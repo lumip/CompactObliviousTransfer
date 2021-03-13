@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <AssemblyName>CompactObliviousTransfer</AssemblyName>
+    <RootNamespace>CompactOT</RootNamespace>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>CS8602;CS8603;CS8600;CS8625;CS8610</WarningsAsErrors>
+    <Title>CompactObliviousTransfer</Title>
+    <PackageId>CompactObliviousTransfer</PackageId>
+    <LicenseId>GPL-3.0-or-later</LicenseId>
+    <Authors>Lukas "lumip" Prediger</Authors>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <Copyright>Copyright © 2021 Lukas Prediger</Copyright>
+    <Description>A compact library for oblivous transport protocols, fully written in C#.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <!-- <DocumentationFile>bin/$(Configuration)/CompactObliviousTransfer.xml</DocumentationFile> -->
+    <DebugType>full</DebugType>
+    <OutputPath>bin/$(Configuration)/</OutputPath>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <!-- <DocumentationFile>bin/$(Configuration)/CompactObliviousTransfer.xml</DocumentationFile> -->
+    <OutputPath>bin/$(Configuration)/</OutputPath>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <!--<PackageReference Include="CompactCryptoGroupAlgebra" Version="1.0.0" />-->
+    <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
+    <ProjectReference Include="../../CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra.csproj" />
+  </ItemGroup>
+
+</Project>

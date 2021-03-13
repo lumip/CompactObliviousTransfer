@@ -1,0 +1,11 @@
+*/bin/*
+*/obj/*
+*.suo
+/packages/*
+/testPackages/*
+.vs
+project.lock.json
+CoverageReport/
+*coverage*.xml
+__Instrumented/
+*Coverage*/
