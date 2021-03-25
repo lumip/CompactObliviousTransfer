@@ -33,7 +33,7 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <!--<PackageReference Include="CompactCryptoGroupAlgebra" Version="1.0.0" />-->
     <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
-    <ProjectReference Include="../../CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra.csproj" />
+    <PackageReference Include="CompactCryptoGroupAlgebra" Version="2.0.0-alpha*" />
   </ItemGroup>
 
 </Project>
