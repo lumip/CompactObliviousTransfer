@@ -32,7 +32,7 @@ namespace CompactOT
 
             // execute protocol
             var sendTask = otProtocol.SendAsync(channels.FirstPartyChannel, options);
-            var receiverTask = otProtocol.ReceiveAsync(channels.SecondPartyChannel, receiverIndices, numberOfOptions, numberOfMessageBytes);
+            var receiverTask = otProtocol.ReceiveAsync(channels.SecondPartyChannel, receiverIndices, numberOfOptions, numberOfMessageBytes * 8);
 
             // verify results
             byte[][] results = receiverTask.Result;

@@ -25,7 +25,7 @@ namespace CompactOT
             byte[][] receivedOptions = new byte[selectionIndices.Length][];
             for (int j = 0; j < selectionIndices.Length; ++j)
             {
-                receivedOptions[j] = response.ReadBuffer(numberOfMessageBits * 8);
+                receivedOptions[j] = response.ReadBuffer(numberOfMessageBits / 8);
             }
             return receivedOptions;
         }
