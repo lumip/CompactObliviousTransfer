@@ -31,7 +31,8 @@ namespace CompactOT
 
             // protocol setup
             var otProtocol = new NaorPinkasObliviousTransfer<BigInteger, BigInteger>(
-                CryptoContext<BigInteger, BigInteger>.CreateDefaultWith768BitGroup()
+                CryptoGroupDefaults.Create768BitMultiplicativeGroup(),
+                CryptoContext.CreateDefault()
             );
             var channels = new TestMessageChannels();
 

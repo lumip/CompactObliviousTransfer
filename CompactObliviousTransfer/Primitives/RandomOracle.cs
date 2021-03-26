@@ -1,4 +1,8 @@
-﻿using System;
+﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
+// SPDX-License-Identifier: MIT
+// Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,31 +10,25 @@ using System.Threading.Tasks;
 
 namespace CompactOT
 {
+
     public abstract class RandomOracle
     {
-        public abstract IEnumerable<byte> Invoke(byte[] query);
+        public abstract RandomByteSequence Invoke(byte[] query);
+
+        public virtual RandomByteSequence Invoke(IEnumerable<byte> query)
+        {
+            return Invoke(query.ToArray());
+        }
         
         public byte[] Mask(byte[] message, byte[] query)
         {
-            byte[] result = new byte[message.Length];
-            int index = 0;
-
-            foreach (byte maskByte in Invoke(query).Take(message.Length))
-            {
-                result[index] = (byte)(message[index] ^ maskByte);
-                index++;
-            }
-
-            if (index < message.Length)
-                throw new ArgumentException("Random oracle invocation does not provide enough data to mask the given message.", nameof(query));
-            
-            return result;
+            return Mask(((IEnumerable<byte>)message), query).ToArray();
         }
 
         public IEnumerable<byte> Mask(IEnumerable<byte> message, byte[] query)
         {
             var messageEnumerator = message.GetEnumerator();
-            var maskEnumerator = Invoke(query).GetEnumerator();
+            var maskEnumerator = Invoke(query).Enumerator;
 
             while (messageEnumerator.MoveNext())
             {

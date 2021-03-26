@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Numerics;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Diagnostics;
@@ -18,23 +16,25 @@ namespace CompactOT
     /// </summary>
     /// <remarks>
     /// Reference: Moni Naor and Benny Pinkas: Efficient oblivious transfer protocols 2001. https://dl.acm.org/citation.cfm?id=365502
+    ///
     /// Further implementation details: Seung Geol Choi et al.: Secure Multi-Party Computation of Boolean Circuits with Applications
     /// to Privacy in On-Line Marketplaces. https://link.springer.com/chapter/10.1007/978-3-642-27954-6_26
     /// </remarks>
-    public class NaorPinkasObliviousTransfer<TSecret, TCrypto> : IStatelessObliviousTransfer where TSecret: notnull where TCrypto: notnull
+    public class NaorPinkasObliviousTransfer<TSecret, TCrypto> : StatelessObliviousTransfer where TSecret: notnull where TCrypto: notnull
     {
 
         private CryptoGroup<TSecret, TCrypto> _group;
 
         private RandomOracle _randomOracle;
         private RandomNumberGenerator _randomNumberGenerator;
+
+        public override int SecurityLevel => _group.SecurityLevel;
         
-        public NaorPinkasObliviousTransfer(CryptoContext<TSecret, TCrypto> cryptoContext)
+        public NaorPinkasObliviousTransfer(CryptoGroup<TSecret, TCrypto> cryptoGroup, CryptoContext cryptoContext)
         {
-            _group = cryptoContext.CryptoGroup;
+            _group = cryptoGroup;
             _randomOracle = new HashRandomOracle(cryptoContext.HashAlgorithm);
-            //_randomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
-            _randomNumberGenerator = cryptoContext.RandomNumberGenerator;
+            _randomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
 #if DEBUG
             Console.WriteLine("Security parameters:");
             Console.WriteLine("order = {0}", _group.Order);
@@ -44,7 +44,8 @@ namespace CompactOT
 #endif
         }
 
-        public async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions<byte> options)
+        /// <inheritdoc/>
+        public override async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions<byte> options)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -127,7 +128,8 @@ namespace CompactOT
 #endif
         }
 
-        public async Task<byte[][]> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBytes)
+        /// <inheritdoc/>
+        public override async Task<byte[][]> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -159,7 +161,7 @@ namespace CompactOT
 #endif
 
             Task writeDsTask = WriteGroupElements(channel, listOfDs);
-            Task<ObliviousTransferOptions<byte>> readMaskedOptionsTask = ReadOptions(channel, numberOfInvocations, numberOfOptions, numberOfMessageBytes);
+            Task<ObliviousTransferOptions<byte>> readMaskedOptionsTask = ReadOptions(channel, numberOfInvocations, numberOfOptions, numberOfMessageBits);
 
             var listOfEs = new CryptoGroupElement<TSecret, TCrypto>[numberOfInvocations];
 
@@ -239,16 +241,16 @@ namespace CompactOT
         }
 
         private async Task<ObliviousTransferOptions<byte>> ReadOptions(
-            IMessageChannel channel, int numberOfInvocations, int numberOfOptions, int numberOfMessageBytes
+            IMessageChannel channel, int numberOfInvocations, int numberOfOptions, int numberOfMessageBits
         )
         {
             MessageDecomposer message = new MessageDecomposer(await channel.ReadMessageAsync());
 
-            var options = new ObliviousTransferOptions<byte>(numberOfInvocations, numberOfOptions, numberOfMessageBytes);
+            var options = new ObliviousTransferOptions<byte>(numberOfInvocations, numberOfOptions, numberOfMessageBits);
             for (int j = 0; j < numberOfInvocations; ++j)
             {
                 for (int i = 0; i < numberOfOptions; ++i)
-                    options.SetMessageOption(j, i, message.ReadBuffer(numberOfMessageBytes));
+                    options.SetMessageOption(j, i, message.ReadBuffer(NumberLength.FromBitLength(numberOfMessageBits).InBytes));
             }
 
             return options;

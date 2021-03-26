@@ -1,4 +1,8 @@
-﻿using System;
+﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
+// SPDX-License-Identifier: MIT
+// Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,7 +26,7 @@ namespace CompactOT
             _hashAlgorithmLock = new object();
         }
 
-        public override IEnumerable<byte> Invoke(byte[] query)
+        public IEnumerator<byte> InvokeForEnumerator(byte[] query)
         {
             byte[] seed;
             lock (_hashAlgorithmLock)
@@ -55,6 +59,12 @@ namespace CompactOT
             }
 
             throw new InvalidOperationException("Random oracle cannot provide more data since the counter has reached its maximum value.");
+        }
+
+        public override RandomByteSequence Invoke(byte[] query)
+        {
+            // note(lumip): as an alternative, extend Linq to IEnumerator ?
+            return new RandomByteSequence(InvokeForEnumerator(query));
         }
     }
 }
