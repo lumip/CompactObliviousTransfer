@@ -1,9 +1,9 @@
 using System;
-using System.Collections;
 using System.Security.Cryptography;
 using CompactCryptoGroupAlgebra;
 using System.Numerics;
-using System.Linq;
+
+using CompactOT.DataStructures;
 
 namespace CompactOT
 {
@@ -27,13 +27,6 @@ namespace CompactOT
             } while (sample >= toExclusive);
 
             return sample;
-
-            // int bitsPerSample = NumberLength.GetLength(limit).InBits;
-            // int totalBytes = NumberLength.FromBitLength(bitsPerSample * count).InBytes;
-
-            // byte[] randomBytes = new byte[totalBytes];
-            // randomNumberGenerator.GetBytes(randomBytes);
-            // int[] results = 
         }
 
         public static int[] GetInt32Array(this RandomNumberGenerator randomNumberGenerator, int toExclusive, int amount)
@@ -77,6 +70,14 @@ namespace CompactOT
                 }
             }
             return samples;
+        }
+
+        public static BitArray GetBits(this RandomNumberGenerator randomNumberGenerator, int amount)
+        {
+            int numberOfBytes = DataStructures.BitArray.RequiredBytes(amount);
+            byte[] buffer = new byte[numberOfBytes];
+            randomNumberGenerator.GetBytes(buffer);
+            return DataStructures.BitArray.CreateFromBytes(buffer, amount);
         }
     }
 }

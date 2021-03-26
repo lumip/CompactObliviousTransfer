@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using CompactOT.Buffers.Internal;
+using CompactOT.DataStructures;
 
 namespace CompactOT.Buffers
 {
@@ -36,6 +37,16 @@ namespace CompactOT.Buffers
         public void Write(int value)
         {
             AddComponent(new IntMessageComponent(value));
+        }
+
+        public void Write(BitArray bits)
+        {
+            AddComponent(new BitArrayMessageComponent(bits));
+        }
+
+        public void Write(BitMatrix bits)
+        {
+            AddComponent(new BitMatrixMessageComponent(bits));
         }
 
         private void AddComponent(IMessageComponent component)

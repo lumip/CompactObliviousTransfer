@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using CompactOT.Buffers.Internal;
+using CompactOT.DataStructures;
 
 namespace CompactOT.Buffers
 {
@@ -31,6 +32,16 @@ namespace CompactOT.Buffers
         public int ReadInt()
         {
             return IntMessageComponent.ReadFromBuffer(_messageBuffer, ref _offset);
+        }
+
+        public BitArray ReadBitArray(int numberOfElements)
+        {
+            return BitArrayMessageComponent.ReadFromBuffer(_messageBuffer, ref _offset, numberOfElements);
+        }
+
+        public BitMatrix ReadBitMatrix(int numberOfRows, int numberOfColumns)
+        {
+            return BitMatrixMessageComponent.ReadFromBuffer(_messageBuffer, ref _offset, numberOfRows, numberOfColumns);
         }
 
         public int Length
