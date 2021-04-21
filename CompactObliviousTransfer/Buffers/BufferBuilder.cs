@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CompactOT.DataStructures;
 
 namespace CompactOT.Buffers
 {
@@ -18,6 +19,8 @@ namespace CompactOT.Buffers
         {
             _composer = new MessageComposer();
         }
+
+        public static BufferBuilder Empty => new BufferBuilder();
 
         public static BufferBuilder From(byte[] buffer)
         {
@@ -33,6 +36,12 @@ namespace CompactOT.Buffers
         public BufferBuilder With(int value)
         {
             _composer.Write(value);
+            return this;
+        }
+
+        public BufferBuilder With(IBitArray bits)
+        {
+            _composer.Write(bits);
             return this;
         }
 

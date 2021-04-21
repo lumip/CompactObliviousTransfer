@@ -161,9 +161,8 @@ namespace CompactOT
                 Debug.Assert(t1Col.Length == CodeLength);
                 Debug.Assert(selectionCode.Length == CodeLength);
 
-                us.SetRow(j,
-                    t0Col ^ (t1Col) ^ (WalshHadamardCode.ComputeWalshHadamardCode(selectionIndices[j], optionLength.InBits))
-                );
+                var row = t0Col ^ t1Col ^ selectionCode;
+                us.SetRow(j, BitArray.FromBytes(row.AsByteEnumerable(), row.Length));
             }
 
             
@@ -188,10 +187,10 @@ namespace CompactOT
         /// <summary>
         /// Masks an option (i.e., a sender input message).
         /// </summary>
-        private BitArray MaskOption(BitArray option, BitArray mask, int invocationIndex)
+        private IBitArray MaskOption(IBitArray option, IBitArray mask, int invocationIndex)
         {
-            var query = BufferBuilder.From(mask.ToBytes()).With(invocationIndex).Create();
-            return RandomOracle.Mask(option.ToBytes(), query);
+            var query = BufferBuilder.Empty.With(mask).With(invocationIndex).Create();
+            return new EnumeratedBitArrayView(RandomOracle.Mask(option.AsByteEnumerable(), query), option.Length);
         }
 
         private async Task SendReceiverMessage(BitMatrix us)
@@ -232,7 +231,7 @@ namespace CompactOT
                 Debug.Assert(u.Length == options.NumberOfInvocations);
                 var q = u & _senderState.RandomChoices[k];
                 q = q ^ _senderState.SeededRandomOracles[k].GetBits(options.NumberOfInvocations);
-                qs.SetColumn(k, q);
+                qs.SetColumn(k, BitArray.FromBytes(q.AsByteEnumerable(), q.Length));
             }
 
             var optionLength = NumberLength.GetLength(options.NumberOfOptions);
@@ -250,7 +249,7 @@ namespace CompactOT
 
                 for (int i = 0; i < options.NumberOfInvocations; ++i)
                 {
-                    var option = BitArray.CreateFromByteEnumerator(
+                    var option = BitArray.FromBytes(
                         options.GetMessageOption(i, j).GetEnumerator(), numberOfMessageBits
                     );
 
@@ -258,7 +257,7 @@ namespace CompactOT
                     var maskedOption = MaskOption(option, query, i);
                     Debug.Assert(maskedOption.Length == options.MessageLength);
 
-                    maskedOptions[j].SetRow(i, maskedOption);
+                    maskedOptions[j].SetRow(i, BitArray.FromBytes(maskedOption.AsByteEnumerable(), maskedOption.Length));
                 }
             }
 

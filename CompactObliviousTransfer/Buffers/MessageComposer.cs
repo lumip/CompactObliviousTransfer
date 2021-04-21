@@ -39,7 +39,7 @@ namespace CompactOT.Buffers
             AddComponent(new IntMessageComponent(value));
         }
 
-        public void Write(BitArray bits)
+        public void Write(IBitArray bits)
         {
             AddComponent(new BitArrayMessageComponent(bits));
         }

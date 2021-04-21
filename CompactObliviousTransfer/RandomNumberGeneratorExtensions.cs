@@ -77,7 +77,7 @@ namespace CompactOT
             int numberOfBytes = DataStructures.BitArray.RequiredBytes(amount);
             byte[] buffer = new byte[numberOfBytes];
             randomNumberGenerator.GetBytes(buffer);
-            return DataStructures.BitArray.CreateFromBytes(buffer, amount);
+            return DataStructures.BitArray.FromBytes(buffer, amount);
         }
     }
 }

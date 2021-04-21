@@ -30,7 +30,7 @@ namespace CompactOT
 
         public DataStructures.BitArray GetBits(int amount)
         {
-            return DataStructures.BitArray.CreateFromByteEnumerator(Enumerator, amount);
+            return DataStructures.BitArray.FromBytes(Enumerator, amount);
         }
 
         public IEnumerator<byte> Enumerator => _randomnessEnumerator;

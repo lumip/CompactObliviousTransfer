@@ -31,7 +31,7 @@ namespace CompactOT.Buffers.Internal
             var bits = new BitMatrix(rows, columns);
             for (int i = 0; i < rows; ++i)
             {
-                var row = BitArray.CreateFromBytes(messageBuffer, columns, offset);
+                var row = BitArray.FromBytes(messageBuffer, columns, offset);
                 bits.SetRow(i, row);
                 offset += bytesPerRow;
             }
