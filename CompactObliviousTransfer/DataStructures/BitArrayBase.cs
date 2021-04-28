@@ -6,7 +6,7 @@ using System.Linq;
 namespace CompactOT.DataStructures
 {
 
-    public abstract class BitArrayBase : IBitArray
+    public abstract class BitArrayBase : ICollection, IEnumerable<Bit>
     {
 
         public abstract int Length { get; }
@@ -35,9 +35,12 @@ namespace CompactOT.DataStructures
         {
             CopyToInternal(buffer, offset);
             var nonAlignedBits = Length % 8;
-            var mask = (byte)~(0xff << nonAlignedBits);
-            var numBytes = BitArray.RequiredBytes(Length);
-            buffer[offset + (numBytes - 1)] &= mask;
+            if (nonAlignedBits > 0)
+            {
+                var mask = (byte)~(0xff << nonAlignedBits);
+                var numBytes = BitArray.RequiredBytes(Length);
+                buffer[offset + (numBytes - 1)] &= mask;
+            }
         }
 
         public virtual void CopyTo(Bit[] buffer, int offset)
@@ -66,33 +69,33 @@ namespace CompactOT.DataStructures
             return String.Concat(((IEnumerable<Bit>)this).Select(b => b ? '1' : '0'));
         }
 
-        public virtual IBitArray Concatenate(IBitArray other)
+        public virtual BitArrayBase Concatenate(BitArrayBase other)
         {
             return new EnumeratedBitArrayView(
                 new BitToByteEnumerable(((IEnumerable<Bit>)this).Concat(other)), Length + other.Length);
         }
 
-        public virtual IBitArray Not()
+        public virtual BitArrayBase Not()
         {
             return new EnumeratedBitArrayView(
                 ByteEnumerableOperations.Not(AsByteEnumerable()), Length
             );
         }
 
-        public virtual IBitArray And(IBitArray other)
+        public virtual BitArrayBase And(BitArrayBase other)
         {
             return new EnumeratedBitArrayView(
                 ByteEnumerableOperations.And(AsByteEnumerable(), other.AsByteEnumerable()), Length
             );
         }
 
-        public virtual IBitArray Or(IBitArray other)
+        public virtual BitArrayBase Or(BitArrayBase other)
         {
             return new EnumeratedBitArrayView(
                 ByteEnumerableOperations.Or(AsByteEnumerable(), other.AsByteEnumerable()), Length
             );
         }
-        public virtual IBitArray Xor(IBitArray other)
+        public virtual BitArrayBase Xor(BitArrayBase other)
         {
             return new EnumeratedBitArrayView(
                 ByteEnumerableOperations.Xor(AsByteEnumerable(), other.AsByteEnumerable()), Length
@@ -107,30 +110,23 @@ namespace CompactOT.DataStructures
             return buffer;
         }
 
-        public virtual IBitArray And(Bit bit) => And(new ConstantBitArrayView(bit, Length));
-        public virtual IBitArray Or(Bit bit) => Or(new ConstantBitArrayView(bit, Length));
-        public virtual IBitArray Xor(Bit bit) => Xor(new ConstantBitArrayView(bit, Length));
+        public virtual BitArrayBase And(Bit bit) => And(new ConstantBitArrayView(bit, Length));
+        public virtual BitArrayBase Or(Bit bit) => Or(new ConstantBitArrayView(bit, Length));
+        public virtual BitArrayBase Xor(Bit bit) => Xor(new ConstantBitArrayView(bit, Length));
 
-        public static IBitArray operator &(BitArrayBase left, BitArrayBase right) => left.And(right);
-        public static IBitArray operator |(BitArrayBase left, BitArrayBase right) => left.Or(right);
-        public static IBitArray operator ^(BitArrayBase left, BitArrayBase right) => left.Xor(right);
+        public static BitArrayBase operator &(BitArrayBase left, BitArrayBase right) => left.And(right);
+        public static BitArrayBase operator |(BitArrayBase left, BitArrayBase right) => left.Or(right);
+        public static BitArrayBase operator ^(BitArrayBase left, BitArrayBase right) => left.Xor(right);
 
-        public static IBitArray operator &(BitArrayBase left, IBitArray right) => left.And(right);
-        public static IBitArray operator |(BitArrayBase left, IBitArray right) => left.Or(right);
-        public static IBitArray operator ^(BitArrayBase left, IBitArray right) => left.Xor(right);
-        public static IBitArray operator ~(BitArrayBase left) => left.Not();
+        public static BitArrayBase operator ~(BitArrayBase left) => left.Not();
 
-        public static IBitArray operator &(IBitArray left, BitArrayBase right) => right.And(left);
-        public static IBitArray operator |(IBitArray left, BitArrayBase right) => right.Or(left);
-        public static IBitArray operator ^(IBitArray left, BitArrayBase right) => right.Xor(left);
+        public static BitArrayBase operator &(BitArrayBase left, Bit right) => left.And(right);
+        public static BitArrayBase operator &(Bit left, BitArrayBase right) => right.And(left);
 
-        public static IBitArray operator &(BitArrayBase left, Bit right) => left.And(right);
-        public static IBitArray operator &(Bit left, BitArrayBase right) => right.And(left);
+        public static BitArrayBase operator |(BitArrayBase left, Bit right) => left.Or(right);
+        public static BitArrayBase operator |(Bit left, BitArrayBase right) => right.Or(left);
 
-        public static IBitArray operator |(BitArrayBase left, Bit right) => left.Or(right);
-        public static IBitArray operator |(Bit left, BitArrayBase right) => right.Or(left);
-
-        public static IBitArray operator ^(BitArrayBase left, Bit right) => left.Xor(right);
-        public static IBitArray operator ^(Bit left, BitArrayBase right) => right.Xor(left);
+        public static BitArrayBase operator ^(BitArrayBase left, Bit right) => left.Xor(right);
+        public static BitArrayBase operator ^(Bit left, BitArrayBase right) => right.Xor(left);
     }
 }

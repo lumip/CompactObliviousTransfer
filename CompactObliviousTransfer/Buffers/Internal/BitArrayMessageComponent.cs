@@ -5,9 +5,9 @@ namespace CompactOT.Buffers.Internal
     public class BitArrayMessageComponent : IMessageComponent
     {
 
-        IBitArray _array;
+        BitArrayBase _array;
 
-        public BitArrayMessageComponent(IBitArray array)
+        public BitArrayMessageComponent(BitArrayBase array)
         {
             _array = array;
         }
@@ -20,7 +20,7 @@ namespace CompactOT.Buffers.Internal
             offset += Length;
         }
 
-        public static IBitArray ReadFromBuffer(byte[] messageBuffer, ref int offset, int numberOfElements)
+        public static BitArrayBase ReadFromBuffer(byte[] messageBuffer, ref int offset, int numberOfElements)
         {
             var bits = BitArray.FromBytes(messageBuffer, numberOfElements, offset);
             offset += BitArray.RequiredBytes(numberOfElements);

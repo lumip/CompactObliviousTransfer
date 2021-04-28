@@ -1,78 +1,143 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Diagnostics;
 // using System.Linq;
 
+using CompactOT.DataStructures;
 namespace CompactOT
 {
 
-    public class ObliviousTransferOptions<T>
+    public class ObliviousTransferOptions
     {
-        private T[,,] _options;
+        private BitArray _values;
 
-        public ObliviousTransferOptions(int numberOfInvocations, int numberOfOptions, int messageLength)
+        public int NumberOfInvocations { get; }
+        public int NumberOfOptions { get; }
+        public int NumberOfMessageBits { get; }
+
+        public ObliviousTransferOptions(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
         {
-            _options = new T[numberOfInvocations, numberOfOptions, messageLength];
+            NumberOfInvocations = numberOfInvocations;
+            NumberOfOptions = numberOfOptions;
+            NumberOfMessageBits = numberOfMessageBits;
+
+            _values = new BitArray(NumberOfInvocations * NumberOfOptions * NumberOfMessageBits);
         }
 
-        public static ObliviousTransferOptions<T> MakeNewLike<TIn>(ObliviousTransferOptions<TIn> other)
+        private ObliviousTransferOptions(BitArray values, int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
         {
-            return new ObliviousTransferOptions<T>(other.NumberOfInvocations, other.NumberOfOptions, other.MessageLength);
+            NumberOfInvocations = numberOfInvocations;
+            NumberOfOptions = numberOfOptions;
+            NumberOfMessageBits = numberOfMessageBits;
+
+            int expectedSize = NumberOfInvocations * NumberOfOptions * NumberOfMessageBits;
+            if (values.Length != expectedSize)
+                throw new ArgumentException($"Value buffer does not have the correct size: {values.Length}; expected {expectedSize}", nameof(values));
+
+            _values = values;
         }
 
-        public int NumberOfInvocations => _options.GetLength(0);
-        public int NumberOfOptions => _options.GetLength(1);
-        public int MessageLength => _options.GetLength(2);
-
-        public IEnumerable<T> GetMessageOption(int invocationIndex, int optionIndex)
+        public static ObliviousTransferOptions FromBitArray(BitArrayBase values, int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
         {
-            for (int i = 0; i < MessageLength; ++i)
+            return new ObliviousTransferOptions(new BitArray(values), numberOfInvocations, numberOfOptions, numberOfMessageBits);
+        }
+
+        public static ObliviousTransferOptions CreateLike(ObliviousTransferOptions other)
+        {
+            return new ObliviousTransferOptions(other.NumberOfInvocations, other.NumberOfOptions, other.NumberOfMessageBits);
+        }
+
+        public static ObliviousTransferOptions CreateRandom(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits, RandomNumberGenerator randomNumberGenerator)
+        {
+            int numberOfBits = numberOfInvocations * numberOfOptions * numberOfMessageBits;
+            BitArray randomBits = randomNumberGenerator.GetBits(numberOfBits);
+            return new ObliviousTransferOptions(randomBits, numberOfInvocations, numberOfOptions, numberOfMessageBits);
+        }
+
+        private int GetMessageOffset(int invocation, int option)
+        {
+            if (invocation < 0 || invocation >= NumberOfInvocations)
+                throw new ArgumentOutOfRangeException("Invocation index out of range!", nameof(invocation));
+            if (option < 0 || option >= NumberOfOptions)
+                throw new ArgumentOutOfRangeException("Option index out of range!", nameof(option));
+            return (invocation * NumberOfOptions + option) * NumberOfMessageBits;
+        }
+
+        public BitArrayBase GetMessage(int invocation, int option)
+        {
+            int offset = GetMessageOffset(invocation, option);
+            int end = offset + NumberOfMessageBits;
+            Debug.Assert(end <= _values.Length);
+            return new BitArraySlice(_values, offset, end);
+        }
+
+        public void SetMessage(int invocation, int option, BitArrayBase message)
+        {
+            if (message.Length != NumberOfMessageBits)
+                throw new ArgumentException("Length of given message must match oblivious transfer message length.", nameof(message));
+
+            int offset = GetMessageOffset(invocation, option);
+            int end = offset + NumberOfMessageBits;
+            Debug.Assert(end <= _values.Length);
+
+            // todo: ideally not work in Bit level here
+            foreach ((int i, Bit b) in message.Enumerate())
             {
-                yield return _options[invocationIndex, optionIndex, i];
+                _values[offset + i] = b;
+                Debug.Assert(offset + i < end);
             }
         }
 
-        public void SetMessageOption(int invocationIndex, int optionIndex, IEnumerable<T> messageOption)
+        public BitArrayBase GetInvocation(int invocation)
         {
-            IEnumerator<T> e = messageOption.GetEnumerator();
+            int offset = GetMessageOffset(invocation, 0);
+            int end = offset + NumberOfOptions * NumberOfMessageBits;
+            Debug.Assert(end <= _values.Length);
 
-            for (int i = 0; i < MessageLength; ++i)
-            {                
-                if (!e.MoveNext()) throw new ArgumentException("Given message option is too short!");
-                _options[invocationIndex, optionIndex, i] = e.Current;
+            return new BitArraySlice(_values, offset, end);
+        }
+
+        /// <summary>
+        /// Sets all messages for an invocation at once.
+        /// </summary>
+        /// <param name="message">Sequence of bits for all messages, concatenated starting with the first message.</param>
+        public void SetInvocation(int invocation, BitArrayBase messages)
+        {
+            if (messages.Length != NumberOfOptions * NumberOfMessageBits)
+                throw new ArgumentException("Length of given messages must match oblivious transfer message length times the number of options.", nameof(messages));
+
+            int offset = GetMessageOffset(invocation, 0);
+            int end = offset + NumberOfOptions * NumberOfMessageBits;
+            Debug.Assert(end <= _values.Length);
+
+            // todo: ideally not work in Bit level here
+            foreach ((int i, Bit b) in messages.Enumerate())
+            {
+                _values[offset + i] = b;
+                Debug.Assert(offset + i < end);
             }
         }
 
-        public void SetInvocationOptions(int invocationIndex, IEnumerable<IEnumerable<T>> invocationOptions)
+        public void SetInvocation(int invocation, BitArrayBase[] messages)
         {
-            var e = invocationOptions.GetEnumerator();
-            for (int i = 0; i < NumberOfOptions; ++i)
+            if (messages.Length != NumberOfOptions)
+                throw new ArgumentException("Number of given messages must match oblivious transfer option count.", nameof(messages));
+
+            foreach ((int i, var message) in messages.Enumerate())
             {
-                if (!e.MoveNext()) throw new ArgumentException("Not enough option messages provided!");
-                SetMessageOption(invocationIndex, i, e.Current);
+                SetMessage(invocation, i, message);
             }
         }
 
-        public static void FillWithRandom(ObliviousTransferOptions<byte> options, RandomNumberGenerator randomNumberGenerator)
+        public void SetInvocation(int invocation, byte[][] messages)
         {
-            var buffer = new byte[options.MessageLength];
-            for (int j = 0; j < options.NumberOfInvocations; ++j)
-            {
-                for (int i = 0; i < options.NumberOfOptions; ++i)
-                {
-                    randomNumberGenerator.GetBytes(buffer);
-                    options.SetMessageOption(j, i, buffer);
-                }
-            }
-        }
+            if (messages.Length != NumberOfOptions)
+                throw new ArgumentException("Number of given messages must match oblivious transfer option count.", nameof(messages));
 
-        public T[] Buffer
-        {
-            get
+            foreach ((int i, var message) in messages.Enumerate())
             {
-                T[] buffer = new T[NumberOfInvocations * NumberOfOptions * MessageLength];
-                Array.Copy(_options, buffer, buffer.Length);
-                return buffer;
+                SetMessage(invocation, i, new EnumeratedBitArrayView(message, message.Length * 8));
             }
         }
     }

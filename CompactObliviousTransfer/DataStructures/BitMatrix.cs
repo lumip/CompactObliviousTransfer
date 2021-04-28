@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace CompactOT.DataStructures
 {
@@ -57,19 +59,15 @@ namespace CompactOT.DataStructures
             }
         }
 
-        public BitArray GetRow(int row)
+        public BitArrayBase GetRow(int row)
         {
             if (row < 0 || row >= Rows)
                 throw new ArgumentOutOfRangeException(nameof(row));
-            BitArray result = new BitArray(Cols);
-            for (int j = 0; j < Cols; ++j)
-            {
-                result[j] = _values[GetValuesIndex(row, j)];
-            }
-            return result;
+            int rowIndex = GetValuesIndex(row, 0);
+            return new BitArraySlice(_values, rowIndex, rowIndex + Cols);
         }
 
-        public void SetRow(int row, BitArray values)
+        public void SetRow(int row, BitArrayBase values)
         {
             if (row < 0 || row >= Rows)
                 throw new ArgumentOutOfRangeException(nameof(row));
@@ -77,13 +75,13 @@ namespace CompactOT.DataStructures
                 throw new ArgumentNullException(nameof(values));
             if (values.Length != Cols)
                 throw new ArgumentException("Provided argument must match the number of columns.", nameof(values));
-            for (int j = 0; j < Cols; ++j)
+            foreach ((int j, Bit v) in values.Enumerate())
             {
-                _values[GetValuesIndex(row, j)] = values[j];
+                _values[GetValuesIndex(row, j)] = v;
             }
         }
 
-        public BitArray GetColumn(int col)
+        public BitArrayBase GetColumn(int col)
         {
             if (col < 0 || col >= Cols)
                 throw new ArgumentOutOfRangeException(nameof(col));
@@ -95,7 +93,7 @@ namespace CompactOT.DataStructures
             return result;
         }
 
-        public void SetColumn(int col, BitArray values)
+        public void SetColumn(int col, BitArrayBase values)
         {
             if (col < 0 || col >= Cols)
                 throw new ArgumentOutOfRangeException(nameof(col));
@@ -103,22 +101,9 @@ namespace CompactOT.DataStructures
                 throw new ArgumentNullException(nameof(values));
             if (values.Length != Rows)
                 throw new ArgumentException("Provided argument must match the number of columns.", nameof(values));
-            for (int i = 0; i < Rows; ++i)
+            foreach ((int i, Bit v) in values.Enumerate())
             {
-                _values[GetValuesIndex(i, col)] = values[i];
-            }
-        }
-
-        public BitMatrix Transposed
-        {
-            get
-            {
-                BitMatrix transposed = new BitMatrix(Cols, Rows);
-                for (int i = 0; i < Rows; ++i)
-                {
-                    transposed.SetColumn(i, this.GetRow(i));
-                }
-                return transposed;
+                _values[GetValuesIndex(i, col)] = v;
             }
         }
 

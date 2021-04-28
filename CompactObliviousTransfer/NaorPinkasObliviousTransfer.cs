@@ -7,6 +7,7 @@ using System.Diagnostics;
 
 using CompactCryptoGroupAlgebra;
 using CompactOT.Buffers;
+using CompactOT.DataStructures;
 
 namespace CompactOT
 {
@@ -45,7 +46,7 @@ namespace CompactOT
         }
 
         /// <inheritdoc/>
-        public override async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions<byte> options)
+        public override async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -85,7 +86,7 @@ namespace CompactOT
             stopwatch.Restart();
 #endif
 
-            var maskedOptions = ObliviousTransferOptions<byte>.MakeNewLike(options);
+            var maskedOptions = ObliviousTransferOptions.CreateLike(options);
 
             Parallel.For(0, maskedOptions.NumberOfInvocations, j =>
             {
@@ -110,7 +111,7 @@ namespace CompactOT
                     // todo: think about whether we want to use a static set of Cs for each sender for all
                     //  connection to reduce the required amount of computation per OT. Would require to
                     //  maintain state in this class and negate the points made in the note above.
-                    maskedOptions.SetMessageOption(j, i, MaskOption(options.GetMessageOption(j, i), e, j, i));
+                    maskedOptions.SetMessage(j, i, MaskOption(options.GetMessage(j, i), e, j, i));
                 });
             });
 
@@ -161,7 +162,7 @@ namespace CompactOT
 #endif
 
             Task writeDsTask = WriteGroupElements(channel, listOfDs);
-            Task<ObliviousTransferOptions<byte>> readMaskedOptionsTask = ReadOptions(channel, numberOfInvocations, numberOfOptions, numberOfMessageBits);
+            Task<ObliviousTransferOptions> readMaskedOptionsTask = ReadOptions(channel, numberOfInvocations, numberOfOptions, numberOfMessageBits);
 
             var listOfEs = new CryptoGroupElement<TSecret, TCrypto>[numberOfInvocations];
 
@@ -184,7 +185,7 @@ namespace CompactOT
             {
                 int i = selectionIndices[j];
 
-                selectedOptions[j] = MaskOption(maskedOptions.GetMessageOption(j, i), listOfEs[j], j, i).ToArray();
+                selectedOptions[j] = MaskOption(maskedOptions.GetMessage(j, i), listOfEs[j], j, i).ToBytes();
             });
 
 #if DEBUG
@@ -228,29 +229,29 @@ namespace CompactOT
             return groupElements;
         }
 
-        private Task WriteOptions(IMessageChannel channel, ObliviousTransferOptions<byte> options)
+        private Task WriteOptions(IMessageChannel channel, ObliviousTransferOptions options)
         {
             MessageComposer message = new MessageComposer(options.NumberOfOptions * options.NumberOfInvocations);
             for (int j = 0; j < options.NumberOfInvocations; ++j)
             {
                 for (int i = 0; i < options.NumberOfOptions; ++i)
-                    message.Write(options.GetMessageOption(j, i).ToArray());
+                    message.Write(options.GetMessage(j, i));
             }
 
             return channel.WriteMessageAsync(message.Compose());
         }
 
-        private async Task<ObliviousTransferOptions<byte>> ReadOptions(
+        private async Task<ObliviousTransferOptions> ReadOptions(
             IMessageChannel channel, int numberOfInvocations, int numberOfOptions, int numberOfMessageBits
         )
         {
             MessageDecomposer message = new MessageDecomposer(await channel.ReadMessageAsync());
 
-            var options = new ObliviousTransferOptions<byte>(numberOfInvocations, numberOfOptions, numberOfMessageBits);
+            var options = new ObliviousTransferOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
             for (int j = 0; j < numberOfInvocations; ++j)
             {
                 for (int i = 0; i < numberOfOptions; ++i)
-                    options.SetMessageOption(j, i, message.ReadBuffer(NumberLength.FromBitLength(numberOfMessageBits).InBytes));
+                    options.SetMessage(j, i, message.ReadBitArray(NumberLength.FromBitLength(numberOfMessageBits).InBits));
             }
 
             return options;
@@ -268,10 +269,10 @@ namespace CompactOT
         /// <param name="invocationIndex">The index of the OT invocation this options belongs to.</param>
         /// <param name="optionIndex">The index of the option.</param>
         /// <returns>The masked option.</returns>
-        private IEnumerable<byte> MaskOption(IEnumerable<byte> option, CryptoGroupElement<TSecret, TCrypto> groupElement, int invocationIndex, int optionIndex)
+        private BitArrayBase MaskOption(BitArrayBase option, CryptoGroupElement<TSecret, TCrypto> groupElement, int invocationIndex, int optionIndex)
         {
             var query = BufferBuilder.From(groupElement.ToBytes()).With(invocationIndex).With(optionIndex).Create();
-            return _randomOracle.Mask(option, query);
+            return _randomOracle.Mask(option, query.AsEnumerable());
         }
         
     }

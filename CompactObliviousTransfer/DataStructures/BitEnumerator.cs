@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 namespace CompactOT.DataStructures
 {
-    public class BitEnumerator : IEnumerator<Bit>
+    public class ByteToBitEnumerator : IEnumerator<Bit>
     {
 
         private int _bitIndex;
 
         private IEnumerator<byte> _byteEnumerator;
 
-        public BitEnumerator(IEnumerator<byte> byteEnumerator)
+        public ByteToBitEnumerator(IEnumerator<byte> byteEnumerator)
         {
             _byteEnumerator = byteEnumerator;
             _bitIndex = 7;
@@ -43,12 +43,12 @@ namespace CompactOT.DataStructures
         }
     }
 
-    public class BitEnumerable : IEnumerable<Bit>
+    public class ByteToBitEnumerable : IEnumerable<Bit>
     {
         private IEnumerable<byte> _byteEnumerable;
         private int _numberOfBits;
 
-        public BitEnumerable(IEnumerable<byte> byteEnumerable, int numberOfBits)
+        public ByteToBitEnumerable(IEnumerable<byte> byteEnumerable, int numberOfBits)
         {
             if (numberOfBits < 0)
                 throw new ArgumentOutOfRangeException("Number of bits cannot be negative.", nameof(numberOfBits));
@@ -58,7 +58,7 @@ namespace CompactOT.DataStructures
 
         public IEnumerator<Bit> GetEnumerator()
         {
-            return new BitEnumerator(_byteEnumerable.GetEnumerator());
+            return new ByteToBitEnumerator(_byteEnumerable.GetEnumerator());
         }
 
         IEnumerator IEnumerable.GetEnumerator()

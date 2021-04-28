@@ -39,7 +39,7 @@ namespace CompactOT.Buffers
             return this;
         }
 
-        public BufferBuilder With(IBitArray bits)
+        public BufferBuilder With(BitArrayBase bits)
         {
             _composer.Write(bits);
             return this;

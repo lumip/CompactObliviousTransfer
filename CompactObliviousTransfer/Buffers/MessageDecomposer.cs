@@ -34,7 +34,7 @@ namespace CompactOT.Buffers
             return IntMessageComponent.ReadFromBuffer(_messageBuffer, ref _offset);
         }
 
-        public IBitArray ReadBitArray(int numberOfElements)
+        public BitArrayBase ReadBitArray(int numberOfElements)
         {
             return BitArrayMessageComponent.ReadFromBuffer(_messageBuffer, ref _offset, numberOfElements);
         }

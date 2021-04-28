@@ -54,12 +54,11 @@ namespace CompactOT
             baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<BitArray>(), It.IsAny<int>()))
                 .Returns(Task.FromResult(received));
 
-            // var randomCoiceBuffer = new byte[] { 0x5A, 0xDB, 0xAA, 0x5A, 0xDB, 0xAA };
-            var randomChoices = BitArray.FromBinaryString("010110101100110010101010010110101100110010101010");
+            // var randomCoiceBuffer = new byte[] { 0x5A, 0x33, 0x55, 0x5A, 0x33, 0x55 };
+            var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010 11001100 10101010");
             var rngMock = new Mock<RandomNumberGenerator>();
             rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
                 randomChoices.CopyTo(b, 0);
-                // Array.Copy(randomCoiceBuffer, b, Math.Min(randomCoiceBuffer.Length, b.Length));
             });
 
 
@@ -75,8 +74,7 @@ namespace CompactOT
 
             rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
             baseOTMock.Verify(ot => ot.ReceiveAsync(
-                //It.Is<int[]>(s => s.TakeWhile(x => x < numberOfOptions).Count() == securityParameter.InBits),
-                It.Is<BitArray>(b => b.SequenceEqual(randomChoices)),
+                It.Is<BitArrayBase>(b => randomChoices.AsByteEnumerable().SequenceEqual(b.AsByteEnumerable())),
                 It.Is<int>(i => i == securityParameter.InBits)), Times.Once());
 
         }

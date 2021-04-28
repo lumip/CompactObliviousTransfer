@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,6 +30,13 @@ namespace CompactOT.DataStructures
         {
             Length = elements.Length;
             Buffer = new BitToByteEnumerable(elements).ToArray();
+        }
+
+        public BitArray(BitArrayBase elements)
+            : this(elements.Length)
+        {
+            Debug.Assert(Buffer.Length == elements.AsByteEnumerable().Count());
+            elements.AsByteEnumerable().WriteInto(Buffer, 0);
         }
 
         protected BitArray(byte[] bytes, int numberOfElements)
@@ -104,7 +112,7 @@ namespace CompactOT.DataStructures
 
         public override IEnumerator<Bit> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new ByteToBitEnumerator(AsByteEnumerable().GetEnumerator());
         }
 
         public class InPlaceBitArrayOperations
@@ -116,17 +124,17 @@ namespace CompactOT.DataStructures
                 _bitArray = bitArray;
             }
 
-            public void Or(IBitArray other)
+            public void Or(BitArrayBase other)
             {
                 ByteEnumerableOperations.InPlaceOr(_bitArray.Buffer, other.AsByteEnumerable());
             }
 
-            public void Xor(IBitArray other)
+            public void Xor(BitArrayBase other)
             {
                 ByteEnumerableOperations.InPlaceXor(_bitArray.Buffer, other.AsByteEnumerable());
             }
 
-            public void And(IBitArray other)
+            public void And(BitArrayBase other)
             {
                 ByteEnumerableOperations.InPlaceAnd(_bitArray.Buffer, other.AsByteEnumerable());
             }

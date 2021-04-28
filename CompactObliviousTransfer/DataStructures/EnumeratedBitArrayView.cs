@@ -9,13 +9,17 @@ namespace CompactOT.DataStructures
     {
         private IEnumerable<byte> _byteFeed;
         private int _numberOfBits;
-        public EnumeratedBitArrayView(IEnumerable<byte> operationOutputEnumerable, int numberOfBits)
+        public EnumeratedBitArrayView(IEnumerable<byte> asBytes, int numberOfBits)
         {
-            _byteFeed = operationOutputEnumerable;
+            _byteFeed = asBytes;
             _numberOfBits = numberOfBits;
         }
 
-        public EnumeratedBitArrayView(IBitArray bits)
+        public EnumeratedBitArrayView(IEnumerable<Bit> bits, int numberOfBits)
+            : this(new BitToByteEnumerable(bits), numberOfBits)
+        { }
+
+        public EnumeratedBitArrayView(BitArrayBase bits)
             : this(bits.AsByteEnumerable(), ((ICollection<Bit>)bits).Count) { }
 
         public static EnumeratedBitArrayView FromBytes(byte[] buffer, int byteOffset, int numberOfBits)
@@ -38,7 +42,7 @@ namespace CompactOT.DataStructures
 
         public override IEnumerator<Bit> GetEnumerator()
         {
-            return new BitEnumerable(AsByteEnumerable(), _numberOfBits).GetEnumerator();
+            return new ByteToBitEnumerable(AsByteEnumerable(), _numberOfBits).GetEnumerator();
         }
         
     }

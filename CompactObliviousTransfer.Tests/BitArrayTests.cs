@@ -138,5 +138,25 @@ namespace CompactOT.DataStructures
             var bytes = bits.ToBytes();
             Assert.Equal(expectedBytes, bytes);
         }
+
+        [Fact]
+        public void TestToBytesAligned()
+        {
+            var bits = BitArray.FromBytes(new byte[] { 0b10011011, 0b11100101 }, 16);
+            var expectedBytes = new byte[] { 0b10011011, 0b11100101 };
+
+            var bytes = bits.ToBytes();
+            Assert.Equal(expectedBytes, bytes);
+        }
+
+        [Fact]
+        public void TestToBytesOneUnaligned()
+        {
+            var bits = BitArray.FromBytes(new byte[] { 0b10011011, 0b11100101 }, 9);
+            var expectedBytes = new byte[] { 0b10011011, 0b00000001 };
+
+            var bytes = bits.ToBytes();
+            Assert.Equal(expectedBytes, bytes);
+        }
     }
 }

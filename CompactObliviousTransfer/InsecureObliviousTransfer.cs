@@ -30,7 +30,7 @@ namespace CompactOT
             return receivedOptions;
         }
 
-        public override async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions<byte> options)
+        public override async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options)
         {
             var indexMessage = new MessageDecomposer(await channel.ReadMessageAsync());
 
@@ -38,7 +38,7 @@ namespace CompactOT
             for (int j = 0; j < options.NumberOfInvocations; ++j)
             {
                 int index = indexMessage.ReadInt();
-                transferMessage.Write(options.GetMessageOption(j, index).ToArray());
+                transferMessage.Write(options.GetMessage(j, index));
             }
             await channel.WriteMessageAsync(transferMessage.Compose());
         }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CompactOT.DataStructures;
 
 namespace CompactOT
 {
@@ -25,7 +26,7 @@ namespace CompactOT
             return Mask(((IEnumerable<byte>)message), query).ToArray();
         }
 
-        public IEnumerable<byte> Mask(IEnumerable<byte> message, byte[] query)
+        public IEnumerable<byte> Mask(IEnumerable<byte> message, IEnumerable<byte> query)
         {
             var messageEnumerator = message.GetEnumerator();
             var maskEnumerator = Invoke(query).Enumerator;
@@ -37,6 +38,19 @@ namespace CompactOT
 
                 yield return (byte)(messageEnumerator.Current ^ maskEnumerator.Current);
             }
+        }
+
+        public BitArrayBase Mask(BitArrayBase message, BitArrayBase query)
+        {
+            return Mask(message, query.AsByteEnumerable());
+        }
+
+        public BitArrayBase Mask(BitArrayBase message, IEnumerable<byte> query)
+        {
+            return new EnumeratedBitArrayView(
+                Mask(message.AsByteEnumerable(), query),
+                message.Length
+            );
         }
     }
 }

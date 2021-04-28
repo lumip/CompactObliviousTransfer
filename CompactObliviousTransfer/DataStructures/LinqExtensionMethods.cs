@@ -32,5 +32,6 @@ namespace CompactOT.DataStructures
                 i += 1;
             }
         }
+
     }
 }

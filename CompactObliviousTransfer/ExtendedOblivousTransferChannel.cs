@@ -115,8 +115,7 @@ namespace CompactOT
         {
             // generating _securityParameter many pairs of random seeds of length _securityParameter
             int numBaseOTOptions = 2;
-            var seeds = new ObliviousTransferOptions<byte>(CodeLength, numBaseOTOptions, _securityParameter.InBytes);
-            ObliviousTransferOptions<byte>.FillWithRandom(seeds, RandomNumberGenerator);
+            var seeds = ObliviousTransferOptions.CreateRandom(CodeLength, numBaseOTOptions, _securityParameter.InBits, RandomNumberGenerator);
 
             // base OTs as _sender_ with the seeds as inputs
             // Task sendTask = _baseOT.SendAsync(seeds, SecurityParameter, _securityParameter.InBytes);
@@ -125,8 +124,8 @@ namespace CompactOT
             // initializing a random oracle based on each seed
             for (int k = 0; k < CodeLength; ++k)
             {
-                _receiverState.SeededRandomOracles[k, 0] = RandomOracle.Invoke(seeds.GetMessageOption(k, 0));
-                _receiverState.SeededRandomOracles[k, 1] = RandomOracle.Invoke(seeds.GetMessageOption(k, 1));
+                _receiverState.SeededRandomOracles[k, 0] = RandomOracle.Invoke(seeds.GetMessage(k, 0).AsByteEnumerable());
+                _receiverState.SeededRandomOracles[k, 1] = RandomOracle.Invoke(seeds.GetMessage(k, 1).AsByteEnumerable());
             };
 
             await sendTask;
@@ -187,7 +186,7 @@ namespace CompactOT
         /// <summary>
         /// Masks an option (i.e., a sender input message).
         /// </summary>
-        private IBitArray MaskOption(IBitArray option, IBitArray mask, int invocationIndex)
+        private BitArrayBase MaskOption(BitArrayBase option, BitArrayBase mask, int invocationIndex)
         {
             var query = BufferBuilder.Empty.With(mask).With(invocationIndex).Create();
             return new EnumeratedBitArrayView(RandomOracle.Mask(option.AsByteEnumerable(), query), option.Length);
@@ -217,7 +216,7 @@ namespace CompactOT
             return message.ReadBitMatrix(numberOfInvocations, CodeLength);
         }
 
-        public override async Task SendAsync(ObliviousTransferOptions<byte> options)
+        public override async Task SendAsync(ObliviousTransferOptions options)
         {
             BitMatrix us = await ReceiveReceiverMessage(options.NumberOfInvocations);
             Debug.Assert(us.Cols == CodeLength);
@@ -236,7 +235,7 @@ namespace CompactOT
 
             var optionLength = NumberLength.GetLength(options.NumberOfOptions);
             
-            var numberOfMessageBits = NumberLength.FromByteLength(options.MessageLength).InBits;
+            var numberOfMessageBits = options.NumberOfMessageBits;
 
             BitMatrix[] maskedOptions = new BitMatrix[options.NumberOfOptions];
             for (int j = 0; j < options.NumberOfOptions; ++j)
@@ -249,13 +248,11 @@ namespace CompactOT
 
                 for (int i = 0; i < options.NumberOfInvocations; ++i)
                 {
-                    var option = BitArray.FromBytes(
-                        options.GetMessageOption(i, j).GetEnumerator(), numberOfMessageBits
-                    );
+                    var option = options.GetMessage(i, j);
 
                     var query = queryMask ^ qs.GetRow(i);
                     var maskedOption = MaskOption(option, query, i);
-                    Debug.Assert(maskedOption.Length == options.MessageLength);
+                    Debug.Assert(maskedOption.Length == numberOfMessageBits);
 
                     maskedOptions[j].SetRow(i, BitArray.FromBytes(maskedOption.AsByteEnumerable(), maskedOption.Length));
                 }

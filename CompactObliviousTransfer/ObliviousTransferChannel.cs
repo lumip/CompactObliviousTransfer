@@ -13,11 +13,11 @@ namespace CompactOT
     /// </summary>
     public abstract class ObliviousTransferChannel
     {
-        public abstract Task SendAsync(ObliviousTransferOptions<byte> options);
+        public abstract Task SendAsync(ObliviousTransferOptions options);
         
         public abstract Task<byte[][]> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
 
-        public virtual Task<byte[][]> ReceiveAsync(BitArray selectionIndices, int numberOfMessageBits)
+        public virtual Task<byte[][]> ReceiveAsync(BitArrayBase selectionIndices, int numberOfMessageBits)
         {
             return ReceiveAsync(
                 selectionIndices.Select(x => x ? 1 : 0).ToArray(), 2, numberOfMessageBits

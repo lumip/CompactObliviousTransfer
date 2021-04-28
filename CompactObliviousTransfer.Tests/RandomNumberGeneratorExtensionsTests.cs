@@ -7,6 +7,19 @@ using Moq;
 namespace CompactOT
 {
 
+    public class RandomByteSequenceTests
+    {
+        [Fact]
+        public void TestRepeatedInvocation()
+        {
+            byte[] randomBytes = new byte[] { 0x52, 0xf1 };
+            var randomSequence = new RandomByteSequence(randomBytes);
+            DataStructures.BitArrayBase bits1 = randomSequence.GetBits(7);
+            DataStructures.BitArrayBase bits2 = randomSequence.GetBits(7);
+            Assert.NotEqual(bits1.ToBytes(), bits2.ToBytes());
+        }
+    }
+
     public class RandomNumberGeneratorExtensionsTests
     {
         [Fact]
