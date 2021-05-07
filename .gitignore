@@ -9,3 +9,5 @@ CoverageReport/
 *coverage*.xml
 __Instrumented/
 *Coverage*/
+.vscode/*
+dep5
