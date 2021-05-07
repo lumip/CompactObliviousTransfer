@@ -140,6 +140,20 @@ namespace CompactOT
                 SetMessage(invocation, i, new EnumeratedBitArrayView(message, message.Length * 8));
             }
         }
+
+        public override bool Equals(object? obj)
+        {
+            ObliviousTransferOptions? other = obj as ObliviousTransferOptions;
+            if (other == null) return false;
+            if (other.NumberOfInvocations != NumberOfInvocations ||
+                other.NumberOfOptions != NumberOfOptions ||
+                other.NumberOfMessageBits != NumberOfMessageBits)
+            {
+                return false;
+            }
+
+            return other._values.Equals(_values);
+        }
     }
 
 }

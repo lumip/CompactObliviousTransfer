@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using CompactOT.Buffers;
@@ -66,15 +67,20 @@ namespace CompactOT
 
         public int NumberOfOptions { get; private set; }
 
-        public ExtendedObliviousTransferChannel(ObliviousTransferChannel baseOT, int numberOfOptions, int securityParameter, CryptoContext cryptoContext)
+        public ExtendedObliviousTransferChannel(ObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext)
         {
             _baseOT = baseOT;
+            if (_baseOT.SecurityLevel < securityParameter)
+            {
+                throw new ArgumentException($"The provided base OT must provided at least the requested security level of "+
+                $"{securityParameter} but only provides {baseOT.SecurityLevel}.", nameof(baseOT));
+            }
+            
             RandomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
             RandomOracle = new HashRandomOracle(cryptoContext.HashAlgorithm);
             _securityParameter = NumberLength.FromBitLength(securityParameter);
-            NumberOfOptions = numberOfOptions;
-            _senderState = new SenderState(CodeLength, NumberOfOptions);
-            _receiverState = new ReceiverState(CodeLength, NumberOfOptions);
+            _senderState = new SenderState(CodeLength, 2);
+            _receiverState = new ReceiverState(CodeLength, 2);
         }
 
 
@@ -133,6 +139,12 @@ namespace CompactOT
 
         public override async Task<byte[][]> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
+            if (numberOfOptions > CodeLength)
+            {
+                throw new ArgumentException($"Extended Oblivious Transfer with security level {SecurityLevel} requires " +
+                    $"the number of options to be less than {CodeLength}; was {numberOfOptions}", nameof(numberOfOptions));
+            }
+            
             int numberOfInvocations = selectionIndices.Length;
 
             NumberLength optionLength = NumberLength.GetLength(numberOfOptions);
@@ -155,30 +167,29 @@ namespace CompactOT
                 var t0Col = ts[0].GetColumn(j);
                 var t1Col = ts[1].GetColumn(j);
 
-                var selectionCode = WalshHadamardCode.ComputeWalshHadamardCode(selectionIndices[j], optionLength.InBits);
+                var selectionCode = WalshHadamardCode.ComputeWalshHadamardCode(selectionIndices[j], CodeLength);
                 Debug.Assert(t0Col.Length == CodeLength);
                 Debug.Assert(t1Col.Length == CodeLength);
                 Debug.Assert(selectionCode.Length == CodeLength);
 
                 var row = t0Col ^ t1Col ^ selectionCode;
-                us.SetRow(j, BitArray.FromBytes(row.AsByteEnumerable(), row.Length));
+                us.SetRow(j, row);
             }
 
             
             Task sendingTask = SendReceiverMessage(us);
 
-            BitMatrix[] maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
-
             byte[][] results = new byte[numberOfInvocations][];
+            ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
 
-            for (int j = 0; j < numberOfInvocations; ++j)
+            for (int i = 0; i < numberOfInvocations; ++i)
             {
-                int s = selectionIndices[j];
-                var q = maskedOptions[s].GetRow(j);
-                Debug.Assert(q.Length == CodeLength);
-                var t0Col = ts[0].GetColumn(j);
-                var unmaskedOption = MaskOption(q, t0Col, (int)j);
-                results[j] = unmaskedOption.ToBytes();
+                int s = selectionIndices[i];
+                var q = maskedOptions.GetMessage(i, s);
+                Debug.Assert(q.Length == numberOfMessageBits);
+                var t0Col = ts[0].GetColumn(i);
+                var unmaskedOption = MaskOption(q, t0Col, i);
+                results[i] = unmaskedOption.ToBytes();
             }
             return results;
         }
@@ -199,13 +210,13 @@ namespace CompactOT
             await Channel.WriteMessageAsync(message.Compose());
         }
 
-        private async Task<BitMatrix[]> ReceiveMaskedOptions(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
+        private async Task<ObliviousTransferOptions> ReceiveMaskedOptions(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
         {
             var message = new MessageDecomposer(await Channel.ReadMessageAsync());
-            BitMatrix[] maskedOptions = new BitMatrix[numberOfOptions];
-            for (int i = 0; i < numberOfOptions; ++i)
+            var maskedOptions = new ObliviousTransferOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
+            for (int i = 0; i < numberOfInvocations; ++i)
             {
-                maskedOptions[i] = message.ReadBitMatrix(numberOfInvocations, numberOfMessageBits);
+                maskedOptions.SetInvocation(i, message.ReadBitArray(numberOfOptions * numberOfMessageBits));
             }
             return maskedOptions;
         }
@@ -218,6 +229,12 @@ namespace CompactOT
 
         public override async Task SendAsync(ObliviousTransferOptions options)
         {
+            if (options.NumberOfOptions > CodeLength)
+            {
+                throw new ArgumentException($"Extended Oblivious Transfer with security level {SecurityLevel} requires " +
+                    $"the number of options to be less than {CodeLength}; was {options.NumberOfOptions}", nameof(options));
+            }
+
             BitMatrix us = await ReceiveReceiverMessage(options.NumberOfInvocations);
             Debug.Assert(us.Cols == CodeLength);
             Debug.Assert(us.Rows == options.NumberOfInvocations);
@@ -230,31 +247,30 @@ namespace CompactOT
                 Debug.Assert(u.Length == options.NumberOfInvocations);
                 var q = u & _senderState.RandomChoices[k];
                 q = q ^ _senderState.SeededRandomOracles[k].GetBits(options.NumberOfInvocations);
-                qs.SetColumn(k, BitArray.FromBytes(q.AsByteEnumerable(), q.Length));
+                qs.SetColumn(k, q);
             }
 
             var optionLength = NumberLength.GetLength(options.NumberOfOptions);
             
             var numberOfMessageBits = options.NumberOfMessageBits;
 
-            BitMatrix[] maskedOptions = new BitMatrix[options.NumberOfOptions];
+            var maskedOptions = new ObliviousTransferOptions(options.NumberOfInvocations, options.NumberOfOptions, numberOfMessageBits);
+
             for (int j = 0; j < options.NumberOfOptions; ++j)
             {
-                maskedOptions[j] = new BitMatrix(options.NumberOfInvocations, numberOfMessageBits);
-                var selectionCode = WalshHadamardCode.ComputeWalshHadamardCode(j, optionLength.InBits);
-
+                var selectionCode = WalshHadamardCode.ComputeWalshHadamardCode(j, CodeLength);
                 var queryMask = selectionCode & _senderState.RandomChoices;
                 Debug.Assert(queryMask.Length == CodeLength);
 
                 for (int i = 0; i < options.NumberOfInvocations; ++i)
                 {
                     var option = options.GetMessage(i, j);
-
+                    
                     var query = queryMask ^ qs.GetRow(i);
                     var maskedOption = MaskOption(option, query, i);
                     Debug.Assert(maskedOption.Length == numberOfMessageBits);
 
-                    maskedOptions[j].SetRow(i, BitArray.FromBytes(maskedOption.AsByteEnumerable(), maskedOption.Length));
+                    maskedOptions.SetMessage(i, j, maskedOption);
                 }
             }
 
@@ -267,6 +283,16 @@ namespace CompactOT
             foreach (var option in maskedOptions)
             {
                 message.Write(option);
+            }
+            await Channel.WriteMessageAsync(message.Compose());
+        }
+
+        private async Task SendMaskedOptions(ObliviousTransferOptions maskedOptions)
+        {
+            var message = new MessageComposer(1);
+            for (int i = 0; i < maskedOptions.NumberOfInvocations; ++i)
+            {
+                message.Write(maskedOptions.GetInvocation(i));
             }
             await Channel.WriteMessageAsync(message.Compose());
         }
