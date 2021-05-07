@@ -112,7 +112,7 @@ namespace CompactOT.DataStructures
 
         public override IEnumerator<Bit> GetEnumerator()
         {
-            return new ByteToBitEnumerator(AsByteEnumerable().GetEnumerator());
+            return new ByteToBitEnumerator(AsByteEnumerable().GetEnumerator(), Length);
         }
 
         public class InPlaceBitArrayOperations
@@ -167,6 +167,14 @@ namespace CompactOT.DataStructures
                 int bufferOffset = index / 8;
                 Buffer[bufferOffset] = (byte)(Buffer[bufferOffset] & mask | v);
             }
+        }
+
+        public override bool Equals(object? obj)
+        {
+            BitArray? other = obj as BitArray;
+            if (other == null) return false;
+            if (other.Length != Length) return false;
+            return other.AsByteEnumerable().SequenceEqual(this.AsByteEnumerable());
         }
     }
 }

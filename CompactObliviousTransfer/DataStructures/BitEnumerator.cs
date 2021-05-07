@@ -8,16 +8,25 @@ namespace CompactOT.DataStructures
     {
 
         private int _bitIndex;
+        private int? _length;
 
         private IEnumerator<byte> _byteEnumerator;
+
+        public ByteToBitEnumerator(IEnumerator<byte> byteEnumerator, int length)
+        {
+            _byteEnumerator = byteEnumerator;
+            _bitIndex = -1;
+            _length = length;
+        }
 
         public ByteToBitEnumerator(IEnumerator<byte> byteEnumerator)
         {
             _byteEnumerator = byteEnumerator;
-            _bitIndex = 7;
+            _bitIndex = -1;
+            _length = null;
         }
 
-        public Bit Current => new Bit((byte)((_byteEnumerator.Current >> _bitIndex) & 1));
+        public Bit Current => new Bit((byte)((_byteEnumerator.Current >> (_bitIndex & 0b111)) & 1)); // _bitIndex % 8 == 0
         object IEnumerator.Current => ((IEnumerator<Bit>)this).Current;
 
         public void Dispose()
@@ -27,19 +36,21 @@ namespace CompactOT.DataStructures
 
         public bool MoveNext()
         {
-            if (_bitIndex == 7)
+            _bitIndex += 1;
+            if (_length != null && _bitIndex >= _length)
+                return false;
+
+            if ((_bitIndex & 0b111) == 0) // _bitIndex % 8 == 0
             {
-                _bitIndex = 0;
                 return _byteEnumerator.MoveNext();
             }
-            _bitIndex++;
             return true;
         }
 
         public void Reset()
         {
             _byteEnumerator.Reset();
-            _bitIndex = 7;
+            _bitIndex = -1;
         }
     }
 
@@ -58,7 +69,7 @@ namespace CompactOT.DataStructures
 
         public IEnumerator<Bit> GetEnumerator()
         {
-            return new ByteToBitEnumerator(_byteEnumerable.GetEnumerator());
+            return new ByteToBitEnumerator(_byteEnumerable.GetEnumerator(), _numberOfBits);
         }
 
         IEnumerator IEnumerable.GetEnumerator()

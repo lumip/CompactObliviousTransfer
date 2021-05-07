@@ -110,5 +110,10 @@ namespace CompactOT.DataStructures
         {
             return new Bit(right);
         }
+
+        public override string ToString()
+        {
+            return _value == 0 ? "Bit(0)" : "Bit(1)";
+        }
     }
 }

@@ -158,5 +158,19 @@ namespace CompactOT.DataStructures
             var bytes = bits.ToBytes();
             Assert.Equal(expectedBytes, bytes);
         }
+
+        [Fact]
+        public void TestEnumerator()
+        {
+            var bits  = BitArray.FromBinaryString("01110100 01001");
+            Bit[] expectedBits = new Bit[] {
+                Bit.Zero, Bit.One, Bit.One, Bit.One, Bit.Zero, Bit.One, Bit.Zero, Bit.Zero,
+                Bit.Zero, Bit.One, Bit.Zero, Bit.Zero, Bit.One
+            };
+            foreach ((int i, Bit b) in bits.Enumerate())
+            {
+                Assert.True(expectedBits[i] == b, $"Expected {expectedBits[i]} but got {b} at position {i}.");
+            }
+        }
     }
 }
