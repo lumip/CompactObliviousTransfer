@@ -14,21 +14,28 @@ namespace CompactOT
     public class ExtendedObliviousTransferChannelTests
     {
 
+        private ObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
+        {
+            var otMock = new Mock<InsecureObliviousTransfer>() { CallBase = true };
+            otMock.Setup(ot => ot.SecurityLevel).Returns(10000000);
+            return new StatelessObliviousTransferChannel(otMock.Object, messageChannel);
+        }
+
         [Fact]
         public void TestBaseOTs()
         {
             var securityParameter = NumberLength.FromBitLength(24);
 
             var messageChannels = new TestMessageChannels();
-            var senderBaseChannel = new StatelessObliviousTransferChannel(new InsecureObliviousTransfer(), messageChannels.FirstPartyChannel);
-            var receiverBaseChannel = new StatelessObliviousTransferChannel(new InsecureObliviousTransfer(), messageChannels.SecondPartyChannel);
+            var senderBaseChannel = GetBaseTransferChannel(messageChannels.FirstPartyChannel);
+            var receiverBaseChannel = GetBaseTransferChannel(messageChannels.SecondPartyChannel);
 
             var cryptoContext = CryptoContext.CreateDefault();
             var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext);
             var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext);
             
-            var senderTask = otSender.ExecuteSenderBaseOTAsync();
-            var receiverTask = otReceiver.ExecuteReceiverBaseOTAsync();
+            var senderTask = otSender.ExecuteSenderBaseTransferAsync();
+            var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
 
             Task.WaitAll(senderTask, receiverTask);
         }
@@ -43,14 +50,12 @@ namespace CompactOT
             var securityParameter = NumberLength.FromBitLength(8);
 
             var messageChannels = new TestMessageChannels();
-            var senderBaseChannel = new StatelessObliviousTransferChannel(new InsecureObliviousTransfer(), messageChannels.FirstPartyChannel);
-            var receiverBaseChannel = new StatelessObliviousTransferChannel(new InsecureObliviousTransfer(), messageChannels.SecondPartyChannel);
+            var senderBaseChannel = GetBaseTransferChannel(messageChannels.FirstPartyChannel);
+            var receiverBaseChannel = GetBaseTransferChannel(messageChannels.SecondPartyChannel);
 
             var cryptoContext = CryptoContext.CreateDefault();
             var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext);
             var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext);
-
-            Task.WaitAll(otSender.ExecuteSenderBaseOTAsync(), otReceiver.ExecuteReceiverBaseOTAsync());
 
             const int numberOfInvocations = 3;
             int numberOfMessageBits = TestOptions[0].Length * 8;
@@ -100,6 +105,7 @@ namespace CompactOT
             var baseOTMock = new Mock<ObliviousTransferChannel>();
             baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<BitArray>(), It.IsAny<int>()))
                 .Returns(Task.FromResult(received));
+            baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
             // var randomCoiceBuffer = new byte[] { 0x5A, 0x33, 0x55, 0x5A, 0x33, 0x55 };
             var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010 11001100 10101010");
@@ -117,7 +123,7 @@ namespace CompactOT
                 baseOTMock.Object, securityParameter.InBits, cryptoContext
             );
 
-            otProtocol.ExecuteSenderBaseOTAsync().Wait();
+            otProtocol.ExecuteSenderBaseTransferAsync().Wait();
 
             rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
             baseOTMock.Verify(ot => ot.ReceiveAsync(
@@ -134,6 +140,7 @@ namespace CompactOT
 
             var baseOTMock = new Mock<ObliviousTransferChannel>();
             baseOTMock.Setup(ot => ot.SendAsync(It.IsAny<ObliviousTransferOptions>())).Returns(Task.CompletedTask);
+            baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
             var randomChoices = BitArray.FromBinaryString("00000000 01011010 11111111 11001100 1010");
             var rngMock = new Mock<RandomNumberGenerator>();
@@ -154,7 +161,7 @@ namespace CompactOT
                 baseOTMock.Object, securityParameter.InBits, cryptoContext
             );
 
-            otProtocol.ExecuteReceiverBaseOTAsync().Wait();
+            otProtocol.ExecuteReceiverBaseTransferAsync().Wait();
 
             rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
             baseOTMock.Verify(ot => ot.SendAsync(

@@ -35,7 +35,7 @@ namespace CompactOT
         /// <summary>
         /// Internal encapsulation of the persistent state for the sender role.
         /// </summary>
-        private struct SenderState
+        private class SenderState
         {
             public RandomByteSequence[] SeededRandomOracles;
             public BitArray RandomChoices;
@@ -46,12 +46,12 @@ namespace CompactOT
                 RandomChoices = new BitArray(stateSize);
             }
         };
-        private SenderState _senderState;
+        private SenderState? _senderState;
 
         /// <summary>
         /// Internal encapsulation of the persistent state for the receiver role.
         /// </summary>
-        private struct ReceiverState
+        private class ReceiverState
         {
             public RandomByteSequence[,] SeededRandomOracles;
 
@@ -59,8 +59,9 @@ namespace CompactOT
             {
                 SeededRandomOracles = new RandomByteSequence[stateSize, numberOfOptions];
             }
+
         }
-        private ReceiverState _receiverState;
+        private ReceiverState? _receiverState;
 
         public override IMessageChannel Channel => _baseOT.Channel;
         protected RandomNumberGenerator RandomNumberGenerator { get; private set; }
@@ -75,24 +76,27 @@ namespace CompactOT
                 throw new ArgumentException($"The provided base OT must provided at least the requested security level of "+
                 $"{securityParameter} but only provides {baseOT.SecurityLevel}.", nameof(baseOT));
             }
-            
+
             RandomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
             RandomOracle = new HashRandomOracle(cryptoContext.HashAlgorithm);
             _securityParameter = NumberLength.FromBitLength(securityParameter);
-            _senderState = new SenderState(CodeLength, 2);
-            _receiverState = new ReceiverState(CodeLength, 2);
+            _senderState = null;
+            _receiverState = null;
         }
 
 
         /// <summary>
-        /// Performs k many 1-out-of-N OTs on k bits for the sender, where k is the security parameter, using the base OT implementation.
+        /// Performs 2k many 1-out-of-2 OTs on k bits for the sender, where k is the security parameter, using the base OT implementation.
         /// 
         /// These are subsequently expanded into m many 1ooN OTs on arbitrarily long messages
         /// by the SendAsync method, where m is only bounded by the amount of secure randomness the random
-        /// oracle implementation can produce.
+        /// oracle implementation can produce and N must be smaller than 2k.
         /// </summary>
-        public async Task ExecuteSenderBaseOTAsync()
+        public async Task ExecuteSenderBaseTransferAsync()
         {
+            int numBaseOTOptions = 2;
+            _senderState = new SenderState(CodeLength, numBaseOTOptions);
+
             _senderState.RandomChoices = RandomNumberGenerator.GetBits(CodeLength);
 
             // retrieve seeds for OT extension via _securityParameter many base OTs
@@ -111,16 +115,18 @@ namespace CompactOT
         }
 
         /// <summary>
-        /// Performs k many 1-out-of-N OTs on k bits for the receiver, where k is the security parameter, using the base OT implementation.
+        /// Performs 2k many 1-out-of-2 OTs on k bits for the receiver, where k is the security parameter, using the base OT implementation.
         /// 
         /// These are subsequently expanded into m many 1ooN OTs on arbitrarily long messages
-        /// by the ReceiveAsync method, where m is only bounded by the amount of secure randomness the random
-        /// oracle implementation can produce.
+        /// by the SendAsync method, where m is only bounded by the amount of secure randomness the random
+        /// oracle implementation can produce and N must be smaller than 2k.
         /// </summary>
-        public async Task ExecuteReceiverBaseOTAsync()
+        public async Task ExecuteReceiverBaseTransferAsync()
         {
-            // generating _securityParameter many pairs of random seeds of length _securityParameter
             int numBaseOTOptions = 2;
+            _receiverState = new ReceiverState(CodeLength, numBaseOTOptions);
+
+            // generating _securityParameter many pairs of random seeds of length _securityParameter
             var seeds = ObliviousTransferOptions.CreateRandom(CodeLength, numBaseOTOptions, _securityParameter.InBits, RandomNumberGenerator);
 
             // base OTs as _sender_ with the seeds as inputs
@@ -144,6 +150,7 @@ namespace CompactOT
                 throw new ArgumentException($"Extended Oblivious Transfer with security level {SecurityLevel} requires " +
                     $"the number of options to be less than {CodeLength}; was {numberOfOptions}", nameof(numberOfOptions));
             }
+            if (_receiverState == null) await ExecuteReceiverBaseTransferAsync();
             
             int numberOfInvocations = selectionIndices.Length;
 
@@ -156,8 +163,8 @@ namespace CompactOT
 
             for (int k = 0; k < CodeLength; ++k)
             {
-                ts[0].SetRow(k, _receiverState.SeededRandomOracles[k, 0].GetBits(numberOfInvocations));
-                ts[1].SetRow(k, _receiverState.SeededRandomOracles[k, 1].GetBits(numberOfInvocations));
+                ts[0].SetRow(k, _receiverState!.SeededRandomOracles[k, 0].GetBits(numberOfInvocations));
+                ts[1].SetRow(k, _receiverState!.SeededRandomOracles[k, 1].GetBits(numberOfInvocations));
             }
 
             BitMatrix us = new BitMatrix(numberOfInvocations, CodeLength);
@@ -234,19 +241,20 @@ namespace CompactOT
                 throw new ArgumentException($"Extended Oblivious Transfer with security level {SecurityLevel} requires " +
                     $"the number of options to be less than {CodeLength}; was {options.NumberOfOptions}", nameof(options));
             }
+            if (_senderState == null) await ExecuteSenderBaseTransferAsync();
 
             BitMatrix us = await ReceiveReceiverMessage(options.NumberOfInvocations);
             Debug.Assert(us.Cols == CodeLength);
             Debug.Assert(us.Rows == options.NumberOfInvocations);
-            Debug.Assert(_senderState.RandomChoices.Length == CodeLength);
+            Debug.Assert(_senderState!.RandomChoices.Length == CodeLength);
 
             BitMatrix qs = new BitMatrix(options.NumberOfInvocations, CodeLength);
             for (int k = 0; k < CodeLength; ++k)
             {
                 var u = us.GetColumn(k);
                 Debug.Assert(u.Length == options.NumberOfInvocations);
-                var q = u & _senderState.RandomChoices[k];
-                q = q ^ _senderState.SeededRandomOracles[k].GetBits(options.NumberOfInvocations);
+                var q = u & _senderState!.RandomChoices[k];
+                q = q ^ _senderState!.SeededRandomOracles[k].GetBits(options.NumberOfInvocations);
                 qs.SetColumn(k, q);
             }
 
