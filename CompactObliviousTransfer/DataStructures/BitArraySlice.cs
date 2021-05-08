@@ -38,13 +38,15 @@ namespace CompactOT.DataStructures
         {
             int byteOffset = _start / 8;
             int bitOffset = _start % 8;
-            int numberOfBytes = (_stopBefore - _start + 7) / 8;
-            return new ShiftedByteArrayEnumerable(_array.AsByteEnumerable().Skip(byteOffset).Take(numberOfBytes), bitOffset);
+            int lastByteOffset = (_stopBefore - 1) / 8;
+            int numberOfBytes = (lastByteOffset + 1 - byteOffset);
+            int numberOfOutputBytes = (Length + 7) / 8; // todo: somewhat hacky solution right now, try to make this nicer?
+            return new ShiftedByteArrayEnumerable(_array.AsByteEnumerable().Skip(byteOffset).Take(numberOfBytes), bitOffset).Take(numberOfOutputBytes);
         }
 
         public override IEnumerator<Bit> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new ByteToBitEnumerable(AsByteEnumerable(), _stopBefore - _start).GetEnumerator();
         }
     }
 

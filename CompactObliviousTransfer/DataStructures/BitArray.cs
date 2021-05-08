@@ -169,12 +169,19 @@ namespace CompactOT.DataStructures
             }
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             BitArray? other = obj as BitArray;
             if (other == null) return false;
             if (other.Length != Length) return false;
             return other.AsByteEnumerable().SequenceEqual(this.AsByteEnumerable());
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return Buffer.GetHashCode();
         }
     }
 }

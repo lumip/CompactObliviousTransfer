@@ -37,7 +37,7 @@ namespace CompactOT.DataStructures
 
         public override IEnumerable<byte> AsByteEnumerable()
         {
-            return _byteFeed;
+            return _byteFeed.Take((_numberOfBits + 7) / 8);
         }
 
         public override IEnumerator<Bit> GetEnumerator()

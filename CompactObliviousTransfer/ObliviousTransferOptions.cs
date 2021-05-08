@@ -141,6 +141,7 @@ namespace CompactOT
             }
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             ObliviousTransferOptions? other = obj as ObliviousTransferOptions;
@@ -153,6 +154,12 @@ namespace CompactOT
             }
 
             return other._values.Equals(_values);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return _values.GetHashCode();
         }
     }
 
