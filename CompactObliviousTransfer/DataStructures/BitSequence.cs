@@ -31,6 +31,7 @@ namespace CompactOT.DataStructures
         {
             AsByteEnumerable().WriteInto(buffer, offset);
         }
+        
         public void CopyTo(byte[] buffer, int offset = 0)
         {
             CopyToInternal(buffer, offset);

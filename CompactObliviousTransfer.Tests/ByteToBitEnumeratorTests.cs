@@ -80,7 +80,7 @@ namespace CompactOT.DataStructures
             byte[] bytes = new byte[] { 0x12, 0x43 };
             var enumerator = new ByteToBitEnumerator(((IEnumerable<byte>)bytes).GetEnumerator(), 20);
 
-            Assert.Throws(typeof(BaseEnumeratorExhaustedException), () => {
+            Assert.Throws<BaseEnumeratorExhaustedException>(() => {
                 while (enumerator.MoveNext()) { }
             });
         }
