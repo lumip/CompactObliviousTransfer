@@ -2,7 +2,8 @@ using Xunit;
 using System;
 
 using CompactOT.DataStructures;
-namespace CompactOT
+
+namespace CompactOT.Codes
 {
     public class WalshHadamardCodeTests
     {
@@ -19,8 +20,10 @@ namespace CompactOT
         [Fact]
         public void TestComputeWalshHadamardCode()
         {
+            var code = new WalshHadamardCode(8);
+            var result = code.Encode(0b101);
+
             var expected = BitArray.FromBinaryString("01011010");
-            var result = WalshHadamardCode.ComputeWalshHadamardCode(0b101, 8);
             Assert.Equal(expected, result);
         } 
 
@@ -28,8 +31,10 @@ namespace CompactOT
         [Fact]
         public void TestComputeWalshHadamardCodeUpperBound()
         {
+            var code = new WalshHadamardCode(8);
+            var result = code.Encode(0b111);
+
             var expected = BitArray.FromBinaryString("01101001");
-            var result = WalshHadamardCode.ComputeWalshHadamardCode(0b111, 8);
             Assert.Equal(expected, result);
         } 
 
@@ -37,13 +42,22 @@ namespace CompactOT
         [Fact]
         public void TestComputeWalshHadamardCodeInvalidCodeLength()
         {
-            Assert.Throws<ArgumentException>(() => WalshHadamardCode.ComputeWalshHadamardCode(0b111, 3));
+            Assert.Throws<ArgumentException>(() => new WalshHadamardCode(3));
         }
 
         [Fact]
         public void TestComputeWalshHadamardCodeTooLargeValue()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => WalshHadamardCode.ComputeWalshHadamardCode(0b10000, 4));
+            var code = new WalshHadamardCode(4);
+            Assert.Throws<ArgumentOutOfRangeException>(() => code.Encode(0b10000));
+        }
+
+        [Fact]
+        public void TestCodeLength()
+        {
+            int codeLength = 6;
+            var code = new WalshHadamardCode(codeLength);
+            Assert.Equal(codeLength, code.CodeLength);
         }
 
     }

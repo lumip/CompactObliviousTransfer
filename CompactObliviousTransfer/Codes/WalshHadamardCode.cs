@@ -1,0 +1,58 @@
+using System;
+using System.Collections.Generic;
+
+using CompactOT.DataStructures;
+using CompactCryptoGroupAlgebra;
+
+namespace CompactOT.Codes
+{
+
+    public class WalshHadamardCode : IBinaryCode
+    {
+
+        public int CodeLength { get; }
+
+        public WalshHadamardCode(int codeLength)
+        {
+            if ((codeLength & (codeLength - 1)) != 0)
+                throw new ArgumentException($"Code length must be a power of two, was {codeLength}.", nameof(codeLength));
+
+            CodeLength = codeLength;
+        }
+
+        public static byte GetParity(int x)
+        {
+            int p = x;
+            p ^= p >> 16;
+            p ^= p >> 8;
+            p ^= p >> 4;
+            p ^= p >> 2;
+            p ^= p >> 1;
+            return (byte)(p & 1);
+        }
+
+        private IEnumerable<Bit> EncodeToEnumerable(int x)
+        {
+            for (int i = 0; i < CodeLength; ++i)
+            {
+                yield return new Bit(GetParity(x & i));
+            }
+        }
+
+        public BitSequence Encode(int x)
+        {
+            if (x >= CodeLength)
+            {
+                int requiredCodeLength = 1 << NumberLength.GetLength(x).InBits;
+                throw new ArgumentOutOfRangeException(
+                    $"Provided value {x} is too large to be encoded with a code length of {CodeLength}"+
+                    $"(required code length at least {requiredCodeLength}).",
+                    nameof(x)
+                );
+            }
+            
+            return new EnumeratedBitSequence(EncodeToEnumerable(x), CodeLength);
+        }
+    }
+
+}

@@ -8,6 +8,7 @@ using System.Text;
 
 using CompactCryptoGroupAlgebra;
 using CompactOT.DataStructures;
+using CompactOT.Codes;
 
 namespace CompactOT
 {
@@ -31,8 +32,10 @@ namespace CompactOT
             var receiverBaseChannel = GetBaseTransferChannel(messageChannels.SecondPartyChannel);
 
             var cryptoContext = CryptoContext.CreateDefault();
-            var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext);
-            var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext);
+            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+
+            var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
             
             var senderTask = otSender.ExecuteSenderBaseTransferAsync();
             var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
@@ -52,8 +55,10 @@ namespace CompactOT
             var receiverBaseChannel = GetBaseTransferChannel(messageChannels.SecondPartyChannel);
 
             var cryptoContext = CryptoContext.CreateDefault();
-            var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext);
-            var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext);
+            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+
+            var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
 
             const int numberOfInvocations = 3;
             int numberOfMessageBits = TestUtils.TestOptions[0].Length * 8;
@@ -117,9 +122,10 @@ namespace CompactOT
             var cryptoContext = new CryptoContext(
                 rngMock.Object, SHA1.Create()
             );
+            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
 
             var otProtocol = new ExtendedObliviousTransferChannel(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext
+                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
             );
 
             otProtocol.ExecuteSenderBaseTransferAsync().Wait();
@@ -156,9 +162,10 @@ namespace CompactOT
             var cryptoContext = new CryptoContext(
                 rngMock.Object, SHA1.Create()
             );
+            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
 
             var otProtocol = new ExtendedObliviousTransferChannel(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext
+                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
             );
 
             otProtocol.ExecuteReceiverBaseTransferAsync().Wait();

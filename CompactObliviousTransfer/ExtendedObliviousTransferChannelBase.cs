@@ -8,6 +8,7 @@ using CompactCryptoGroupAlgebra;
 
 using CompactOT.DataStructures;
 using CompactOT.Buffers;
+using CompactOT.Codes;
 
 namespace CompactOT
 {
@@ -25,9 +26,11 @@ namespace CompactOT
 
         private NumberLength _securityParameter;
         public int SecurityLevel => _securityParameter.InBits;
-        protected int CodeLength => 2 * SecurityLevel;
+        protected int CodeLength => _code.CodeLength;
 
         protected RandomOracle RandomOracle { get; }
+
+        protected IBinaryCode _code;
         
         /// <summary>
         /// Internal encapsulation of the persistent state for the sender role.
@@ -71,7 +74,7 @@ namespace CompactOT
         /// </summary>
         public int TotalNumberOfInvocations { get; private set; }
 
-        public ExtendedObliviousTransferChannelBase(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext)
+        public ExtendedObliviousTransferChannelBase(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext, IBinaryCode code)
         {
             if (securityParameter < 1)
             {
@@ -96,6 +99,7 @@ namespace CompactOT
             _senderState = null;
             _receiverState = null;
             TotalNumberOfInvocations = 0;
+            _code = code;
         }
 
         /// <summary>
@@ -263,7 +267,7 @@ namespace CompactOT
                 var t0Col = ts[0].GetColumn(j);
                 var t1Col = ts[1].GetColumn(j);
 
-                var selectionCode = WalshHadamardCode.ComputeWalshHadamardCode(selectionIndices[j], CodeLength);
+                var selectionCode = _code.Encode(selectionIndices[j]);
                 Debug.Assert(t0Col.Length == CodeLength);
                 Debug.Assert(t1Col.Length == CodeLength);
                 Debug.Assert(selectionCode.Length == CodeLength);

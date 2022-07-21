@@ -6,6 +6,7 @@ using CompactOT.Buffers;
 using CompactCryptoGroupAlgebra;
 
 using CompactOT.DataStructures;
+using CompactOT.Codes;
 
 namespace CompactOT
 {
@@ -17,8 +18,8 @@ namespace CompactOT
     public class ALSZCorrelatedObliviousTransferChannel : ExtendedObliviousTransferChannelBase, ICorrelatedObliviousTransferChannel
     {
 
-        public ALSZCorrelatedObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext)
-            : base(baseOT, securityParameter, cryptoContext)
+        public ALSZCorrelatedObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext, IBinaryCode code)
+            : base(baseOT, securityParameter, cryptoContext, code)
         {
         }
 
@@ -87,7 +88,7 @@ namespace CompactOT
             
             for (int j = 0; j < correlations.NumberOfOptions; ++j)
             {
-                var selectionCode = WalshHadamardCode.ComputeWalshHadamardCode(j, CodeLength);
+                var selectionCode = _code.Encode(j);
                 var queryMask = selectionCode & _senderState!.RandomChoices;
                 Debug.Assert(queryMask.Length == CodeLength);
 

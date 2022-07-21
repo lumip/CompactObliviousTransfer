@@ -7,6 +7,7 @@ using System.Linq;
 
 using CompactCryptoGroupAlgebra;
 using CompactOT.DataStructures;
+using CompactOT.Codes;
 
 namespace CompactOT
 {
@@ -34,8 +35,9 @@ namespace CompactOT
             var receiverBaseChannel = GetBaseTransferChannel(messageChannels.SecondPartyChannel);
 
             var cryptoContext = CryptoContext.CreateDefault();
-            var otSender = new ALSZRandomObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext);
-            var otReceiver = new ALSZRandomObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext);
+            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+            var otSender = new ALSZRandomObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otReceiver = new ALSZRandomObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
 
             // receiver data
             var receiverIndices = new int[] { 0, 3 };

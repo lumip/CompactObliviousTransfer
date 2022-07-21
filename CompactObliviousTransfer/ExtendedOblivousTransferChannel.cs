@@ -6,6 +6,7 @@ using CompactOT.Buffers;
 using CompactCryptoGroupAlgebra;
 
 using CompactOT.DataStructures;
+using CompactOT.Codes;
 
 namespace CompactOT
 {
@@ -23,10 +24,9 @@ namespace CompactOT
     public class ExtendedObliviousTransferChannel : ExtendedObliviousTransferChannelBase, IObliviousTransferChannel
     {
 
-        public ExtendedObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext)
-            : base(baseOT, securityParameter, cryptoContext)
+        public ExtendedObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext, IBinaryCode code)
+            : base(baseOT, securityParameter, cryptoContext, code)
         {
-            // _extendedOTBase = new ExtendedObliviousTransferChannelBase(baseOT, securityParameter, cryptoContext);
         }
 
 
@@ -84,7 +84,7 @@ namespace CompactOT
             int totalNumberOfInvocationsOffset = TotalNumberOfInvocations - options.NumberOfInvocations;
             for (int j = 0; j < options.NumberOfOptions; ++j)
             {
-                var selectionCode = WalshHadamardCode.ComputeWalshHadamardCode(j, CodeLength);
+                var selectionCode = _code.Encode(j);
                 var queryMask = selectionCode & _senderState!.RandomChoices;
                 Debug.Assert(queryMask.Length == CodeLength);
 

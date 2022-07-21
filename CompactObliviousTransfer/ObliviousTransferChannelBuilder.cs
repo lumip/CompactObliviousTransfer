@@ -1,4 +1,5 @@
 using System;
+using CompactOT.Codes;
 
 namespace CompactOT
 {
@@ -84,13 +85,14 @@ namespace CompactOT
         )
         {
             cryptoContext = MakeCryptoContext(cryptoContext);
+            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
                 channel, cryptoContext, _projection.SecurityLevel
             );
 
             var extendedOtChannel = new ExtendedObliviousTransferChannel(
-                baseProtocolChannel, _projection.SecurityLevel, cryptoContext
+                baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
             );
 
 
@@ -116,13 +118,14 @@ namespace CompactOT
         )
         {
             cryptoContext = MakeCryptoContext(cryptoContext);
+            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
                 channel, cryptoContext, _projection.SecurityLevel
             );
 
             var alszCorrelatedChannel = new ALSZCorrelatedObliviousTransferChannel(
-                baseProtocolChannel, _projection.SecurityLevel, cryptoContext
+                baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
             );
 
             if (_projection.HasMaxNumberOfInvocations)
@@ -155,13 +158,14 @@ namespace CompactOT
         )
         {
             cryptoContext = MakeCryptoContext(cryptoContext);
+            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
                 channel, cryptoContext, _projection.SecurityLevel
             );
 
             var alszRandomChannel = new ALSZRandomObliviousTransferChannel(
-                baseProtocolChannel, _projection.SecurityLevel, cryptoContext
+                baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
             );
 
             if (_projection.HasMaxNumberOfInvocations)
