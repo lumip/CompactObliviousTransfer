@@ -2,12 +2,12 @@ using CompactOT.DataStructures;
 
 namespace CompactOT.Buffers.Internal
 {
-    public class BitArrayMessageComponent : IMessageComponent
+    public class BitSequenceMessageComponent : IMessageComponent
     {
 
-        BitArrayBase _array;
+        BitSequence _array;
 
-        public BitArrayMessageComponent(BitArrayBase array)
+        public BitSequenceMessageComponent(BitSequence array)
         {
             _array = array;
         }
@@ -20,7 +20,7 @@ namespace CompactOT.Buffers.Internal
             offset += Length;
         }
 
-        public static BitArrayBase ReadFromBuffer(byte[] messageBuffer, ref int offset, int numberOfElements)
+        public static BitSequence ReadFromBuffer(byte[] messageBuffer, ref int offset, int numberOfElements)
         {
             var bits = BitArray.FromBytes(messageBuffer, numberOfElements, offset);
             offset += BitArray.RequiredBytes(numberOfElements);

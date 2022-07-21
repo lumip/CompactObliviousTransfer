@@ -37,7 +37,7 @@ namespace CompactOT
         /// <summary>
         /// Starts a K-fold 1-out-of-2 Oblivious Transfer as the receiver with the given choice indices.
         /// </summary>
-        public async Task<byte[][]> ReceiveAsync(IMessageChannel channel, BitArrayBase selectionIndices, int numberOfMessageBits)
+        public async Task<byte[][]> ReceiveAsync(IMessageChannel channel, BitSequence selectionIndices, int numberOfMessageBits)
         {
             int numberOfInvocations = selectionIndices.Length;
             int[] selectionIndicesAsInts = selectionIndices.Select(b => (int)b).ToArray();

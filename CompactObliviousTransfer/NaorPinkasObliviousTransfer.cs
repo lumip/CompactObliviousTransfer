@@ -269,7 +269,7 @@ namespace CompactOT
         /// <param name="invocationIndex">The index of the OT invocation this options belongs to.</param>
         /// <param name="optionIndex">The index of the option.</param>
         /// <returns>The masked option.</returns>
-        private BitArrayBase MaskOption(BitArrayBase option, CryptoGroupElement<TSecret, TCrypto> groupElement, int invocationIndex, int optionIndex)
+        private BitSequence MaskOption(BitSequence option, CryptoGroupElement<TSecret, TCrypto> groupElement, int invocationIndex, int optionIndex)
         {
             var query = BufferBuilder.From(groupElement.ToBytes()).With(invocationIndex).With(optionIndex).Create();
             return _randomOracle.Mask(option, query.AsEnumerable());

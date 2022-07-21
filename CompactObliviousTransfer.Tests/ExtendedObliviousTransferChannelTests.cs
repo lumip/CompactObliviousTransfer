@@ -127,7 +127,7 @@ namespace CompactOT
 
             rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
             baseOTMock.Verify(ot => ot.ReceiveAsync(
-                It.Is<BitArrayBase>(b => randomChoices.AsByteEnumerable().SequenceEqual(b.AsByteEnumerable())),
+                It.Is<BitSequence>(b => randomChoices.AsByteEnumerable().SequenceEqual(b.AsByteEnumerable())),
                 It.Is<int>(i => i == securityParameter.InBits)), Times.Once());
         }
 

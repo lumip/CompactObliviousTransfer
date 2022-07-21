@@ -6,7 +6,7 @@ using System.Linq;
 namespace CompactOT.DataStructures
 {
 
-    public abstract class BitArrayBase : ICollection, IEnumerable<Bit>
+    public abstract class BitSequence : ICollection, IEnumerable<Bit>
     {
 
         public abstract int Length { get; }
@@ -69,33 +69,33 @@ namespace CompactOT.DataStructures
             return String.Concat(((IEnumerable<Bit>)this).Select(b => b ? '1' : '0'));
         }
 
-        public virtual BitArrayBase Concatenate(BitArrayBase other)
+        public virtual BitSequence Concatenate(BitSequence other)
         {
             return new EnumeratedBitArrayView(
                 new BitToByteEnumerable(((IEnumerable<Bit>)this).Concat(other)), Length + other.Length);
         }
 
-        public virtual BitArrayBase Not()
+        public virtual BitSequence Not()
         {
             return new EnumeratedBitArrayView(
                 ByteEnumerableOperations.Not(AsByteEnumerable()), Length
             );
         }
 
-        public virtual BitArrayBase And(BitArrayBase other)
+        public virtual BitSequence And(BitSequence other)
         {
             return new EnumeratedBitArrayView(
                 ByteEnumerableOperations.And(AsByteEnumerable(), other.AsByteEnumerable()), Length
             );
         }
 
-        public virtual BitArrayBase Or(BitArrayBase other)
+        public virtual BitSequence Or(BitSequence other)
         {
             return new EnumeratedBitArrayView(
                 ByteEnumerableOperations.Or(AsByteEnumerable(), other.AsByteEnumerable()), Length
             );
         }
-        public virtual BitArrayBase Xor(BitArrayBase other)
+        public virtual BitSequence Xor(BitSequence other)
         {
             return new EnumeratedBitArrayView(
                 ByteEnumerableOperations.Xor(AsByteEnumerable(), other.AsByteEnumerable()), Length
@@ -110,23 +110,23 @@ namespace CompactOT.DataStructures
             return buffer;
         }
 
-        public virtual BitArrayBase And(Bit bit) => And(new ConstantBitArrayView(bit, Length));
-        public virtual BitArrayBase Or(Bit bit) => Or(new ConstantBitArrayView(bit, Length));
-        public virtual BitArrayBase Xor(Bit bit) => Xor(new ConstantBitArrayView(bit, Length));
+        public virtual BitSequence And(Bit bit) => And(new ConstantBitArrayView(bit, Length));
+        public virtual BitSequence Or(Bit bit) => Or(new ConstantBitArrayView(bit, Length));
+        public virtual BitSequence Xor(Bit bit) => Xor(new ConstantBitArrayView(bit, Length));
 
-        public static BitArrayBase operator &(BitArrayBase left, BitArrayBase right) => left.And(right);
-        public static BitArrayBase operator |(BitArrayBase left, BitArrayBase right) => left.Or(right);
-        public static BitArrayBase operator ^(BitArrayBase left, BitArrayBase right) => left.Xor(right);
+        public static BitSequence operator &(BitSequence left, BitSequence right) => left.And(right);
+        public static BitSequence operator |(BitSequence left, BitSequence right) => left.Or(right);
+        public static BitSequence operator ^(BitSequence left, BitSequence right) => left.Xor(right);
 
-        public static BitArrayBase operator ~(BitArrayBase left) => left.Not();
+        public static BitSequence operator ~(BitSequence left) => left.Not();
 
-        public static BitArrayBase operator &(BitArrayBase left, Bit right) => left.And(right);
-        public static BitArrayBase operator &(Bit left, BitArrayBase right) => right.And(left);
+        public static BitSequence operator &(BitSequence left, Bit right) => left.And(right);
+        public static BitSequence operator &(Bit left, BitSequence right) => right.And(left);
 
-        public static BitArrayBase operator |(BitArrayBase left, Bit right) => left.Or(right);
-        public static BitArrayBase operator |(Bit left, BitArrayBase right) => right.Or(left);
+        public static BitSequence operator |(BitSequence left, Bit right) => left.Or(right);
+        public static BitSequence operator |(Bit left, BitSequence right) => right.Or(left);
 
-        public static BitArrayBase operator ^(BitArrayBase left, Bit right) => left.Xor(right);
-        public static BitArrayBase operator ^(Bit left, BitArrayBase right) => right.Xor(left);
+        public static BitSequence operator ^(BitSequence left, Bit right) => left.Xor(right);
+        public static BitSequence operator ^(Bit left, BitSequence right) => right.Xor(left);
     }
 }

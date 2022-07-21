@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+using CompactCryptoGroupAlgebra;
+
 namespace CompactOT.DataStructures
 {
-    public class EnumeratedBitArrayView : BitArrayBase
+    public class EnumeratedBitArrayView : BitSequence
     {
         private IEnumerable<byte> _byteFeed;
         private int _numberOfBits;
@@ -19,7 +21,7 @@ namespace CompactOT.DataStructures
             : this(new BitToByteEnumerable(bits), numberOfBits)
         { }
 
-        public EnumeratedBitArrayView(BitArrayBase bits)
+        public EnumeratedBitArrayView(BitSequence bits)
             : this(bits.AsByteEnumerable(), ((ICollection<Bit>)bits).Count) { }
 
         public static EnumeratedBitArrayView FromBytes(byte[] buffer, int byteOffset, int numberOfBits)

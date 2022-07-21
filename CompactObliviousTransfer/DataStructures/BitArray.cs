@@ -9,10 +9,12 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
+using CompactCryptoGroupAlgebra;
+
 namespace CompactOT.DataStructures
 {
 
-    public class BitArray : BitArrayBase, IReadOnlyList<Bit> // it is also a IList but does not support any operations changing length...
+    public class BitArray : BitSequence, IReadOnlyList<Bit> // it is also a IList but does not support any operations changing length...
     {
 
         protected byte[] Buffer { get; }
@@ -32,7 +34,7 @@ namespace CompactOT.DataStructures
             Buffer = new BitToByteEnumerable(elements).ToArray();
         }
 
-        public BitArray(BitArrayBase elements)
+        public BitArray(BitSequence elements)
             : this(elements.Length)
         {
             Debug.Assert(Buffer.Length == elements.AsByteEnumerable().Count());
@@ -71,7 +73,7 @@ namespace CompactOT.DataStructures
 
         public static int RequiredBytes(int numberOfBits)
         {
-            return (numberOfBits+(ElementsPerByte-1)) / ElementsPerByte;
+            return NumberLength.FromBitLength(numberOfBits).InBytes;
         }
 
         protected override void CopyToInternal(byte[] buffer, int offset)
@@ -124,17 +126,17 @@ namespace CompactOT.DataStructures
                 _bitArray = bitArray;
             }
 
-            public void Or(BitArrayBase other)
+            public void Or(BitSequence other)
             {
                 ByteEnumerableOperations.InPlaceOr(_bitArray.Buffer, other.AsByteEnumerable());
             }
 
-            public void Xor(BitArrayBase other)
+            public void Xor(BitSequence other)
             {
                 ByteEnumerableOperations.InPlaceXor(_bitArray.Buffer, other.AsByteEnumerable());
             }
 
-            public void And(BitArrayBase other)
+            public void And(BitSequence other)
             {
                 ByteEnumerableOperations.InPlaceAnd(_bitArray.Buffer, other.AsByteEnumerable());
             }

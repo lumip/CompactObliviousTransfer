@@ -1,25 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CompactCryptoGroupAlgebra;
 
 namespace CompactOT.DataStructures
 {
 
-    public class BitArraySlice : BitArrayBase
+    public class BitArraySlice : BitSequence
     {
 
-        BitArrayBase _array;
+        BitSequence _array;
         int _start;
         int _stopBefore;
 
-        public BitArraySlice(BitArrayBase array, int start, int stopBefore)
+        public BitArraySlice(BitSequence array, int start, int stopBefore)
         {
             if (array.Length < stopBefore)
-                throw new ArgumentOutOfRangeException($"Bit array slice [{start}, {stopBefore}] exceeds bit array length {array.Length}");
+                throw new ArgumentOutOfRangeException($"Bit array slice [{start}, {stopBefore}] exceeds bit array length {array.Length}.");
             if (stopBefore <= start)
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException($"Start {start} must be before stop {stopBefore}.");
             if (start < 0)
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException($"Start must not be negative; was {start}.");
 
             _array = array;
             _start = start;

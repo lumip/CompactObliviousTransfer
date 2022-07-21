@@ -26,7 +26,7 @@ namespace CompactOT
         }
 
         /// <inheritdoc/>
-        public override Task<byte[][]> ReceiveAsync(BitArrayBase selectionIndices, int numberOfMessageBits)
+        public override Task<byte[][]> ReceiveAsync(BitSequence selectionIndices, int numberOfMessageBits)
         {
             return _statelessOT.ReceiveAsync(Channel, selectionIndices, numberOfMessageBits);
         }

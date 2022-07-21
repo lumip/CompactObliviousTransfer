@@ -40,12 +40,12 @@ namespace CompactOT
             }
         }
 
-        public BitArrayBase Mask(BitArrayBase message, BitArrayBase query)
+        public BitSequence Mask(BitSequence message, BitSequence query)
         {
             return Mask(message, query.AsByteEnumerable());
         }
 
-        public BitArrayBase Mask(BitArrayBase message, IEnumerable<byte> query)
+        public BitSequence Mask(BitSequence message, IEnumerable<byte> query)
         {
             return new EnumeratedBitArrayView(
                 Mask(message.AsByteEnumerable(), query),

@@ -59,7 +59,7 @@ namespace CompactOT.DataStructures
             }
         }
 
-        public BitArrayBase GetRow(int row)
+        public BitSequence GetRow(int row)
         {
             if (row < 0 || row >= Rows)
                 throw new ArgumentOutOfRangeException(nameof(row));
@@ -67,7 +67,7 @@ namespace CompactOT.DataStructures
             return new BitArraySlice(_values, rowIndex, rowIndex + Cols);
         }
 
-        public void SetRow(int row, BitArrayBase values)
+        public void SetRow(int row, BitSequence values)
         {
             if (row < 0 || row >= Rows)
                 throw new ArgumentOutOfRangeException(nameof(row));
@@ -81,7 +81,7 @@ namespace CompactOT.DataStructures
             }
         }
 
-        public BitArrayBase GetColumn(int col)
+        public BitSequence GetColumn(int col)
         {
             if (col < 0 || col >= Cols)
                 throw new ArgumentOutOfRangeException(nameof(col));
@@ -93,7 +93,7 @@ namespace CompactOT.DataStructures
             return result;
         }
 
-        public void SetColumn(int col, BitArrayBase values)
+        public void SetColumn(int col, BitSequence values)
         {
             if (col < 0 || col >= Cols)
                 throw new ArgumentOutOfRangeException(nameof(col));

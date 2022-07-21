@@ -204,7 +204,7 @@ namespace CompactOT
         /// <summary>
         /// Masks an option (i.e., a sender input message).
         /// </summary>
-        private BitArrayBase MaskOption(BitArrayBase option, BitArrayBase mask, int invocationIndex)
+        private BitSequence MaskOption(BitSequence option, BitSequence mask, int invocationIndex)
         {
             var query = BufferBuilder.Empty.With(mask).With(invocationIndex).Create();
             return new EnumeratedBitArrayView(RandomOracle.Mask(option.AsByteEnumerable(), query), option.Length);

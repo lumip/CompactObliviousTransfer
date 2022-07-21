@@ -38,7 +38,7 @@ namespace CompactOT
             _values = values;
         }
 
-        public static ObliviousTransferOptions FromBitArray(BitArrayBase values, int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
+        public static ObliviousTransferOptions FromBitArray(BitSequence values, int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
         {
             return new ObliviousTransferOptions(new BitArray(values), numberOfInvocations, numberOfOptions, numberOfMessageBits);
         }
@@ -64,7 +64,7 @@ namespace CompactOT
             return (invocation * NumberOfOptions + option) * NumberOfMessageBits;
         }
 
-        public BitArrayBase GetMessage(int invocation, int option)
+        public BitSequence GetMessage(int invocation, int option)
         {
             int offset = GetMessageOffset(invocation, option);
             int end = offset + NumberOfMessageBits;
@@ -72,7 +72,7 @@ namespace CompactOT
             return new BitArraySlice(_values, offset, end);
         }
 
-        public void SetMessage(int invocation, int option, BitArrayBase message)
+        public void SetMessage(int invocation, int option, BitSequence message)
         {
             if (message.Length != NumberOfMessageBits)
                 throw new ArgumentException("Length of given message must match oblivious transfer message length.", nameof(message));
@@ -89,7 +89,7 @@ namespace CompactOT
             }
         }
 
-        public BitArrayBase GetInvocation(int invocation)
+        public BitSequence GetInvocation(int invocation)
         {
             int offset = GetMessageOffset(invocation, 0);
             int end = offset + NumberOfOptions * NumberOfMessageBits;
@@ -102,7 +102,7 @@ namespace CompactOT
         /// Sets all messages for an invocation at once.
         /// </summary>
         /// <param name="message">Sequence of bits for all messages, concatenated starting with the first message.</param>
-        public void SetInvocation(int invocation, BitArrayBase messages)
+        public void SetInvocation(int invocation, BitSequence messages)
         {
             if (messages.Length != NumberOfOptions * NumberOfMessageBits)
                 throw new ArgumentException("Length of given messages must match oblivious transfer message length times the number of options.", nameof(messages));
@@ -119,7 +119,7 @@ namespace CompactOT
             }
         }
 
-        public void SetInvocation(int invocation, BitArrayBase[] messages)
+        public void SetInvocation(int invocation, BitSequence[] messages)
         {
             if (messages.Length != NumberOfOptions)
                 throw new ArgumentException("Number of given messages must match oblivious transfer option count.", nameof(messages));

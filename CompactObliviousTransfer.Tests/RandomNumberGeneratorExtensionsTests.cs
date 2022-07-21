@@ -14,8 +14,8 @@ namespace CompactOT
         {
             byte[] randomBytes = new byte[] { 0x52, 0xf1 };
             var randomSequence = new RandomByteSequence(randomBytes);
-            DataStructures.BitArrayBase bits1 = randomSequence.GetBits(7);
-            DataStructures.BitArrayBase bits2 = randomSequence.GetBits(7);
+            DataStructures.BitSequence bits1 = randomSequence.GetBits(7);
+            DataStructures.BitSequence bits2 = randomSequence.GetBits(7);
             Assert.NotEqual(bits1.ToBytes(), bits2.ToBytes());
         }
     }
