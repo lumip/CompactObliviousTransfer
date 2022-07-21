@@ -32,7 +32,7 @@ namespace CompactOT.DataStructures
 
         public static void InPlaceAnd(byte[] left, IEnumerable<byte> right)
         {
-            And(left.AsEnumerable(), right).WriteInto(left, 0);
+            And(left.AsEnumerable(), right).WriteInto(left);
         }
 
         public static byte[] Or(byte[] left, IEnumerable<byte> right)
@@ -42,7 +42,7 @@ namespace CompactOT.DataStructures
 
         public static void InPlaceOr(byte[] left, IEnumerable<byte> right)
         {
-            Or(left.AsEnumerable(), right).WriteInto(left, 0);
+            Or(left.AsEnumerable(), right).WriteInto(left);
         }
 
         public static byte[] Xor(byte[] left, IEnumerable<byte> right)
@@ -52,7 +52,7 @@ namespace CompactOT.DataStructures
 
         public static void InPlaceXor(byte[] left, IEnumerable<byte> right)
         {
-            Xor(left.AsEnumerable(), right).WriteInto(left, 0);
+            Xor(left.AsEnumerable(), right).WriteInto(left);
         }
 
         public static byte[] Not(byte[] bytes)
@@ -62,7 +62,7 @@ namespace CompactOT.DataStructures
 
         public static void InPlaceNot(byte[] bytes)
         {
-            Not(bytes.AsEnumerable()).WriteInto(bytes, 0);
+            Not(bytes.AsEnumerable()).WriteInto(bytes);
         }
     }
 }

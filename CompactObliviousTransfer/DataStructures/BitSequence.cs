@@ -31,7 +31,7 @@ namespace CompactOT.DataStructures
         {
             AsByteEnumerable().WriteInto(buffer, offset);
         }
-        public void CopyTo(byte[] buffer, int offset)
+        public void CopyTo(byte[] buffer, int offset = 0)
         {
             CopyToInternal(buffer, offset);
             var nonAlignedBits = Length % 8;
@@ -43,7 +43,7 @@ namespace CompactOT.DataStructures
             }
         }
 
-        public virtual void CopyTo(Bit[] buffer, int offset)
+        public virtual void CopyTo(Bit[] buffer, int offset = 0)
         {
             ((IEnumerable<Bit>)this).WriteInto(buffer, offset);
         }
@@ -106,7 +106,7 @@ namespace CompactOT.DataStructures
         {
             int bufferSize = BitArray.RequiredBytes(Length);
             byte[] buffer = new byte[bufferSize];
-            CopyTo(buffer, 0);
+            CopyTo(buffer);
             return buffer;
         }
 

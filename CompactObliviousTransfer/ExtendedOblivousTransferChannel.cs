@@ -73,8 +73,10 @@ namespace CompactOT
             _baseOT = baseOT;
             if (_baseOT.SecurityLevel < securityParameter)
             {
-                throw new ArgumentException($"The provided base OT must provided at least the requested security level of "+
-                $"{securityParameter} but only provides {baseOT.SecurityLevel}.", nameof(baseOT));
+                throw new ArgumentException(
+                    $"The provided base OT must provided at least the requested security level of "+
+                    $"{securityParameter} but only provides {baseOT.SecurityLevel}.", nameof(baseOT)
+                );
             }
 
             RandomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);

@@ -11,7 +11,7 @@ namespace CompactOT.DataStructures
         /// Note that if the buffer is too small, the operation will result in an exception
         /// but prior to that fill the buffer as far as possible.
         /// </summary>
-        public static void WriteInto<T>(this IEnumerable<T> enumerable, T[] buffer, int offset)
+        public static void WriteInto<T>(this IEnumerable<T> enumerable, T[] buffer, int offset = 0)
         {
             int i = offset;
             foreach (T x in enumerable)

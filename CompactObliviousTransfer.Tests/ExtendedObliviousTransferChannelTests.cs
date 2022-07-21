@@ -45,7 +45,7 @@ namespace CompactOT
         [Fact]
         public void TestExtendedOTs()
         {
-            int numberOfOptions = 6;
+            int numberOfOptions = TestOptions.Length;
 
             var securityParameter = NumberLength.FromBitLength(8);
 
@@ -111,7 +111,7 @@ namespace CompactOT
             var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010 11001100 10101010");
             var rngMock = new Mock<RandomNumberGenerator>();
             rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b, 0);
+                randomChoices.CopyTo(b);
             });
 
 
@@ -145,7 +145,7 @@ namespace CompactOT
             var randomChoices = BitArray.FromBinaryString("00000000 01011010 11111111 11001100 1010");
             var rngMock = new Mock<RandomNumberGenerator>();
             rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b, 0);
+                randomChoices.CopyTo(b);
             });
 
             var expectedOptions = ObliviousTransferOptions.FromBitArray(

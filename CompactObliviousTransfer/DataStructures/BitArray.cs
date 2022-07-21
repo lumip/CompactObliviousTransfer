@@ -38,7 +38,7 @@ namespace CompactOT.DataStructures
             : this(elements.Length)
         {
             Debug.Assert(Buffer.Length == elements.AsByteEnumerable().Count());
-            elements.AsByteEnumerable().WriteInto(Buffer, 0);
+            elements.AsByteEnumerable().WriteInto(Buffer);
         }
 
         protected BitArray(byte[] bytes, int numberOfElements)

@@ -16,7 +16,7 @@ namespace CompactOT
         public void TestNaorPinkasObliviousTransfer()
         {
             const int numberOfInvocations = 3;
-            const int numberOfOptions = 6;
+            int numberOfOptions = TestOptions.Length;
             int numberOfMessageBits = TestOptions[0].Length * 8;
 
             // sender data
