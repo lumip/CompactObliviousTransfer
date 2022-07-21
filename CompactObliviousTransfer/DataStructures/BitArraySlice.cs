@@ -35,19 +35,32 @@ namespace CompactOT.DataStructures
 
         public override bool IsReadOnly => true;
 
-        public override IEnumerable<byte> AsByteEnumerable()
+        private IEnumerable<byte> AsByteEnumerableInternalUnfiltered()
         {
             int byteOffset = _start / 8;
             int bitOffset = _start % 8;
             int lastByteOffset = (_stopBefore - 1) / 8;
             int numberOfBytes = (lastByteOffset + 1 - byteOffset);
-            int numberOfOutputBytes = (Length + 7) / 8; // todo: somewhat hacky solution right now, try to make this nicer?
-            return new ShiftedByteArrayEnumerable(_array.AsByteEnumerable().Skip(byteOffset).Take(numberOfBytes), bitOffset).Take(numberOfOutputBytes);
+            
+            int numberOfOutputBytes = NumberLength.FromBitLength(Length).InBytes;
+            var unfilteredByteEnumerable = new ShiftedByteArrayEnumerable(
+                _array.AsByteEnumerable().Skip(byteOffset).Take(numberOfBytes),
+                bitOffset
+            ).Take(numberOfOutputBytes);
+
+            return unfilteredByteEnumerable;
+        }
+
+        public override IEnumerable<byte> AsByteEnumerable()
+        {
+            var unfilteredByteEnumerable = AsByteEnumerableInternalUnfiltered();
+
+            return new EnumeratedBitArrayView(unfilteredByteEnumerable, Length).AsByteEnumerable();
         }
 
         public override IEnumerator<Bit> GetEnumerator()
         {
-            return new ByteToBitEnumerable(AsByteEnumerable(), _stopBefore - _start).GetEnumerator();
+            return new ByteToBitEnumerable(AsByteEnumerableInternalUnfiltered(), _stopBefore - _start).GetEnumerator();
         }
     }
 

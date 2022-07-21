@@ -19,7 +19,7 @@ namespace CompactOT.DataStructures
         [InlineData(26, 28, "01")]
         public void TestSlices(int sliceOffset, int sliceStop, string expected)
         {
-            byte[] bytes = new byte[] { 0x9c, 0xb5, 0xeb, 0x69 }; // 00111001 10101101 11010111 10010110
+            byte[] bytes = new byte[] { 0x9c, 0xb5, 0xeb, 0x69 }; // 10011100 10110101 11101011 01101001
             var bits = BitArray.FromBytes(bytes, 28); // "0011100110101101110101111001"
             var slice = new BitArraySlice(bits, sliceOffset, sliceStop);
 
@@ -58,14 +58,19 @@ namespace CompactOT.DataStructures
 
         [Theory]
         [InlineData(0, 8, new byte[] { 0x9c })]
+        [InlineData(8, 16, new byte[] { 0xb5 })]
         [InlineData(3, 11, new byte[] { 0b10110011 })]
-        [InlineData(0, 7, new byte[] { 0x1c })] // todo: known failure, trailing bits in last byte are not masked; clarify intended behavior
-        // todo: add more potential edge cases and non-byte aligned tests
+        [InlineData(0, 7, new byte[] { 0x1c })]
+        [InlineData(0, 28, new byte[] { 0x9c, 0xb5, 0xeb, 0x09 })]
+        [InlineData(21, 22, new byte[] { 0x01 })]
+        [InlineData(26, 28, new byte[] { 0x02 })]
         public void TestAsByteEnumerable(int sliceOffset, int sliceStop, byte[] expected)
         {
-            byte[] bytes = new byte[] { 0x9c, 0xb5, 0xeb, 0x69 }; // 00111001 10101101 11010111 10010110
+            byte[] bytes = new byte[] { 0x9c, 0xb5, 0xeb, 0x69 }; // 10011100 10110101 11101011 01101001
             var bits = BitArray.FromBytes(bytes, 28); // "0011100110101101110101111001"
             var slice = new BitArraySlice(bits, sliceOffset, sliceStop);
+
+            var bbytes = slice.AsByteEnumerable().ToArray();
 
             Assert.Equal(expected.Length, slice.AsByteEnumerable().Count());
             Assert.Equal(expected, slice.AsByteEnumerable());

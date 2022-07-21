@@ -4,6 +4,20 @@ using System.Collections.Generic;
 
 namespace CompactOT.DataStructures
 {
+
+    public class BaseEnumeratorExhaustedException : Exception
+    {
+        public BaseEnumeratorExhaustedException() : base("The base enumerator was exhausted will the derived enumerator expects more elements.")
+        {
+            
+        }
+    }
+
+    /// <summary>
+    /// An enumerator of bits from an enumerator of bytes.
+    /// 
+    /// This enumerator starts proceeds from least to most significant bit in each byte of the byte enumerator.
+    /// </summary>
     public class ByteToBitEnumerator : IEnumerator<Bit>
     {
 
@@ -42,7 +56,14 @@ namespace CompactOT.DataStructures
 
             if ((_bitIndex & 0b111) == 0) // _bitIndex % 8 == 0
             {
-                return _byteEnumerator.MoveNext();
+                if (!_byteEnumerator.MoveNext())
+                {
+                    if (_length != null && _bitIndex < _length)
+                    {
+                        throw new BaseEnumeratorExhaustedException();
+                    }
+                    return false;
+                }
             }
             return true;
         }
@@ -78,6 +99,14 @@ namespace CompactOT.DataStructures
         }
     }
 
+    /// <summary>
+    /// An enumerator of bytes from an enumerator of bits.
+    /// 
+    /// For each byte it outputs, this enumerator collects 8 bits from the bit enumerator
+    /// assembling them as a byte from least to most significant bit. If the number of bits
+    /// in the bit enumerator is not a multiple of 8, the last byte output is filled with 0
+    /// for the most significant bits.
+    /// </summary>
     public class BitToByteEnumerator : IEnumerator<byte>
     {
         private IEnumerator<Bit> _bitEnumerator;
@@ -101,16 +130,16 @@ namespace CompactOT.DataStructures
         /// <inheritdoc/>
         public bool MoveNext()
         {
-            if (_bitEnumerator.MoveNext())
+            if (!_bitEnumerator.MoveNext())
                 return false;
 
             _byte = 0;
-            int i = 8;
+            int i = 0;
             do
             {
-                i -= 1;
                 _byte = (byte)((int)_byte | (((byte)_bitEnumerator.Current) << i));
-            } while (i >= 0 && _bitEnumerator.MoveNext());
+                i++;
+            } while(i < 8 && _bitEnumerator.MoveNext());
             
             return true;
         }

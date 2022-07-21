@@ -11,8 +11,8 @@ namespace CompactOT.DataStructures
         [Fact]
         public void TestConstruction()
         {
-            byte[] bytes = new byte[] { 0x56, 0x8d, 0xa3 };
-            var bits = new EnumeratedBitArrayView(bytes, 11);
+            byte[] bytes = new byte[] { 0x56, 0x8d, 0xa3 }; //   01010110 10001101 10100011
+            var bits = new EnumeratedBitArrayView(bytes, 11); // 01010110      101
             Assert.Equal(11, bits.Length);
 
             var expectedBits = BitArray.FromBinaryString("01101010 101");
@@ -27,7 +27,6 @@ namespace CompactOT.DataStructures
 
             var bitsAsArray = bits.AsByteEnumerable().ToArray();
             var expectedBitsAsArray = new byte[] { 0x56, 0x05 };
-            // todo: currently fails, last byte is not masked properly. think whether that is relevant requirement as that usually gets ignored anyways..
             Assert.Equal(expectedBitsAsArray, bitsAsArray);
         }
     }

@@ -39,12 +39,30 @@ namespace CompactOT.DataStructures
 
         public override IEnumerable<byte> AsByteEnumerable()
         {
-            return _byteFeed.Take((_numberOfBits + 7) / 8);
+            var enumerator = _byteFeed.GetEnumerator();
+
+            int numberOfBytes = NumberLength.FromBitLength(_numberOfBits).InBytes;
+            for (int i = 0; i < numberOfBytes; ++i)
+            {
+                if (!enumerator.MoveNext()) // _byteFeed does not offer enough bytes to satisfy specified _numberOfBits
+                    throw new BaseEnumeratorExhaustedException();
+
+                byte current = enumerator.Current;
+
+                // in the last byte, we mask away most significant bits if their position is larger than specified _numberOfBits
+                int remainingBits = _numberOfBits - i * 8;
+                if (remainingBits < 8)
+                {
+                    byte mask = (byte)((1 << remainingBits) - 1);
+                    current = (byte)(current & mask);
+                }
+                yield return current;
+            }
         }
 
         public override IEnumerator<Bit> GetEnumerator()
         {
-            return new ByteToBitEnumerable(AsByteEnumerable(), _numberOfBits).GetEnumerator();
+            return new ByteToBitEnumerable(_byteFeed, _numberOfBits).GetEnumerator();
         }
         
     }
