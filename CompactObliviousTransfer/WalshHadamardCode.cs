@@ -1,6 +1,7 @@
 using System;
 
 using CompactOT.DataStructures;
+using CompactCryptoGroupAlgebra;
 
 namespace CompactOT
 {
@@ -22,6 +23,17 @@ namespace CompactOT
         {
             if ((codeLength & (codeLength - 1)) != 0)
                 throw new ArgumentException($"Code length must be a power of two, was {codeLength}.", nameof(codeLength));
+
+            if (x >= codeLength)
+            {
+                int requiredCodeLength = 1 << NumberLength.GetLength(x).InBits;
+                throw new ArgumentOutOfRangeException(
+                    $"Provided value {x} is too large to be encoded with a code length of {codeLength}"+
+                    $"(required code length at least {requiredCodeLength}).",
+                    nameof(x)
+                );
+            }
+            
             var code = new BitArray(codeLength);
             
             for (int i = 0; i < codeLength; ++i)

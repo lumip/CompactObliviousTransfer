@@ -24,10 +24,26 @@ namespace CompactOT
             Assert.Equal(expected, result);
         } 
 
+
+        [Fact]
+        public void TestComputeWalshHadamardCodeUpperBound()
+        {
+            var expected = BitArray.FromBinaryString("01101001");
+            var result = WalshHadamardCode.ComputeWalshHadamardCode(0b111, 8);
+            Assert.Equal(expected, result);
+        } 
+
+
         [Fact]
         public void TestComputeWalshHadamardCodeInvalidCodeLength()
         {
             Assert.Throws<ArgumentException>(() => WalshHadamardCode.ComputeWalshHadamardCode(0b111, 3));
+        }
+
+        [Fact]
+        public void TestComputeWalshHadamardCodeTooLargeValue()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => WalshHadamardCode.ComputeWalshHadamardCode(0b10000, 4));
         }
 
     }
