@@ -81,16 +81,20 @@ namespace CompactOT.DataStructures
             }
         }
 
+        private IEnumerable<Bit> GetColumnAsEnumerable(int col)
+        {
+            for (int i = 0; i < Rows; ++i)
+            {
+                yield return _values[GetValuesIndex(i, col)];
+            }
+        }
+
         public BitSequence GetColumn(int col)
         {
             if (col < 0 || col >= Cols)
                 throw new ArgumentOutOfRangeException(nameof(col));
-            BitArray result = new BitArray(Rows);
-            for (int i = 0; i < Rows; ++i)
-            {
-                result[i] = _values[GetValuesIndex(i, col)];
-            }
-            return result;
+
+            return new EnumeratedBitArrayView(GetColumnAsEnumerable(col), Rows);
         }
 
         public void SetColumn(int col, BitSequence values)
