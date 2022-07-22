@@ -25,7 +25,7 @@ namespace CompactOT
         /// Starts  K-fold 1-out-of-N Oblivious Transfer as the receiver with the given choice indices.
         /// </summar>
         public abstract Task<byte[][]> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
-        
+                
         /// <summary>
         /// Security level provided by the Oblious Transfer.
         ///

@@ -15,8 +15,10 @@ namespace CompactOT
     /// symmetric cryptography via a random oracle instantiation.
     /// </summary>
     /// <remarks>
-    /// References: Yuval Ishai, Joe Kilian, Kobbi Nissim and Erez Petrank: Extending Oblivious Transfers Efficiently. 2003. https://link.springer.com/content/pdf/10.1007/978-3-540-45146-4_9.pdf
-    /// and Gilad Asharov, Yehuda Lindell, Thomas Schneider and Michael Zohner: More Efficient Oblivious Transfer and Extensions for Faster Secure Computation. 2013. Section 5.3. https://thomaschneider.de/papers/ALSZ13.pdf
+    /// References:
+    /// Main: Vladimir Kolesnikov, Ranjit Kumaresan: Improved OT Extension for Transferring Short Secrets. 2013. https://www.microsoft.com/en-us/research/wp-content/uploads/2017/03/otext_crypto13.pdf
+    /// Summary explanation of above in: Michele Orrù, Emmanuela Orsini, Peter Scholl: Actively Secure 1-out-of-N OT Extension with Application to Private Set Intersection. 2017. https://hal.archives-ouvertes.fr/hal-01401005/file/933.pdf
+    /// Original 1oo2 OT extension: Yuval Ishai, Joe Kilian, Kobbi Nissim and Erez Petrank: Extending Oblivious Transfers Efficiently. 2003. https://link.springer.com/content/pdf/10.1007/978-3-540-45146-4_9.pdf
     /// </remarks>
     public class ExtendedObliviousTransferChannel : ObliviousTransferChannel
     {
@@ -29,7 +31,7 @@ namespace CompactOT
         public override int SecurityLevel => _securityParameter.InBits;
         protected RandomOracle RandomOracle { get; }
 
-        private int CodeLength => 2*SecurityLevel;
+        protected int CodeLength => 2*SecurityLevel;
 
         
         /// <summary>
@@ -68,6 +70,15 @@ namespace CompactOT
 
         public int NumberOfOptions { get; private set; }
 
+        private int _totalNumberOfInvocations;
+        /// <summary>
+        /// The total number of OT invocations that have been performed on this channel so far.
+        /// 
+        /// Every call to Send/Receive will advance this by the number of invocations requested for that call,
+        /// even if the call should fail.
+        /// </summary>
+        protected int NumberOfInvocations => _totalNumberOfInvocations;
+
         public ExtendedObliviousTransferChannel(ObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext)
         {
             _baseOT = baseOT;
@@ -84,6 +95,7 @@ namespace CompactOT
             _securityParameter = NumberLength.FromBitLength(securityParameter);
             _senderState = null;
             _receiverState = null;
+            _totalNumberOfInvocations = 0;
         }
 
 
@@ -145,6 +157,7 @@ namespace CompactOT
             await sendTask;
         }
 
+        // todo: think about changing return type to BitSequence[]
         public override async Task<byte[][]> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
             if (numberOfOptions > CodeLength)
@@ -191,13 +204,13 @@ namespace CompactOT
             byte[][] results = new byte[numberOfInvocations][];
             ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
 
-            for (int i = 0; i < numberOfInvocations; ++i)
+            for (int i = 0; i < numberOfInvocations; ++i, ++_totalNumberOfInvocations)
             {
                 int s = selectionIndices[i];
                 var q = maskedOptions.GetMessage(i, s);
                 Debug.Assert(q.Length == numberOfMessageBits);
                 var t0Col = ts[0].GetColumn(i);
-                var unmaskedOption = MaskOption(q, t0Col, i);
+                var unmaskedOption = MaskOption(q, t0Col, _totalNumberOfInvocations);
                 results[i] = unmaskedOption.ToBytes();
             }
             return results;
@@ -266,6 +279,8 @@ namespace CompactOT
 
             var maskedOptions = new ObliviousTransferOptions(options.NumberOfInvocations, options.NumberOfOptions, numberOfMessageBits);
 
+            int totalNumberOfInvocations = _totalNumberOfInvocations;
+            _totalNumberOfInvocations += options.NumberOfInvocations;
             for (int j = 0; j < options.NumberOfOptions; ++j)
             {
                 var selectionCode = WalshHadamardCode.ComputeWalshHadamardCode(j, CodeLength);
@@ -277,7 +292,7 @@ namespace CompactOT
                     var option = options.GetMessage(i, j);
                     
                     var query = queryMask ^ qs.GetRow(i);
-                    var maskedOption = MaskOption(option, query, i);
+                    var maskedOption = MaskOption(option, query, totalNumberOfInvocations + i);
                     Debug.Assert(maskedOption.Length == numberOfMessageBits);
 
                     maskedOptions.SetMessage(i, j, maskedOption);
