@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Linq;
 
 using CompactOT.Buffers;
+using CompactOT.DataStructures;
 
 namespace CompactOT
 {
@@ -12,7 +13,7 @@ namespace CompactOT
 
         public override int SecurityLevel => 0;
 
-        public override async Task<byte[][]> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public override async Task<BitMatrix> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
             var message = new MessageComposer();
             foreach (int index in selectionIndices)
@@ -22,10 +23,10 @@ namespace CompactOT
             await channel.WriteMessageAsync(message.Compose());
 
             var response = new MessageDecomposer(await channel.ReadMessageAsync());
-            byte[][] receivedOptions = new byte[selectionIndices.Length][];
+            BitMatrix receivedOptions = new BitMatrix(selectionIndices.Length, numberOfMessageBits);
             for (int j = 0; j < selectionIndices.Length; ++j)
             {
-                receivedOptions[j] = response.ReadBuffer(numberOfMessageBits / 8);
+                receivedOptions.SetRow(j, new EnumeratedBitArrayView(response.ReadBuffer(numberOfMessageBits / 8), numberOfMessageBits));
             }
             return receivedOptions;
         }

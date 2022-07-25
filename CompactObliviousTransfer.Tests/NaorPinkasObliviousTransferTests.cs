@@ -5,6 +5,8 @@ using Moq;
 
 using System.Numerics;
 
+using CompactOT.DataStructures;
+
 namespace CompactOT
 {
 
@@ -41,12 +43,14 @@ namespace CompactOT
             var receiverTask = otProtocol.ReceiveAsync(channels.SecondPartyChannel, receiverIndices, numberOfOptions, numberOfMessageBits);
 
             // verify results
-            byte[][] results = receiverTask.Result;
-            Assert.Equal(numberOfInvocations, results.Length);
-            for (int i = 0; i < results.Length; ++i)
+            // byte[][] results = receiverTask.Result;
+            // Assert.Equal(numberOfInvocations, results.Length);
+            BitMatrix results = receiverTask.Result;
+            Assert.Equal(numberOfInvocations, results.Rows);
+            for (int i = 0; i < results.Rows; ++i)
             {
                 var expected = options.GetMessage(i, receiverIndices[i]);
-                Assert.Equal(expected.ToBytes(), results[i]);
+                Assert.Equal(expected, results.GetRow(i));
             }
         }
     }

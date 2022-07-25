@@ -15,9 +15,9 @@ namespace CompactOT
     {
         public abstract Task SendAsync(ObliviousTransferOptions options);
         
-        public abstract Task<byte[][]> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
+        public abstract Task<BitMatrix> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
 
-        public virtual Task<byte[][]> ReceiveAsync(BitSequence selectionIndices, int numberOfMessageBits)
+        public virtual Task<BitMatrix> ReceiveAsync(BitSequence selectionIndices, int numberOfMessageBits)
         {
             return ReceiveAsync(
                 selectionIndices.Select(x => x ? 1 : 0).ToArray(), 2, numberOfMessageBits

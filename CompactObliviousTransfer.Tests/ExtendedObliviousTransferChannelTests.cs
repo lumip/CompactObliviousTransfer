@@ -77,12 +77,12 @@ namespace CompactOT
             Task.WaitAll(sendTask, receiverTask);
 
             // verify results
-            byte[][] results = receiverTask.Result;
-            Assert.Equal(numberOfInvocations, results.Length);
-            for (int i = 0; i < results.Length; ++i)
+            BitMatrix results = receiverTask.Result;
+            Assert.Equal(numberOfInvocations, results.Rows);
+            for (int i = 0; i < results.Rows; ++i)
             {
                 var expected = options.GetMessage(i, receiverIndices[i]);
-                Assert.Equal(expected.ToBytes(), results[i]);
+                Assert.Equal(expected, results.GetRow(i));
             }
         }
 
@@ -92,14 +92,15 @@ namespace CompactOT
             var securityParameter = NumberLength.FromBitLength(24);
             int codeLength = 2 * securityParameter.InBits;
 
-            byte[][] received = new byte[codeLength][];
-            for (int j = 0; j < received.Length; ++j)
+            BitMatrix received = new BitMatrix(codeLength, securityParameter.InBits);
+            for (int j = 0; j < codeLength; ++j)
             {
-                received[j] = new byte[securityParameter.InBytes];
+                byte[] receivedAsBytes = new byte[securityParameter.InBytes];
                 for (int i = 0; i < securityParameter.InBytes; ++i)
                 {
-                    received[j][i] = (byte)(j*10 + i);
+                    receivedAsBytes[i] = (byte)(j*10 + i);
                 }
+                received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityParameter.InBits));
             }
 
             var baseOTMock = new Mock<ObliviousTransferChannel>();
@@ -107,7 +108,6 @@ namespace CompactOT
                 .Returns(Task.FromResult(received));
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
-            // var randomCoiceBuffer = new byte[] { 0x5A, 0x33, 0x55, 0x5A, 0x33, 0x55 };
             var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010 11001100 10101010");
             var rngMock = new Mock<RandomNumberGenerator>();
             rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {

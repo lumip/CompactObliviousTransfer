@@ -20,13 +20,13 @@ namespace CompactOT
         }
 
         /// <inheritdoc/>
-        public override Task<byte[][]> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public override Task<BitMatrix> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
             return _statelessOT.ReceiveAsync(Channel, selectionIndices, numberOfOptions, numberOfMessageBits);
         }
 
         /// <inheritdoc/>
-        public override Task<byte[][]> ReceiveAsync(BitSequence selectionIndices, int numberOfMessageBits)
+        public override Task<BitMatrix> ReceiveAsync(BitSequence selectionIndices, int numberOfMessageBits)
         {
             return _statelessOT.ReceiveAsync(Channel, selectionIndices, numberOfMessageBits);
         }

@@ -114,17 +114,23 @@ namespace CompactOT
             _senderState.RandomChoices = RandomNumberGenerator.GetBits(CodeLength);
 
             // retrieve seeds for OT extension via _securityParameter many base OTs
-            byte[][] seeds = await _baseOT.ReceiveAsync(
+            BitMatrix seeds = await _baseOT.ReceiveAsync(
                 _senderState.RandomChoices,
                 numberOfMessageBits: _securityParameter.InBits
             );
-            Debug.Assert(seeds.Length == CodeLength);
+            if (seeds.Rows != CodeLength)
+            {
+                throw new ProtocolException("Base transfer received unexpected number of invocations!");
+            }
+            if (seeds.Cols != SecurityLevel)
+            {
+                throw new ProtocolException("Base transfer received messages with unexpected lengths!");
+            }
 
             // initializing a random oracle based on each seed
             for (int k = 0; k < CodeLength; ++k)
             {
-                Debug.Assert(seeds[k].Length == _securityParameter.InBytes);
-                _senderState.SeededRandomOracles[k] = RandomOracle.Invoke(seeds[k]);
+                _senderState.SeededRandomOracles[k] = RandomOracle.Invoke(seeds.GetRow(k).AsByteEnumerable());
             }
         }
 
@@ -157,8 +163,7 @@ namespace CompactOT
             await sendTask;
         }
 
-        // todo: think about changing return type to BitSequence[]
-        public override async Task<byte[][]> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public override async Task<BitMatrix> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
             if (numberOfOptions > CodeLength)
             {
@@ -201,8 +206,9 @@ namespace CompactOT
             
             Task sendingTask = SendReceiverMessage(us);
 
-            byte[][] results = new byte[numberOfInvocations][];
+            BitMatrix results = new BitMatrix(numberOfInvocations, numberOfMessageBits);
             ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
+            Debug.Assert(maskedOptions.NumberOfInvocations == numberOfInvocations);
 
             for (int i = 0; i < numberOfInvocations; ++i, ++_totalNumberOfInvocations)
             {
@@ -211,7 +217,7 @@ namespace CompactOT
                 Debug.Assert(q.Length == numberOfMessageBits);
                 var t0Col = ts[0].GetColumn(i);
                 var unmaskedOption = MaskOption(q, t0Col, _totalNumberOfInvocations);
-                results[i] = unmaskedOption.ToBytes();
+                results.SetRow(i, unmaskedOption);
             }
             return results;
         }
