@@ -210,13 +210,15 @@ namespace CompactOT
             ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
             Debug.Assert(maskedOptions.NumberOfInvocations == numberOfInvocations);
 
-            for (int i = 0; i < numberOfInvocations; ++i, ++_totalNumberOfInvocations)
+            int totalNumberOfInvocations = _totalNumberOfInvocations;
+            _totalNumberOfInvocations += numberOfInvocations;
+            for (int i = 0; i < numberOfInvocations; ++i)
             {
                 int s = selectionIndices[i];
                 var q = maskedOptions.GetMessage(i, s);
                 Debug.Assert(q.Length == numberOfMessageBits);
                 var t0Col = ts[0].GetColumn(i);
-                var unmaskedOption = MaskOption(q, t0Col, _totalNumberOfInvocations);
+                var unmaskedOption = MaskOption(q, t0Col, totalNumberOfInvocations + i);
                 results.SetRow(i, unmaskedOption);
             }
             return results;
@@ -279,8 +281,6 @@ namespace CompactOT
                 qs.SetColumn(k, q);
             }
 
-            var optionLength = NumberLength.GetLength(options.NumberOfOptions);
-            
             var numberOfMessageBits = options.NumberOfMessageBits;
 
             var maskedOptions = new ObliviousTransferOptions(options.NumberOfInvocations, options.NumberOfOptions, numberOfMessageBits);
@@ -306,16 +306,6 @@ namespace CompactOT
             }
 
             await SendMaskedOptions(maskedOptions);
-        }
-
-        private async Task SendMaskedOptions(BitMatrix[] maskedOptions)
-        {
-            var message = new MessageComposer(maskedOptions.Length);
-            foreach (var option in maskedOptions)
-            {
-                message.Write(option);
-            }
-            await Channel.WriteMessageAsync(message.Compose());
         }
 
         private async Task SendMaskedOptions(ObliviousTransferOptions maskedOptions)
