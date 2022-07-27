@@ -1,0 +1,9 @@
+{
+    "$schema": "https://xunit.net/schema/current/xunit.runner.schema.json",
+    "__comment1": "it seems like dotnet test runs into problems when there's too many parallel tests with tasks.",
+    "__comment2": "tests simply freeze if there is more than 3 tests of OT protocols. either there's some really",
+    "__comment3": "weird concurrency bug that somehow makes tasks in these tests deadlock even though they shouldn't",
+    "__comment4": "be sharing any resources at all; or dotnet test for linux is buggy. Need to test on other platforms.",
+    "parallelizeTestCollections": false,
+    "maxParallelThreads": 1
+}

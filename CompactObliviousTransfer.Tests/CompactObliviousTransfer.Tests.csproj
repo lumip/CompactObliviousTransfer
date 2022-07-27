@@ -20,4 +20,8 @@
     <PackageReference Include="NunitXml.TestLogger" Version="3.0.91" /> -->
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
