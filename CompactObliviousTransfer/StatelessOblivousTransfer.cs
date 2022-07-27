@@ -13,6 +13,10 @@ namespace CompactOT
     /// 
     /// Stateless here means that the OT implementation does not maintain state for each channel (i.e., pair of communicating parties)
     /// in-between invocations.
+    /// 
+    /// In a single invocation of 1-out-of-N Oblivious Transfer, the sender inputs
+    /// N bit-strings x_0, ..., x_N and the receiver inputs a selection index s.
+    /// The sender receives no outputs. The receiver receives as output the bit-string x_s.
     /// </summary>
     public abstract class StatelessObliviousTransfer
     {
