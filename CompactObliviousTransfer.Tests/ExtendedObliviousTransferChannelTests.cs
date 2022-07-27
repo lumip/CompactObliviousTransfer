@@ -37,7 +37,7 @@ namespace CompactOT
             var senderTask = otSender.ExecuteSenderBaseTransferAsync();
             var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
 
-            Task.WaitAll(senderTask, receiverTask);
+            TestUtils.WaitAllOrFail(senderTask, receiverTask);
         }
 
         private static readonly string[] TestOptions = { "Alicia", "Briann", "Charly", "Dennis", "Elenor", "Frieda" };
@@ -74,7 +74,7 @@ namespace CompactOT
             var sendTask = otSender.SendAsync(options);
             var receiverTask = otReceiver.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits);
 
-            Task.WaitAll(sendTask, receiverTask);
+            TestUtils.WaitAllOrFail(sendTask, receiverTask);
 
             // verify results
             BitMatrix results = receiverTask.Result;

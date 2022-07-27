@@ -42,9 +42,9 @@ namespace CompactOT
             var sendTask = otProtocol.SendAsync(channels.FirstPartyChannel, options);
             var receiverTask = otProtocol.ReceiveAsync(channels.SecondPartyChannel, receiverIndices, numberOfOptions, numberOfMessageBits);
 
+            TestUtils.WaitAllOrFail(sendTask, receiverTask);
+
             // verify results
-            // byte[][] results = receiverTask.Result;
-            // Assert.Equal(numberOfInvocations, results.Length);
             BitMatrix results = receiverTask.Result;
             Assert.Equal(numberOfInvocations, results.Rows);
             for (int i = 0; i < results.Rows; ++i)
