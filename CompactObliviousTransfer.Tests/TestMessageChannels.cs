@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace CompactOT
 {
@@ -13,13 +14,13 @@ namespace CompactOT
         public class Channel : IMessageChannel
         {
 
-            Queue<byte[]> _inQueue;
-            Queue<byte[]> _outQueue;
+            ConcurrentQueue<byte[]> _inQueue;
+            ConcurrentQueue<byte[]> _outQueue;
 
             AutoResetEvent _inEvent;
             AutoResetEvent _outEvent;
 
-            public Channel(Queue<byte[]> inQueue, AutoResetEvent inEvent, Queue<byte[]> outQueue, AutoResetEvent outEvent)
+            public Channel(ConcurrentQueue<byte[]> inQueue, AutoResetEvent inEvent, ConcurrentQueue<byte[]> outQueue, AutoResetEvent outEvent)
             {
                 _inQueue = inQueue;
                 _inEvent = inEvent;
@@ -33,12 +34,11 @@ namespace CompactOT
                 {
                     while (true)
                     {
-                        lock (_inQueue)
-                        {
-                            if (_inQueue.Count > 0)
-                                return _inQueue.Dequeue();
-                        }
                         _inEvent.WaitOne();
+
+                        byte[] value;
+                        if (_inQueue.TryDequeue(out value))
+                            return value;
                     }
                 });
             }
@@ -47,28 +47,25 @@ namespace CompactOT
             {
                 await Task.Run(() =>
                 {
-                    lock(_outQueue)
-                    {
-                        _outQueue.Enqueue(message);
-                        _outEvent.Set();
-                    }
+                    _outQueue.Enqueue(message);
+                    _outEvent.Set();
                 });
             }
         }
 
-        Queue<byte[]> _firstToSecond;
-        Queue<byte[]> _secondToFirst;
+        ConcurrentQueue<byte[]> _firstToSecond;
+        ConcurrentQueue<byte[]> _secondToFirst;
 
         AutoResetEvent _firstToSecondEvent;
         AutoResetEvent _secondToFirstEvent;
 
         
 
-        public TestMessageChannels(int capacity = 1)
+        public TestMessageChannels()
         {
-            _firstToSecond = new Queue<byte[]>(capacity);
+            _firstToSecond = new ConcurrentQueue<byte[]>();
             _firstToSecondEvent = new AutoResetEvent(false);
-            _secondToFirst = new Queue<byte[]>(capacity);
+            _secondToFirst = new ConcurrentQueue<byte[]>();
             _secondToFirstEvent = new AutoResetEvent(false);
         }
 
