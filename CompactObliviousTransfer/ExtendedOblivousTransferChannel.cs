@@ -113,11 +113,18 @@ namespace CompactOT
 
             _senderState.RandomChoices = RandomNumberGenerator.GetBits(CodeLength);
 
+#if DEBUG
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            DebugUtils.WriteLineSender("ExtendedOT", $"Performing base transfers ({CodeLength} times {SecurityLevel} bits).");
+#endif
             // retrieve seeds for OT extension via _securityParameter many base OTs
             BitMatrix seeds = await _baseOT.ReceiveAsync(
                 _senderState.RandomChoices,
                 numberOfMessageBits: _securityParameter.InBits
             );
+#if DEBUG
+            DebugUtils.WriteLineSender("ExtendedOT", "Base transfers completed after {0} ms.", stopwatch.ElapsedMilliseconds);
+#endif
             if (seeds.Rows != CodeLength)
             {
                 throw new ProtocolException("Base transfer received unexpected number of invocations!");
@@ -149,6 +156,11 @@ namespace CompactOT
             // generating _securityParameter many pairs of random seeds of length _securityParameter
             var seeds = ObliviousTransferOptions.CreateRandom(CodeLength, numBaseOTOptions, _securityParameter.InBits, RandomNumberGenerator);
 
+#if DEBUG
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            DebugUtils.WriteLineReceiver("ExtendedOT", $"Performing base transfers ({CodeLength} times {SecurityLevel} bits).");
+#endif
+
             // base OTs as _sender_ with the seeds as inputs
             // Task sendTask = _baseOT.SendAsync(seeds, SecurityParameter, _securityParameter.InBytes);
             Task sendTask = _baseOT.SendAsync(seeds);
@@ -161,7 +173,11 @@ namespace CompactOT
             };
 
             await sendTask;
+#if DEBUG
+            DebugUtils.WriteLineReceiver("ExtendedOT", "Base transfers completed after {0} ms.", stopwatch.ElapsedMilliseconds);
+#endif
         }
+
 
         public override async Task<BitMatrix> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
@@ -176,6 +192,9 @@ namespace CompactOT
 
             NumberLength optionLength = NumberLength.GetLength(numberOfOptions);
 
+#if DEBUG
+            Stopwatch stopwatch = Stopwatch.StartNew();
+#endif
             BitMatrix[] ts = new BitMatrix[] {
                 new BitMatrix(CodeLength, numberOfInvocations),
                 new BitMatrix(CodeLength, numberOfInvocations)
@@ -202,12 +221,18 @@ namespace CompactOT
                 var row = t0Col ^ t1Col ^ selectionCode;
                 us.SetRow(j, row);
             }
-
-            
+#if DEBUG
+            DebugUtils.WriteLineReceiver("ExtendedOT", "Generating random Ts and U took {0} ms.", stopwatch.ElapsedMilliseconds);
+            stopwatch.Reset();
+#endif      
             Task sendingTask = SendReceiverMessage(us);
 
             BitMatrix results = new BitMatrix(numberOfInvocations, numberOfMessageBits);
             ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
+#if DEBUG
+            DebugUtils.WriteLineReceiver("ExtendedOT", "Sending U and receiving masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
+            stopwatch.Reset();
+#endif
             Debug.Assert(maskedOptions.NumberOfInvocations == numberOfInvocations);
 
             int totalNumberOfInvocations = _totalNumberOfInvocations;
@@ -221,6 +246,9 @@ namespace CompactOT
                 var unmaskedOption = MaskOption(q, t0Col, totalNumberOfInvocations + i);
                 results.SetRow(i, unmaskedOption);
             }
+#if DEBUG
+            DebugUtils.WriteLineReceiver("ExtendedOT", "Unmasking received options took {0} ms.", stopwatch.ElapsedMilliseconds);
+#endif
             return results;
         }
 
@@ -266,7 +294,14 @@ namespace CompactOT
             }
             if (_senderState == null) await ExecuteSenderBaseTransferAsync();
 
+#if DEBUG
+            Stopwatch stopwatch = Stopwatch.StartNew();
+#endif
             BitMatrix us = await ReceiveReceiverMessage(options.NumberOfInvocations);
+#if DEBUG
+            DebugUtils.WriteLineSender("ExtendedOT", "Receiving U took {0} ms.", stopwatch.ElapsedMilliseconds);
+            stopwatch.Reset();
+#endif
             Debug.Assert(us.Cols == CodeLength);
             Debug.Assert(us.Rows == options.NumberOfInvocations);
             Debug.Assert(_senderState!.RandomChoices.Length == CodeLength);
@@ -305,6 +340,9 @@ namespace CompactOT
                 }
             }
 
+#if DEBUG
+            DebugUtils.WriteLineSender("ExtendedOT", "Computing Q and masking options took {0} ms.", stopwatch.ElapsedMilliseconds);
+#endif
             await SendMaskedOptions(maskedOptions);
         }
 

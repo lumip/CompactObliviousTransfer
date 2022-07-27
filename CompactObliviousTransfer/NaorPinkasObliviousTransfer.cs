@@ -64,7 +64,7 @@ namespace CompactOT
 
 #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine("[Sender] Generating group elements took {0} ms.", stopwatch.ElapsedMilliseconds);
+            DebugUtils.WriteLineSender("NaorPinkas", "Generating group elements took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Restart();
 #endif
 
@@ -82,7 +82,7 @@ namespace CompactOT
 
 #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine("[Sender] Precomputing exponentations, sending c and reading d took {0} ms.", stopwatch.ElapsedMilliseconds);
+            DebugUtils.WriteLineSender("NaorPinkas", "Precomputing exponentations, sending c and reading d took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Restart();
 #endif
 
@@ -117,7 +117,7 @@ namespace CompactOT
 
 #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine("[Sender] Computing masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
+            DebugUtils.WriteLineSender("NaorPinkas", "Computing masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Restart();
 #endif
 
@@ -125,7 +125,7 @@ namespace CompactOT
 
 #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine("[Sender] Sending masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
+            DebugUtils.WriteLineSender("NaorPinkas", "Sending masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
 #endif
         }
 
@@ -141,7 +141,7 @@ namespace CompactOT
 
 #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine("[Receiver] Reading values for c took {0} ms.", stopwatch.ElapsedMilliseconds);
+            DebugUtils.WriteLineReceiver("NaorPinkas", "Reading values for c took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Restart();
 #endif
 
@@ -157,7 +157,7 @@ namespace CompactOT
 
 #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine("[Receiver] Generating and d took {0} ms.", stopwatch.ElapsedMilliseconds);
+            DebugUtils.WriteLineReceiver("NaorPinkas", "Generating and d took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Restart();
 #endif
 
@@ -176,7 +176,7 @@ namespace CompactOT
 
 #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine("[Receiver] Computing e, sending d and reading masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
+            DebugUtils.WriteLineReceiver("NaorPinkas", "Computing e, sending d and reading masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Restart();
 #endif
 
@@ -190,7 +190,7 @@ namespace CompactOT
 
 #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine("[Receiver] Unmasking result took {0} ms.", stopwatch.ElapsedMilliseconds);
+            DebugUtils.WriteLineReceiver("NaorPinkas", "Unmasking result took {0} ms.", stopwatch.ElapsedMilliseconds);
 #endif
             
             return selectedOptions;
