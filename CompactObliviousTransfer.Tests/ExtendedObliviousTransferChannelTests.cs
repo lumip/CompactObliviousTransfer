@@ -77,12 +77,13 @@ namespace CompactOT
             TestUtils.WaitAllOrFail(sendTask, receiverTask);
 
             // verify results
-            BitMatrix results = receiverTask.Result;
-            Assert.Equal(numberOfInvocations, results.Rows);
-            for (int i = 0; i < results.Rows; ++i)
+            ObliviousTransferResult results = receiverTask.Result;
+            Assert.Equal(numberOfInvocations, results.NumberOfInvocations);
+            Assert.Equal(numberOfMessageBits, results.NumberOfMessageBits);
+            for (int i = 0; i < results.NumberOfInvocations; ++i)
             {
                 var expected = options.GetMessage(i, receiverIndices[i]);
-                Assert.Equal(expected, results.GetRow(i));
+                Assert.Equal(expected, results.GetInvocationResult(i));
             }
         }
 
@@ -92,7 +93,7 @@ namespace CompactOT
             var securityParameter = NumberLength.FromBitLength(24);
             int codeLength = 2 * securityParameter.InBits;
 
-            BitMatrix received = new BitMatrix(codeLength, securityParameter.InBits);
+            ObliviousTransferResult received = new ObliviousTransferResult(codeLength, securityParameter.InBits);
             for (int j = 0; j < codeLength; ++j)
             {
                 byte[] receivedAsBytes = new byte[securityParameter.InBytes];

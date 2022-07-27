@@ -19,11 +19,11 @@ namespace CompactOT
     /// </summary>
     public abstract class CorrelatedObliviousTransferChannel
     {
-        public abstract Task<BitMatrix> SendAsync(ObliviousTransferOptions options);
+        public abstract Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions options);
         
-        public abstract Task<BitMatrix> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
+        public abstract Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
 
-        public virtual Task<BitMatrix> ReceiveAsync(BitSequence selectionIndices, int numberOfMessageBits)
+        public virtual Task<ObliviousTransferResult> ReceiveAsync(BitSequence selectionIndices, int numberOfMessageBits)
         {
             return ReceiveAsync(
                 selectionIndices.Select(x => x ? 1 : 0).ToArray(), 2, numberOfMessageBits

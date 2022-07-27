@@ -5,8 +5,6 @@ using Moq;
 
 using System.Numerics;
 
-using CompactOT.DataStructures;
-
 namespace CompactOT
 {
 
@@ -45,12 +43,13 @@ namespace CompactOT
             TestUtils.WaitAllOrFail(sendTask, receiverTask);
 
             // verify results
-            BitMatrix results = receiverTask.Result;
-            Assert.Equal(numberOfInvocations, results.Rows);
-            for (int i = 0; i < results.Rows; ++i)
+            ObliviousTransferResult results = receiverTask.Result;
+            Assert.Equal(numberOfInvocations, results.NumberOfInvocations);
+            Assert.Equal(numberOfMessageBits, results.NumberOfMessageBits);
+            for (int i = 0; i < results.NumberOfInvocations; ++i)
             {
                 var expected = options.GetMessage(i, receiverIndices[i]);
-                Assert.Equal(expected, results.GetRow(i));
+                Assert.Equal(expected, results.GetInvocationResult(i));
             }
         }
     }

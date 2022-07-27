@@ -2,7 +2,6 @@ using System.Linq;
 using System.Text;
 using Xunit;
 
-using CompactOT.DataStructures;
 namespace CompactOT
 {
 
@@ -36,12 +35,13 @@ namespace CompactOT
             var receiverTask = otProtocol.ReceiveAsync(channels.SecondPartyChannel, receiverIndices, numberOfOptions, numberOfMessageBits);
 
             // verify results
-            BitMatrix results = receiverTask.Result;
-            Assert.Equal(numberOfInvocations, results.Rows);
-            for (int i = 0; i < results.Rows; ++i)
+            ObliviousTransferResult results = receiverTask.Result;
+            Assert.Equal(numberOfInvocations, results.NumberOfInvocations);
+            Assert.Equal(numberOfMessageBits, results.NumberOfMessageBits);
+            for (int i = 0; i < results.NumberOfInvocations; ++i)
             {
                 var expected = options.GetMessage(i, receiverIndices[i]);
-                Assert.Equal(expected, results.GetRow(i));
+                Assert.Equal(expected, results.GetInvocationResult(i));
             }
         }
     }

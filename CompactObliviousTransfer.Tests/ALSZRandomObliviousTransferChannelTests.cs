@@ -4,8 +4,6 @@ using Moq;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Linq;
-using System.Diagnostics;
-using System.Text;
 
 using CompactCryptoGroupAlgebra;
 using CompactOT.DataStructures;
@@ -20,26 +18,6 @@ namespace CompactOT
             var otMock = new Mock<InsecureObliviousTransfer>() { CallBase = true };
             otMock.Setup(ot => ot.SecurityLevel).Returns(10000000);
             return new StatelessObliviousTransferChannel(otMock.Object, messageChannel);
-        }
-
-        [Fact]
-        public void TestBaseOTs()
-        {
-
-            var securityParameter = NumberLength.FromBitLength(24);
-
-            var messageChannels = new TestMessageChannels();
-            var senderBaseChannel = GetBaseTransferChannel(messageChannels.FirstPartyChannel);
-            var receiverBaseChannel = GetBaseTransferChannel(messageChannels.SecondPartyChannel);
-
-            var cryptoContext = CryptoContext.CreateDefault();
-            var otSender = new ALSZRandomObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext);
-            var otReceiver = new ALSZRandomObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext);
-            
-            var senderTask = otSender.ExecuteSenderBaseTransferAsync();
-            var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
-
-            TestUtils.WaitAllOrFail(senderTask, receiverTask);
         }
 
         [Fact]
@@ -70,9 +48,9 @@ namespace CompactOT
 
             // verify results
             ObliviousTransferOptions senderResults = sendTask.Result;
-            BitMatrix results = receiverTask.Result;
-            Assert.Equal(numberOfInvocations, results.Rows);
-            Assert.Equal(numberOfMessageBits, results.Cols);
+            ObliviousTransferResult results = receiverTask.Result;
+            Assert.Equal(numberOfInvocations, results.NumberOfInvocations);
+            Assert.Equal(numberOfMessageBits, results.NumberOfMessageBits);
             Assert.Equal(numberOfInvocations, senderResults.NumberOfInvocations);
             Assert.Equal(numberOfOptions, senderResults.NumberOfOptions);
             Assert.Equal(numberOfMessageBits, senderResults.NumberOfMessageBits);
@@ -80,7 +58,7 @@ namespace CompactOT
             for (int i = 0; i < numberOfInvocations; ++i)
             {
                 var senderOption = senderResults.GetMessage(i, receiverIndices[i]);
-                var receiverOption = results.GetRow(i);
+                var receiverOption = results.GetInvocationResult(i);
                 Assert.Equal(senderOption, receiverOption);
             }
         }
@@ -91,7 +69,7 @@ namespace CompactOT
             var securityParameter = NumberLength.FromBitLength(24);
             int codeLength = 2 * securityParameter.InBits;
 
-            BitMatrix received = new BitMatrix(codeLength, securityParameter.InBits);
+            var received = new ObliviousTransferResult(codeLength, securityParameter.InBits);
             for (int j = 0; j < codeLength; ++j)
             {
                 byte[] receivedAsBytes = new byte[securityParameter.InBytes];

@@ -130,7 +130,7 @@ namespace CompactOT
         }
 
         /// <inheritdoc/>
-        public override async Task<BitMatrix> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public override async Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -180,7 +180,7 @@ namespace CompactOT
             stopwatch.Restart();
 #endif
 
-            BitMatrix selectedOptions = new BitMatrix(numberOfInvocations, numberOfMessageBits);
+            var selectedOptions = new ObliviousTransferResult(numberOfInvocations, numberOfMessageBits);
             Parallel.For(0, numberOfInvocations, j =>
             {
                 int i = selectionIndices[j];

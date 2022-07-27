@@ -13,7 +13,7 @@ namespace CompactOT
 
         public override int SecurityLevel => 0;
 
-        public override async Task<BitMatrix> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public override async Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -33,7 +33,7 @@ namespace CompactOT
 #if DEBUG
             DebugUtils.WriteLineReceiver("Insecure", "Response received after {0} ms.", stopwatch.ElapsedMilliseconds);
 #endif
-            BitMatrix receivedOptions = new BitMatrix(selectionIndices.Length, numberOfMessageBits);
+            var receivedOptions = new ObliviousTransferResult(selectionIndices.Length, numberOfMessageBits);
             for (int j = 0; j < selectionIndices.Length; ++j)
             {
                 receivedOptions.SetRow(j, new EnumeratedBitArrayView(response.ReadBuffer(numberOfMessageBits / 8), numberOfMessageBits));

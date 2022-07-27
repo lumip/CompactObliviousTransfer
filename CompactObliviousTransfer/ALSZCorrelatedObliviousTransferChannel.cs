@@ -111,18 +111,18 @@ namespace CompactOT
             DebugUtils.WriteLineSender("CorrelatedOT", $"Performing base transfers ({CodeLength} times {SecurityLevel} bits).");
 #endif
             // retrieve seeds for OT extension via _securityParameter many base OTs
-            BitMatrix seeds = await _baseOT.ReceiveAsync(
+            ObliviousTransferResult seeds = await _baseOT.ReceiveAsync(
                 _senderState.RandomChoices,
                 numberOfMessageBits: _securityParameter.InBits
             );
 #if DEBUG
             DebugUtils.WriteLineSender("CorrelatedOT", "Base transfers completed after {0} ms.", stopwatch.ElapsedMilliseconds);
 #endif
-            if (seeds.Rows != CodeLength)
+            if (seeds.NumberOfInvocations != CodeLength)
             {
                 throw new ProtocolException("Base transfer received unexpected number of invocations!");
             }
-            if (seeds.Cols != SecurityLevel)
+            if (seeds.NumberOfMessageBits != SecurityLevel)
             {
                 throw new ProtocolException("Base transfer received messages with unexpected lengths!");
             }
@@ -130,7 +130,7 @@ namespace CompactOT
             // initializing a random oracle based on each seed
             for (int k = 0; k < CodeLength; ++k)
             {
-                _senderState.SeededRandomOracles[k] = RandomOracle.Invoke(seeds.GetRow(k).AsByteEnumerable());
+                _senderState.SeededRandomOracles[k] = RandomOracle.Invoke(seeds.GetInvocationResult(k).AsByteEnumerable());
             }
         }
 
@@ -171,7 +171,7 @@ namespace CompactOT
 #endif
         }
 
-        public override async Task<BitMatrix> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public override async Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
             if (numberOfOptions > CodeLength)
             {
@@ -219,7 +219,7 @@ namespace CompactOT
 #endif      
             Task sendingTask = SendReceiverMessage(us);
 
-            BitMatrix results = new BitMatrix(numberOfInvocations, numberOfMessageBits);
+            var results = new ObliviousTransferResult(numberOfInvocations, numberOfMessageBits);
             ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfOptions - 1, numberOfMessageBits);
 #if DEBUG
             DebugUtils.WriteLineReceiver("CorrelatedOT", "Sending U and receiving masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
@@ -291,7 +291,7 @@ namespace CompactOT
             return message.ReadBitMatrix(numberOfInvocations, CodeLength);
         }
 
-        public override async Task<BitMatrix> SendAsync(ObliviousTransferOptions correlations)
+        public override async Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions correlations)
         {
             if (correlations.NumberOfOptions > CodeLength)
             {
@@ -324,7 +324,7 @@ namespace CompactOT
             
             var numberOfMessageBits = correlations.NumberOfMessageBits;
 
-            var firstOptions = new BitMatrix(correlations.NumberOfInvocations, correlations.NumberOfMessageBits);
+            var firstOptions = new ObliviousTransferResult(correlations.NumberOfInvocations, correlations.NumberOfMessageBits);
             var maskedOptions = new ObliviousTransferOptions(correlations.NumberOfInvocations, correlations.NumberOfOptions, numberOfMessageBits);
 
             int totalNumberOfInvocations = _totalNumberOfInvocations;

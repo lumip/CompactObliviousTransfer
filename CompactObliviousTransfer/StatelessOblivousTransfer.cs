@@ -28,7 +28,7 @@ namespace CompactOT
         /// <summary>
         /// Starts  K-fold 1-out-of-N Oblivious Transfer as the receiver with the given choice indices.
         /// </summar>
-        public abstract Task<BitMatrix> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
+        public abstract Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
                 
         /// <summary>
         /// Security level provided by the Oblious Transfer.
@@ -41,7 +41,7 @@ namespace CompactOT
         /// <summary>
         /// Starts a K-fold 1-out-of-2 Oblivious Transfer as the receiver with the given choice indices.
         /// </summary>
-        public async Task<BitMatrix> ReceiveAsync(IMessageChannel channel, BitSequence selectionIndices, int numberOfMessageBits)
+        public async Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, BitSequence selectionIndices, int numberOfMessageBits)
         {
             int numberOfInvocations = selectionIndices.Length;
             int[] selectionIndicesAsInts = selectionIndices.Select(b => (int)b).ToArray();
