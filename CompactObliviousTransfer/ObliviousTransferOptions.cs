@@ -55,6 +55,36 @@ namespace CompactOT
             return new ObliviousTransferOptions(randomBits, numberOfInvocations, numberOfOptions, numberOfMessageBits);
         }
 
+        public static ObliviousTransferOptions FromCorrelatedTransfer(BitMatrix firstOptions, ObliviousTransferOptions correlations)
+        {
+            if (firstOptions.Rows != correlations.NumberOfInvocations)
+            {
+                throw new ArgumentException(
+                    $"Number of invocations in both arguments must be identical, but was {firstOptions.Rows} and {correlations.NumberOfInvocations}"
+                );
+            }
+            if (firstOptions.Cols != correlations.NumberOfMessageBits)
+            {
+                throw new ArgumentException(
+                    $"Number of message bits in both arguments must be identical, but was {firstOptions.Cols} and {correlations.NumberOfMessageBits}"
+                );
+            }
+
+            var correlatedOptions = new ObliviousTransferOptions(
+                correlations.NumberOfInvocations, correlations.NumberOfOptions + 1, correlations.NumberOfMessageBits
+            );
+            for (int i = 0; i < correlatedOptions.NumberOfInvocations; ++i)
+            {
+                var firstOption = firstOptions.GetRow(i);
+                correlatedOptions.SetMessage(i, 0, firstOption);
+                for (int j = 0; j < correlations.NumberOfOptions; ++j)
+                {
+                    correlatedOptions.SetMessage(i, j + 1, firstOption ^ correlations.GetMessage(i, j));
+                }
+            }
+            return correlatedOptions;
+        }
+
         private int GetMessageOffset(int invocation, int option)
         {
             if (invocation < 0 || invocation >= NumberOfInvocations)
