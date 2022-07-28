@@ -18,7 +18,7 @@ namespace CompactOT
     /// 
     public interface ICorrelatedObliviousTransferChannel : IObliviousTransferChannelReceiverEndpoint
     {
-        public Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions options);
+        public Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions correlations);
     }
     
 }
