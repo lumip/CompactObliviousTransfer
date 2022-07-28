@@ -197,6 +197,7 @@ namespace CompactOT.DataStructures
 
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix.GetColumn(numberOfColumns));
         }
+
         [Fact]
         public void TestGetColumnIndexNegative()
         {
@@ -291,6 +292,7 @@ namespace CompactOT.DataStructures
             }
         }
 
+        [Fact]
         public void TestGetElementRowIndexNegative()
         {
             int numberOfRows = 4;
@@ -301,6 +303,7 @@ namespace CompactOT.DataStructures
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix[-1, 2]);
         }
 
+        [Fact]
         public void TestGetElementRowIndexTooLarge()
         {
             int numberOfRows = 4;
@@ -311,7 +314,7 @@ namespace CompactOT.DataStructures
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix[numberOfRows, 2]);
         }
 
-
+        [Fact]
         public void TestSetElementRowIndexNegative()
         {
             int numberOfRows = 4;
@@ -322,6 +325,7 @@ namespace CompactOT.DataStructures
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix[-1, 2] = Bit.Zero);
         }
 
+        [Fact]
         public void TestSetElementRowIndexTooLarge()
         {
             int numberOfRows = 4;
@@ -332,6 +336,7 @@ namespace CompactOT.DataStructures
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix[numberOfRows, 2] = Bit.Zero);
         }
 
+        [Fact]
         public void TestGetElementColumnIndexNegative()
         {
             int numberOfRows = 4;
@@ -342,6 +347,7 @@ namespace CompactOT.DataStructures
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix[0, -1]);
         }
 
+        [Fact]
         public void TestGetElementColumnIndexTooLarge()
         {
             int numberOfRows = 4;
@@ -352,6 +358,7 @@ namespace CompactOT.DataStructures
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix[0, numberOfColumns]);
         }
 
+        [Fact]
         public void TestSetElementColumnIndexNegative()
         {
             int numberOfRows = 4;
@@ -362,6 +369,7 @@ namespace CompactOT.DataStructures
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix[0, -1] = Bit.Zero);
         }
 
+        [Fact]
         public void TestSetElementColumnIndexTooLarge()
         {
             int numberOfRows = 4;
