@@ -14,7 +14,7 @@ namespace CompactOT
     public class ALSZCorrelatedObliviousTransferChannelTests
     {
 
-        private ObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
+        private IObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
         {
             var otMock = new Mock<InsecureObliviousTransfer>() { CallBase = true };
             otMock.Setup(ot => ot.SecurityLevel).Returns(10000000);
@@ -79,86 +79,5 @@ namespace CompactOT
             Assert.Equal(expectedSecond, results.GetInvocationResult(1));
         }
 
-        [Fact]
-        public void TestSenderBaseOTs()
-        {
-            var securityParameter = NumberLength.FromBitLength(24);
-            int codeLength = 2 * securityParameter.InBits;
-
-            var received = new ObliviousTransferResult(codeLength, securityParameter.InBits);
-            for (int j = 0; j < codeLength; ++j)
-            {
-                byte[] receivedAsBytes = new byte[securityParameter.InBytes];
-                for (int i = 0; i < securityParameter.InBytes; ++i)
-                {
-                    receivedAsBytes[i] = (byte)(j*10 + i);
-                }
-                received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityParameter.InBits));
-            }
-
-            var baseOTMock = new Mock<ObliviousTransferChannel>();
-            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<BitArray>(), It.IsAny<int>()))
-                .Returns(Task.FromResult(received));
-            baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
-
-            var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010 11001100 10101010");
-            var rngMock = new Mock<RandomNumberGenerator>();
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b);
-            });
-
-
-            var cryptoContext = new CryptoContext(
-                rngMock.Object, SHA1.Create()
-            );
-
-            var otProtocol = new ALSZCorrelatedObliviousTransferChannel(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext
-            );
-
-            otProtocol.ExecuteSenderBaseTransferAsync().Wait();
-
-            rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
-            baseOTMock.Verify(ot => ot.ReceiveAsync(
-                It.Is<BitSequence>(b => randomChoices.AsByteEnumerable().SequenceEqual(b.AsByteEnumerable())),
-                It.Is<int>(i => i == securityParameter.InBits)), Times.Once());
-        }
-
-        [Fact]
-        public void TestReceiverBaseOTs()
-        {
-            var securityParameter = NumberLength.FromBitLength(3);
-            int codeLength = 2 * securityParameter.InBits;
-
-
-            var baseOTMock = new Mock<ObliviousTransferChannel>();
-            baseOTMock.Setup(ot => ot.SendAsync(It.IsAny<ObliviousTransferOptions>())).Returns(Task.CompletedTask);
-            baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
-
-            var randomChoices = BitArray.FromBinaryString("00000000 01011010 11111111 11001100 1010");
-            var rngMock = new Mock<RandomNumberGenerator>();
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b);
-            });
-
-            var expectedOptions = ObliviousTransferOptions.FromBitArray(
-                randomChoices, codeLength, 2, securityParameter.InBits
-            );
-
-
-            var cryptoContext = new CryptoContext(
-                rngMock.Object, SHA1.Create()
-            );
-
-            var otProtocol = new ALSZCorrelatedObliviousTransferChannel(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext
-            );
-
-            otProtocol.ExecuteReceiverBaseTransferAsync().Wait();
-
-            rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
-            baseOTMock.Verify(ot => ot.SendAsync(
-                It.Is<ObliviousTransferOptions>(o => o.Equals(expectedOptions))), Times.Once());
-        }
     }
 }

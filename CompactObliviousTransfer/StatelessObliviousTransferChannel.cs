@@ -1,38 +1,32 @@
 using System.Threading.Tasks;
 
-using CompactOT.DataStructures;
-
 namespace CompactOT
 {
-    public class StatelessObliviousTransferChannel : ObliviousTransferChannel
+    public class StatelessObliviousTransferChannel : IObliviousTransferChannel
     {
 
-        private StatelessObliviousTransfer _statelessOT;
-        public override IMessageChannel Channel { get; }
+        private IStatelessObliviousTransfer _statelessOT;
 
         /// <inheritdoc/>
-        public override int SecurityLevel => _statelessOT.SecurityLevel;
+        public IMessageChannel Channel { get; }
 
-        public StatelessObliviousTransferChannel(StatelessObliviousTransfer statelessObliviousTransfer, IMessageChannel channel)
+        /// <inheritdoc/>
+        public int SecurityLevel => _statelessOT.SecurityLevel;
+
+        public StatelessObliviousTransferChannel(IStatelessObliviousTransfer statelessObliviousTransfer, IMessageChannel channel)
         {
             _statelessOT = statelessObliviousTransfer;
             Channel = channel;
         }
 
         /// <inheritdoc/>
-        public override Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
             return _statelessOT.ReceiveAsync(Channel, selectionIndices, numberOfOptions, numberOfMessageBits);
         }
 
         /// <inheritdoc/>
-        public override Task<ObliviousTransferResult> ReceiveAsync(BitSequence selectionIndices, int numberOfMessageBits)
-        {
-            return _statelessOT.ReceiveAsync(Channel, selectionIndices, numberOfMessageBits);
-        }
-
-        /// <inheritdoc/>
-        public override Task SendAsync(ObliviousTransferOptions options)
+        public Task SendAsync(ObliviousTransferOptions options)
         {
             return _statelessOT.SendAsync(Channel, options);
         }

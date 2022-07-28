@@ -14,7 +14,7 @@ namespace CompactOT
     public class ExtendedObliviousTransferChannelTests
     {
 
-        private ObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
+        private IObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
         {
             var otMock = new Mock<InsecureObliviousTransfer>() { CallBase = true };
             otMock.Setup(ot => ot.SecurityLevel).Returns(10000000);
@@ -93,7 +93,7 @@ namespace CompactOT
             var securityParameter = NumberLength.FromBitLength(24);
             int codeLength = 2 * securityParameter.InBits;
 
-            ObliviousTransferResult received = new ObliviousTransferResult(codeLength, securityParameter.InBits);
+            var received = new ObliviousTransferResult(codeLength, securityParameter.InBits);
             for (int j = 0; j < codeLength; ++j)
             {
                 byte[] receivedAsBytes = new byte[securityParameter.InBytes];
@@ -104,8 +104,8 @@ namespace CompactOT
                 received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityParameter.InBits));
             }
 
-            var baseOTMock = new Mock<ObliviousTransferChannel>();
-            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<BitArray>(), It.IsAny<int>()))
+            var baseOTMock = new Mock<IObliviousTransferChannel>();
+            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<int[]>(), It.Is<int>(o => o == 2), It.IsAny<int>()))
                 .Returns(Task.FromResult(received));
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
@@ -128,7 +128,8 @@ namespace CompactOT
 
             rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
             baseOTMock.Verify(ot => ot.ReceiveAsync(
-                It.Is<BitSequence>(b => randomChoices.AsByteEnumerable().SequenceEqual(b.AsByteEnumerable())),
+                It.Is<int[]>(b => randomChoices.ToSelectionIndices().SequenceEqual(b)),
+                It.Is<int>(o => o == 2),
                 It.Is<int>(i => i == securityParameter.InBits)), Times.Once());
         }
 
@@ -139,7 +140,7 @@ namespace CompactOT
             int codeLength = 2 * securityParameter.InBits;
 
 
-            var baseOTMock = new Mock<ObliviousTransferChannel>();
+            var baseOTMock = new Mock<IObliviousTransferChannel>();
             baseOTMock.Setup(ot => ot.SendAsync(It.IsAny<ObliviousTransferOptions>())).Returns(Task.CompletedTask);
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 

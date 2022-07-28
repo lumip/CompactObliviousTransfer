@@ -8,12 +8,15 @@ using CompactOT.DataStructures;
 namespace CompactOT
 {
 
-    public class InsecureObliviousTransfer : StatelessObliviousTransfer
+    public class InsecureObliviousTransfer : IStatelessObliviousTransfer
     {
 
-        public override int SecurityLevel => 0;
+        public virtual int SecurityLevel => 0;
+        // todo(lumip): Only virtual because it is used for base OTs during tests of OT extension protocols.
+        //              Should arguably not be virtual for regular use. However, do not want to duplicate all
+        //              this code in tests project again.. What to do?
 
-        public override async Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public async Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -41,7 +44,7 @@ namespace CompactOT
             return receivedOptions;
         }
 
-        public override async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options)
+        public async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();

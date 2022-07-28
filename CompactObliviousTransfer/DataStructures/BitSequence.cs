@@ -70,6 +70,11 @@ namespace CompactOT.DataStructures
             return String.Concat(((IEnumerable<Bit>)this).Select(b => b ? '1' : '0'));
         }
 
+        public virtual IEnumerable<int> ToSelectionIndices()
+        {
+            return ((IEnumerable<Bit>)this).Select(b => (int)b);
+        }
+
         public virtual BitSequence Concatenate(BitSequence other)
         {
             return new EnumeratedBitArrayView(

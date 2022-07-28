@@ -11,6 +11,6 @@
         /// </summary>
         /// <param name="channel">The network channel the OT operates on, uniquely identifying the pair of parties involved in the OT.</param>
         /// <returns>The stateful Random Oblivious Transfer channel.</returns>
-        ObliviousTransferChannel CreateChannel(IMessageChannel channel);
+        IObliviousTransferChannel CreateChannel(IMessageChannel channel);
     }
 }

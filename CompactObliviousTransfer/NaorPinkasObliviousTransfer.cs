@@ -21,7 +21,7 @@ namespace CompactOT
     /// Further implementation details: Seung Geol Choi et al.: Secure Multi-Party Computation of Boolean Circuits with Applications
     /// to Privacy in On-Line Marketplaces. https://link.springer.com/chapter/10.1007/978-3-642-27954-6_26
     /// </remarks>
-    public class NaorPinkasObliviousTransfer<TSecret, TCrypto> : StatelessObliviousTransfer where TSecret: notnull where TCrypto: notnull
+    public class NaorPinkasObliviousTransfer<TSecret, TCrypto> : IStatelessObliviousTransfer where TSecret: notnull where TCrypto: notnull
     {
 
         private CryptoGroup<TSecret, TCrypto> _group;
@@ -29,7 +29,7 @@ namespace CompactOT
         private RandomOracle _randomOracle;
         private RandomNumberGenerator _randomNumberGenerator;
 
-        public override int SecurityLevel => _group.SecurityLevel;
+        public int SecurityLevel => _group.SecurityLevel;
         
         public NaorPinkasObliviousTransfer(CryptoGroup<TSecret, TCrypto> cryptoGroup, CryptoContext cryptoContext)
         {
@@ -46,7 +46,7 @@ namespace CompactOT
         }
 
         /// <inheritdoc/>
-        public override async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options)
+        public async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -130,7 +130,7 @@ namespace CompactOT
         }
 
         /// <inheritdoc/>
-        public override async Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public async Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
