@@ -7,7 +7,7 @@ namespace CompactOT.DataStructures
 
     public class BaseEnumeratorExhaustedException : Exception
     {
-        public BaseEnumeratorExhaustedException() : base("The base enumerator was exhausted will the derived enumerator expects more elements.")
+        public BaseEnumeratorExhaustedException() : base("The base enumerator was exhausted will while derived enumerator expects more elements.")
         {
             
         }
