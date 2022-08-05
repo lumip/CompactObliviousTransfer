@@ -40,12 +40,10 @@ namespace CompactOT
             TestUtils.WaitAllOrFail(senderTask, receiverTask);
         }
 
-        private static readonly string[] TestOptions = { "Alicia", "Briann", "Charly", "Dennis", "Elenor", "Frieda" };
-
         [Fact]
         public void TestExtendedOTs()
         {
-            int numberOfOptions = TestOptions.Length;
+            int numberOfOptions = TestUtils.TestOptions.Length;
 
             var securityParameter = NumberLength.FromBitLength(8);
 
@@ -58,14 +56,14 @@ namespace CompactOT
             var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext);
 
             const int numberOfInvocations = 3;
-            int numberOfMessageBits = TestOptions[0].Length * 8;
+            int numberOfMessageBits = TestUtils.TestOptions[0].Length * 8;
 
             // sender data
             var options = new ObliviousTransferOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
 
-            options.SetInvocation(0, TestOptions.Select(s => Encoding.ASCII.GetBytes(s)).ToArray());
-            options.SetInvocation(1, TestOptions.Select(s => Encoding.ASCII.GetBytes(s.ToLower())).ToArray());
-            options.SetInvocation(2, TestOptions.Select(s => Encoding.ASCII.GetBytes(s.ToUpper())).ToArray());
+            options.SetInvocation(0, TestUtils.TestOptions.Select(s => Encoding.ASCII.GetBytes(s)).ToArray());
+            options.SetInvocation(1, TestUtils.TestOptions.Select(s => Encoding.ASCII.GetBytes(s.ToLower())).ToArray());
+            options.SetInvocation(2, TestUtils.TestOptions.Select(s => Encoding.ASCII.GetBytes(s.ToUpper())).ToArray());
 
             // receiver data
             var receiverIndices = new int[] { 0, 5, 3 };

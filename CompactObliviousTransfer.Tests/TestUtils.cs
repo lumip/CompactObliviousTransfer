@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using CompactOT.DataStructures;
+
 namespace CompactOT
 {
     public static class TestUtils
@@ -26,5 +28,18 @@ namespace CompactOT
                 taskList.Remove(taskList.ElementAt(which));
             }
         }
+
+
+        public static readonly BitArray[] TestCorrelations = { 
+            BitArray.FromBinaryString("000111"),
+            BitArray.FromBinaryString("111000"),
+            BitArray.FromBinaryString("100001"),
+            BitArray.FromBinaryString("010010"),
+            BitArray.FromBinaryString("101101"),
+        };
+
+        public static readonly string[] TestOptions = {
+            "Alicia", "Briann", "Charly", "Dennis", "Elenor", "Frieda"
+        };
     }
 }

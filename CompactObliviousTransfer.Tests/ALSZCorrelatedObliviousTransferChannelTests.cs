@@ -21,18 +21,10 @@ namespace CompactOT
             return new StatelessObliviousTransferChannel(otMock.Object, messageChannel);
         }
 
-        private static readonly BitArray[] TestCorrelations = { 
-            BitArray.FromBinaryString("000111"),
-            BitArray.FromBinaryString("111000"),
-            BitArray.FromBinaryString("100001"),
-            BitArray.FromBinaryString("010010"),
-            BitArray.FromBinaryString("101101"),
-        };
-
         [Fact]
         public void TestCorrleatedOTs()
         {
-            int numberOfOptions = TestCorrelations.Length + 1;
+            int numberOfOptions = TestUtils.TestCorrelations.Length + 1;
 
             var securityParameter = NumberLength.FromBitLength(8);
 
@@ -45,13 +37,13 @@ namespace CompactOT
             var otReceiver = new ALSZCorrelatedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext);
 
             const int numberOfInvocations = 2;
-            int numberOfMessageBits = TestCorrelations[0].Length;
+            int numberOfMessageBits = TestUtils.TestCorrelations[0].Length;
 
             // sender data
             var correlations = new ObliviousTransferOptions(numberOfInvocations, numberOfOptions - 1, numberOfMessageBits);
 
-            correlations.SetInvocation(0, TestCorrelations.ToArray());
-            correlations.SetInvocation(1, TestCorrelations.ToArray());
+            correlations.SetInvocation(0, TestUtils.TestCorrelations.ToArray());
+            correlations.SetInvocation(1, TestUtils.TestCorrelations.ToArray());
 
             // receiver data
             var receiverIndices = new int[] { 0, 3 };

@@ -39,7 +39,7 @@ namespace CompactOT
             var receivedOptions = new ObliviousTransferResult(selectionIndices.Length, numberOfMessageBits);
             for (int j = 0; j < selectionIndices.Length; ++j)
             {
-                receivedOptions.SetRow(j, new EnumeratedBitArrayView(response.ReadBuffer(numberOfMessageBits / 8), numberOfMessageBits));
+                receivedOptions.SetRow(j, response.ReadBitArray(numberOfMessageBits));
             }
             return receivedOptions;
         }
