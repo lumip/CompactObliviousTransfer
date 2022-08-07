@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -274,6 +274,34 @@ namespace CompactOT
             var query = BufferBuilder.From(groupElement.ToBytes()).With(invocationIndex).With(optionIndex).Create();
             return _randomOracle.Mask(option, query.AsEnumerable());
         }
-        
+
+        public static double EstimateCost(
+            ObliviousTransferUsageProjection usageProjection,
+            double cryptoGroupElementSizeInBits // TODO: figure this out internally based on security level?
+        )
+        {
+            // TODO: currently ignoring computation cost
+            
+            if (!usageProjection.HasMaxNumberOfInvocations)
+                return double.PositiveInfinity;
+
+            Debug.Assert(usageProjection.HasMaxNumberOfBatches);
+
+            double averageInvocationsPerBatch = usageProjection.AverageInvocationsPerBatch;
+            double maxNumberOfInvocations = usageProjection.MaxNumberOfInvocations;
+            double maxNumberOfBatches = usageProjection.MaxNumberOfBatches;
+
+            double averageNumberOfOptions = usageProjection.AverageNumberOfOptions;
+
+            // bandwidth cost of security exchange
+            double securityExchangeCost = 2.0 * maxNumberOfBatches * averageNumberOfOptions * cryptoGroupElementSizeInBits;
+
+            // bandwidth cost of exchanging masked options
+            double averageMessageBits = usageProjection.AverageMessageBits;
+            double optionsExchangeCost = maxNumberOfInvocations * averageNumberOfOptions * averageMessageBits;
+
+            return securityExchangeCost + optionsExchangeCost;
+        }
+
     }
 }

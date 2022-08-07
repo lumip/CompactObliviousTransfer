@@ -73,6 +73,14 @@ namespace CompactOT
 
         public ExtendedObliviousTransferChannelBase(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext)
         {
+            if (securityParameter < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    $"Security level must not be less than 1, was {securityParameter}",
+                    nameof(securityParameter)
+                );
+            }
+
             _baseOT = baseOT;
             if (_baseOT.SecurityLevel < securityParameter)
             {
@@ -330,6 +338,40 @@ namespace CompactOT
                 message.Write(maskedOptions.GetInvocation(i));
             }
             await Channel.WriteMessageAsync(message.Compose());
+        }
+
+        public static double EstimateCost(
+            ObliviousTransferUsageProjection usageProjection,
+            CostCalculationCallback calculateBaseOtCostCallback
+        )
+        {
+            if (!usageProjection.HasMaxNumberOfInvocations)
+                return double.PositiveInfinity;
+
+            Debug.Assert(usageProjection.HasMaxNumberOfBatches);
+
+            int codeLength = 2 * usageProjection.SecurityLevel;
+
+            // base OT cost
+            ObliviousTransferUsageProjection baseOtProjection = new ObliviousTransferUsageProjection();
+            baseOtProjection.MaxNumberOfOptions = 2;
+            baseOtProjection.MaxNumberOfInvocations = codeLength;
+            baseOtProjection.MaxNumberOfBatches = 1;
+            baseOtProjection.AverageMessageBits = usageProjection.SecurityLevel;
+            baseOtProjection.SecurityLevel = usageProjection.SecurityLevel;
+            double baseOtCost = calculateBaseOtCostCallback(baseOtProjection);
+
+            // bandwidth cost of security exchange
+            double averageInvocationsPerBatch = usageProjection.AverageInvocationsPerBatch;
+            double maxNumberOfBatches = usageProjection.MaxNumberOfBatches;
+
+            double averageNumberOfOptions = usageProjection.AverageNumberOfOptions;
+
+            // bandwidth cost of security exchange
+            double securityExchangeBitLength = codeLength;
+            double securityExchangeCost = maxNumberOfBatches * averageInvocationsPerBatch * securityExchangeBitLength;
+
+            return baseOtCost + securityExchangeCost;
         }
 
     }

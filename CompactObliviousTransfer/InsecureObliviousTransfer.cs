@@ -12,7 +12,7 @@ namespace CompactOT
     {
 
         public virtual int SecurityLevel => 0;
-        // todo(lumip): Only virtual because it is used for base OTs during tests of OT extension protocols.
+        // TODO: Only virtual because it is used for base OTs during tests of OT extension protocols.
         //              Should arguably not be virtual for regular use. However, do not want to duplicate all
         //              this code in tests project again.. What to do?
 
@@ -66,6 +66,28 @@ namespace CompactOT
             DebugUtils.WriteLineSender("Insecure", "Sending selected messages took {0} ms.", stopwatch.ElapsedMilliseconds);
 #endif
         }
+
+        public static double EstimateCost(
+            ObliviousTransferUsageProjection usageProjection
+        )
+        {
+            if (!usageProjection.HasMaxNumberOfInvocations)
+                return double.PositiveInfinity;
+
+            double numberOfOptions = usageProjection.AverageNumberOfOptions;
+            double maxNumberOfInvocations = usageProjection.MaxNumberOfInvocations;
+            double averageMessageBits = usageProjection.AverageMessageBits;
+
+            // bandwidth cost of exchanging selection choices
+            double bitsPerChoice = 32.0;
+            double selectionExchangeCost = numberOfOptions * bitsPerChoice;
+
+            // bandwidth cost of exchanging masked options
+            double optionsExchangeCost = maxNumberOfInvocations * averageMessageBits;
+
+            return selectionExchangeCost + optionsExchangeCost;
+        }
+
     }
 
 }

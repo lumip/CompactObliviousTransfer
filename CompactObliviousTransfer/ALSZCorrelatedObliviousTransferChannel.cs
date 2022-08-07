@@ -119,6 +119,31 @@ namespace CompactOT
 
             return firstOptions;
         }
+        
+        public static new double EstimateCost(
+            ObliviousTransferUsageProjection usageProjection,
+            CostCalculationCallback calculateBaseOtCostCallback
+        )
+        {
+            // TODO: currently ignoring computation cost
+
+            if (!usageProjection.HasMaxNumberOfInvocations)
+                return double.PositiveInfinity;
+
+            Debug.Assert(usageProjection.HasMaxNumberOfBatches);
+
+            double baseOtAndSecurityExchangeCost = ExtendedObliviousTransferChannelBase.EstimateCost(
+                usageProjection, calculateBaseOtCostCallback
+            );
+
+            // bandwidth cost of exchanging masked correlations
+            double maxNumberOfInvocations = usageProjection.MaxNumberOfInvocations;
+            double averageNumberOfOptions = usageProjection.AverageNumberOfOptions;
+            double averageMessageBits = usageProjection.AverageMessageBits;
+            double correlationsExchangeCost = maxNumberOfInvocations * (averageNumberOfOptions - 1.0) * usageProjection.AverageMessageBits;
+
+            return baseOtAndSecurityExchangeCost + correlationsExchangeCost;
+        }
 
     }
 }
