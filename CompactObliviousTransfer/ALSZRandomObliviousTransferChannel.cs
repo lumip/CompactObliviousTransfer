@@ -90,20 +90,5 @@ namespace CompactOT
             return randomOptions;
         }
 
-        public static new double EstimateCost(
-            ObliviousTransferUsageProjection usageProjection,
-            CostCalculationCallback calculateBaseOtCostCallback
-        )
-        {
-            // TODO: currently ignoring computation cost
-            
-            double baseOtAndSecurityExchangeCost = ExtendedObliviousTransferChannelBase.EstimateCost(
-                usageProjection, calculateBaseOtCostCallback
-            );
-
-            // no bandwidth cost for exchanging masked options
-            return baseOtAndSecurityExchangeCost;
-        }
-
     }
 }

@@ -106,21 +106,16 @@ namespace CompactOT
             await SendMaskedOptions(maskedOptions);
         }
 
-        public static new double EstimateCost(
-            ObliviousTransferUsageProjection usageProjection,
-            CostCalculationCallback calculateBaseOtCostCallback
-        )
+        public override double EstimateCost(ObliviousTransferUsageProjection usageProjection)
         {
             // TODO: currently ignoring computation cost
 
             if (!usageProjection.HasMaxNumberOfInvocations)
                 return double.PositiveInfinity;
-            
+
             Debug.Assert(usageProjection.HasMaxNumberOfBatches);
 
-            double baseOtAndSecurityExchangeCost = ExtendedObliviousTransferChannelBase.EstimateCost(
-                usageProjection, calculateBaseOtCostCallback
-            );
+            double baseOtAndSecurityExchangeCost = base.EstimateCost(usageProjection);
 
             // bandwidth cost of exchanging masked options
             double maxNumberOfInvocations = usageProjection.MaxNumberOfInvocations;

@@ -30,5 +30,10 @@ namespace CompactOT
         {
             return _statelessOT.SendAsync(Channel, options);
         }
+
+        public double EstimateCost(ObliviousTransferUsageProjection usageProjection)
+        {
+            return _statelessOT.EstimateCost(usageProjection);
+        }
     }
 }

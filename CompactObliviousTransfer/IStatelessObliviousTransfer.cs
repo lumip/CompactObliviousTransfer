@@ -32,5 +32,7 @@ namespace CompactOT
         /// </summary>
         public int SecurityLevel { get; }
 
+        public double EstimateCost(ObliviousTransferUsageProjection usageProjection);
+
     }
 }

@@ -119,11 +119,8 @@ namespace CompactOT
 
             return firstOptions;
         }
-        
-        public static new double EstimateCost(
-            ObliviousTransferUsageProjection usageProjection,
-            CostCalculationCallback calculateBaseOtCostCallback
-        )
+
+        public override double EstimateCost(ObliviousTransferUsageProjection usageProjection)
         {
             // TODO: currently ignoring computation cost
 
@@ -132,9 +129,7 @@ namespace CompactOT
 
             Debug.Assert(usageProjection.HasMaxNumberOfBatches);
 
-            double baseOtAndSecurityExchangeCost = ExtendedObliviousTransferChannelBase.EstimateCost(
-                usageProjection, calculateBaseOtCostCallback
-            );
+            double baseOtAndSecurityExchangeCost = base.EstimateCost(usageProjection);
 
             // bandwidth cost of exchanging masked correlations
             double maxNumberOfInvocations = usageProjection.MaxNumberOfInvocations;

@@ -42,12 +42,10 @@ namespace CompactOT.Adapters
             return _otChannel.SendAsync(options).ContinueWith(t => options);
         }
 
-        public static double EstimateCost(
-            ObliviousTransferUsageProjection usageProjection,
-            CostCalculationCallback calculateBaseOtCostCallback
-        )
+        public double EstimateCost(ObliviousTransferUsageProjection usageProjection)
         {
-            return calculateBaseOtCostCallback(usageProjection);
+            return _otChannel.EstimateCost(usageProjection);
         }
+
     }
 }

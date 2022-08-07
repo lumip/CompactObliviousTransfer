@@ -81,21 +81,16 @@ namespace CompactOT
                 channel
             );
 
+            var extendedOtChannel = new ExtendedObliviousTransferChannel(
+                naorPinkasChannel, _projection.SecurityLevel, cryptoContext
+            );
+
 
             if (_projection.HasMaxNumberOfInvocations)
             {
                 // bounded number of invocations, estimate actual cost and favour least costly protocol
-                double cryptoGroupElementSize = (double)cryptoGroup.ElementLength.InBits;
-                CostCalculationCallback naorPinkasCostCallback = (ObliviousTransferUsageProjection p) => 
-                    NaorPinkasObliviousTransfer<BigInteger, BigInteger>.EstimateCost(
-                        p, cryptoGroupElementSize
-                    );
-
-                double naorPinkasCost = naorPinkasCostCallback(_projection);
-
-                double extendedOtCost = ExtendedObliviousTransferChannel.EstimateCost(
-                    _projection, naorPinkasCostCallback
-                );
+                double naorPinkasCost = naorPinkasChannel.EstimateCost(_projection);
+                double extendedOtCost = extendedOtChannel.EstimateCost(_projection);
 
                 if (naorPinkasCost < extendedOtCost)
                 {
@@ -105,9 +100,7 @@ namespace CompactOT
             // Here either we have determined that for the given number of invocations extended OT is less costly,
             // or the maximum number of invocations is unbounded. Since extended OT is less costly asymptotically,
             // we prefer it in the latter case as well. Therefore, we return the extended OT channel here.
-            return new ExtendedObliviousTransferChannel(
-                naorPinkasChannel, _projection.SecurityLevel, cryptoContext
-            );
+            return extendedOtChannel;
         }
 
         public ICorrelatedObliviousTransferChannel MakeCorrelatedObliviousTransferChannel(
@@ -129,36 +122,33 @@ namespace CompactOT
                 channel
             );
 
+            var alszCorrelatedChannel = new ALSZCorrelatedObliviousTransferChannel(
+                naorPinkasChannel, _projection.SecurityLevel, cryptoContext
+            );
+
             if (_projection.HasMaxNumberOfInvocations)
             {
                 // bounded number of invocations, estimate actual cost and favour least costly protocol
-                double cryptoGroupElementSize = (double)cryptoGroup.ElementLength.InBits;
-                CostCalculationCallback naorPinkasCostCallback = (ObliviousTransferUsageProjection p) => 
-                    NaorPinkasObliviousTransfer<BigInteger, BigInteger>.EstimateCost(
-                        p, cryptoGroupElementSize
-                    );
-
-                double naorPinkasCorrelatedCost = Adapters.CorrelatedFromStandardObliviousTransferChannel.EstimateCost(
-                    _projection, naorPinkasCostCallback
+                var naorPinkasCorrelatedChannel = new Adapters.CorrelatedFromStandardObliviousTransferChannel(
+                    naorPinkasChannel, cryptoContext.RandomNumberGenerator
                 );
 
-                double alszCorrelatedOtCost = ALSZCorrelatedObliviousTransferChannel.EstimateCost(
-                    _projection, naorPinkasCostCallback
+                double naorPinkasCorrelatedCost = naorPinkasCorrelatedChannel.EstimateCost(
+                    _projection
+                );
+                double alszCorrelatedCost = alszCorrelatedChannel.EstimateCost(
+                    _projection
                 );
 
-                if (naorPinkasCorrelatedCost < alszCorrelatedOtCost)
+                if (naorPinkasCorrelatedCost < alszCorrelatedCost)
                 {
-                    return new Adapters.CorrelatedFromStandardObliviousTransferChannel(
-                        naorPinkasChannel, cryptoContext.RandomNumberGenerator
-                    );
+                    return naorPinkasCorrelatedChannel;
                 }
             }
             // Here either we have determined that for the given number of invocations extended OT is less costly,
             // or the maximum number of invocations is unbounded. Since extended OT is less costly asymptotically,
             // we prefer it in the latter case as well. Therefore, we return the extended OT channel here.
-            return new ALSZCorrelatedObliviousTransferChannel(
-                naorPinkasChannel, _projection.SecurityLevel, cryptoContext
-            );
+            return alszCorrelatedChannel;
         }
 
         public IRandomObliviousTransferChannel MakeRandomObliviousTransferChannel(
@@ -180,40 +170,37 @@ namespace CompactOT
                 channel
             );
 
+            var alszRandomChannel = new ALSZRandomObliviousTransferChannel(
+                naorPinkasChannel, _projection.SecurityLevel, cryptoContext
+            );
+
             if (_projection.HasMaxNumberOfInvocations)
             {
                 // bounded number of invocations, estimate actual cost and favour least costly protocol
-                double cryptoGroupElementSize = (double)cryptoGroup.ElementLength.InBits;
-                CostCalculationCallback naorPinkasCostCallback = (ObliviousTransferUsageProjection p) => 
-                    NaorPinkasObliviousTransfer<BigInteger, BigInteger>.EstimateCost(
-                        p, cryptoGroupElementSize
-                    );
-
-                double naorPinkasCorrelatedCost = Adapters.RandomFromStandardObliviousTransferChannel.EstimateCost(
-                    _projection, naorPinkasCostCallback
+                var naorPinkasRandomChannel = new Adapters.RandomFromStandardObliviousTransferChannel(
+                    naorPinkasChannel, cryptoContext.RandomNumberGenerator
+                );
+                
+                double naorPinkasRandomCost = naorPinkasChannel.EstimateCost(
+                    _projection
                 );
 
-                double alszCorrelatedOtCost = ALSZRandomObliviousTransferChannel.EstimateCost(
-                    _projection, naorPinkasCostCallback
+                double alszRandomCost = alszRandomChannel.EstimateCost(
+                    _projection
                 );
 
-                if (naorPinkasCorrelatedCost < alszCorrelatedOtCost)
+                if (naorPinkasRandomCost < alszRandomCost)
                 {
-                    return new Adapters.RandomFromStandardObliviousTransferChannel(
-                        naorPinkasChannel, cryptoContext.RandomNumberGenerator
-                    );
+                    return naorPinkasRandomChannel;
                 }
             }
             // Here either we have determined that for the given number of invocations extended OT is less costly,
             // or the maximum number of invocations is unbounded. Since extended OT is less costly asymptotically,
             // we prefer it in the latter case as well. Therefore, we return the extended OT channel here.
-            return new ALSZRandomObliviousTransferChannel(
-                naorPinkasChannel, _projection.SecurityLevel, cryptoContext
-            );
+            return alszRandomChannel;
         }
 
-        // TODO: think about making EstimateCost callback non-static. It seems the benefit of having it be static
-        // are fairly limited (we instantiate all classes in most cases above anyways), and it would avoid passing around
-        // callbacks.
+        // TODO: can reduce duplicated logic in the above using a generic-typed method?
+
     }
 }

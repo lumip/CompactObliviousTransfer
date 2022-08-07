@@ -340,10 +340,7 @@ namespace CompactOT
             await Channel.WriteMessageAsync(message.Compose());
         }
 
-        public static double EstimateCost(
-            ObliviousTransferUsageProjection usageProjection,
-            CostCalculationCallback calculateBaseOtCostCallback
-        )
+        public virtual double EstimateCost(ObliviousTransferUsageProjection usageProjection)
         {
             if (!usageProjection.HasMaxNumberOfInvocations)
                 return double.PositiveInfinity;
@@ -353,13 +350,13 @@ namespace CompactOT
             int codeLength = 2 * usageProjection.SecurityLevel;
 
             // base OT cost
-            ObliviousTransferUsageProjection baseOtProjection = new ObliviousTransferUsageProjection();
-            baseOtProjection.MaxNumberOfOptions = 2;
-            baseOtProjection.MaxNumberOfInvocations = codeLength;
-            baseOtProjection.MaxNumberOfBatches = 1;
-            baseOtProjection.AverageMessageBits = usageProjection.SecurityLevel;
-            baseOtProjection.SecurityLevel = usageProjection.SecurityLevel;
-            double baseOtCost = calculateBaseOtCostCallback(baseOtProjection);
+            ObliviousTransferUsageProjection baseOtUsageProjection = new ObliviousTransferUsageProjection();
+            baseOtUsageProjection.MaxNumberOfOptions = 2;
+            baseOtUsageProjection.MaxNumberOfInvocations = codeLength;
+            baseOtUsageProjection.MaxNumberOfBatches = 1;
+            baseOtUsageProjection.AverageMessageBits = usageProjection.SecurityLevel;
+            baseOtUsageProjection.SecurityLevel = usageProjection.SecurityLevel;
+            double baseOtCost = _baseOT.EstimateCost(baseOtUsageProjection);
 
             // bandwidth cost of security exchange
             double averageInvocationsPerBatch = usageProjection.AverageInvocationsPerBatch;

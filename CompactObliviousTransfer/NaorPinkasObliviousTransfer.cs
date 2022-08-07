@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -275,10 +275,7 @@ namespace CompactOT
             return _randomOracle.Mask(option, query.AsEnumerable());
         }
 
-        public static double EstimateCost(
-            ObliviousTransferUsageProjection usageProjection,
-            double cryptoGroupElementSizeInBits // TODO: figure this out internally based on security level?
-        )
+        public double EstimateCost(ObliviousTransferUsageProjection usageProjection)
         {
             // TODO: currently ignoring computation cost
             
@@ -294,7 +291,8 @@ namespace CompactOT
             double averageNumberOfOptions = usageProjection.AverageNumberOfOptions;
 
             // bandwidth cost of security exchange
-            double securityExchangeCost = 2.0 * maxNumberOfBatches * averageNumberOfOptions * cryptoGroupElementSizeInBits;
+            double cryptoGroupElementSize = _group.ElementLength.InBits;
+            double securityExchangeCost = 2.0 * maxNumberOfBatches * averageNumberOfOptions * cryptoGroupElementSize;
 
             // bandwidth cost of exchanging masked options
             double averageMessageBits = usageProjection.AverageMessageBits;

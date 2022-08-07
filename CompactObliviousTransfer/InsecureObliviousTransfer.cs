@@ -67,9 +67,7 @@ namespace CompactOT
 #endif
         }
 
-        public static double EstimateCost(
-            ObliviousTransferUsageProjection usageProjection
-        )
+        public double EstimateCost(ObliviousTransferUsageProjection usageProjection)
         {
             if (!usageProjection.HasMaxNumberOfInvocations)
                 return double.PositiveInfinity;

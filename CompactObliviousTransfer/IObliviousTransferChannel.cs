@@ -16,6 +16,8 @@ namespace CompactOT
     public interface IObliviousTransferChannel : IObliviousTransferChannelReceiverEndpoint
     {
         public Task SendAsync(ObliviousTransferOptions options);
+
+        public double EstimateCost(ObliviousTransferUsageProjection usageProjection);
     }
 
 }

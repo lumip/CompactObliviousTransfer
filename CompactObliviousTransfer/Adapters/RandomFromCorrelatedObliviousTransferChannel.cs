@@ -43,12 +43,10 @@ namespace CompactOT.Adapters
             return ObliviousTransferOptions.FromCorrelatedTransfer(firstOptions, correlations);
         }
 
-        public static double EstimateCost(
-            ObliviousTransferUsageProjection usageProjection,
-            CostCalculationCallback calculateBaseOtCostCallback
-        )
+        public double EstimateCost(ObliviousTransferUsageProjection usageProjection)
         {
-            return calculateBaseOtCostCallback(usageProjection);
+            return _cotChannel.EstimateCost(usageProjection);
         }
+
     }
 }
