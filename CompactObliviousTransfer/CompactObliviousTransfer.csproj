@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>CompactObliviousTransfer</AssemblyName>
     <RootNamespace>CompactOT</RootNamespace>
     <Nullable>enable</Nullable>
@@ -29,11 +29,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-    <!--<PackageReference Include="CompactCryptoGroupAlgebra" Version="1.0.0" />-->
     <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
-    <PackageReference Include="CompactCryptoGroupAlgebra" Version="2.0.0-alpha*" />
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+    <!-- <PackageReference Include="CompactCryptoGroupAlgebra" Version="2.0.0-alpha*" /> -->
+    <ProjectReference Include="../../CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,23 +1,18 @@
 using System;
-using System.Diagnostics;
-using System.Numerics;
-
-using CompactCryptoGroupAlgebra;
-using CompactCryptoGroupAlgebra.EllipticCurves;
 
 namespace CompactOT
 {
 
-    public delegate double CostCalculationCallback(ObliviousTransferUsageProjection usageProjection);
-    
     public class ObliviousTransferChannelBuilder
     {
 
         private ObliviousTransferUsageProjection _projection;
+        private IBaseProtocolFactory _baseOtFactory;
 
         public ObliviousTransferChannelBuilder()
         {
             _projection = new ObliviousTransferUsageProjection();
+            _baseOtFactory = new DefaultBaseProtocolFactory();
         }
 
         public ObliviousTransferChannelBuilder WithMaximumNumberOfOptions(int maxNumberOfOptions)
@@ -56,45 +51,58 @@ namespace CompactOT
             return this;
         }
 
-        private CryptoGroup<BigInteger, BigInteger> MakeCryptoGroup()
+        public ObliviousTransferChannelBuilder WithCustomBaseProtocol(IBaseProtocolFactory baseProtocolFactory)
         {
-            // TODO: return group based on security level
-            return XOnlyMontgomeryCurveAlgebra.CreateCryptoGroup(CurveParameters.Curve25519);
+            _baseOtFactory = baseProtocolFactory;
+            return this;
+        }
+
+        private CryptoContext MakeCryptoContext(
+            CryptoContext? cryptoContext
+        )
+        {
+            if (cryptoContext == null)
+            {
+                cryptoContext = CryptoContext.CreateWithSecurityLevel(_projection.SecurityLevel);
+            }
+            else
+            {
+                if (cryptoContext.HashAlgorithm.HashSize / 2 < _projection.SecurityLevel)
+                {
+                    throw new ArgumentException(
+                        $"Hash algorithm in the provided crypto context cannot satisfy required security level {_projection.SecurityLevel}." +
+                        " The length of the hash must be at least twice the security level.",
+                        nameof(cryptoContext)
+                    );
+                }
+            }
+            return cryptoContext;
         }
 
         public IObliviousTransferChannel MakeObliviousTransferChannel(
             IMessageChannel channel, CryptoContext? cryptoContext = null
         )
         {
-            if (cryptoContext == null)
-            {
-                cryptoContext = CryptoContext.CreateDefault(); // TODO: returns SHA1; determine how that factors into security level
-            }
+            cryptoContext = MakeCryptoContext(cryptoContext);
 
-            var cryptoGroup = MakeCryptoGroup();
-            Debug.Assert(cryptoGroup.SecurityLevel >= _projection.SecurityLevel);
-
-            var naorPinkasChannel = new StatelessObliviousTransferChannel(
-                new NaorPinkasObliviousTransfer<BigInteger, BigInteger>(
-                    cryptoGroup, cryptoContext
-                ),
-                channel
+            var baseProtocolChannel = _baseOtFactory.MakeChannel(
+                channel, cryptoContext, _projection.SecurityLevel
             );
 
             var extendedOtChannel = new ExtendedObliviousTransferChannel(
-                naorPinkasChannel, _projection.SecurityLevel, cryptoContext
+                baseProtocolChannel, _projection.SecurityLevel, cryptoContext
             );
 
 
             if (_projection.HasMaxNumberOfInvocations)
             {
                 // bounded number of invocations, estimate actual cost and favour least costly protocol
-                double naorPinkasCost = naorPinkasChannel.EstimateCost(_projection);
+                double pureBaseProtocolCost = baseProtocolChannel.EstimateCost(_projection);
                 double extendedOtCost = extendedOtChannel.EstimateCost(_projection);
 
-                if (naorPinkasCost < extendedOtCost)
+                if (pureBaseProtocolCost < extendedOtCost)
                 {
-                    return naorPinkasChannel;
+                    return baseProtocolChannel;
                 }
             }
             // Here either we have determined that for the given number of invocations extended OT is less costly,
@@ -107,42 +115,33 @@ namespace CompactOT
             IMessageChannel channel, CryptoContext? cryptoContext = null
         )
         {
-            if (cryptoContext == null)
-            {
-                cryptoContext = CryptoContext.CreateDefault(); // TODO: returns SHA1; determine how that factors into security level
-            }
+            cryptoContext = MakeCryptoContext(cryptoContext);
 
-            var cryptoGroup = MakeCryptoGroup();
-            Debug.Assert(cryptoGroup.SecurityLevel >= _projection.SecurityLevel);
-
-            var naorPinkasChannel = new StatelessObliviousTransferChannel(
-                new NaorPinkasObliviousTransfer<BigInteger, BigInteger>(
-                    cryptoGroup, cryptoContext
-                ),
-                channel
+            var baseProtocolChannel = _baseOtFactory.MakeChannel(
+                channel, cryptoContext, _projection.SecurityLevel
             );
 
             var alszCorrelatedChannel = new ALSZCorrelatedObliviousTransferChannel(
-                naorPinkasChannel, _projection.SecurityLevel, cryptoContext
+                baseProtocolChannel, _projection.SecurityLevel, cryptoContext
             );
 
             if (_projection.HasMaxNumberOfInvocations)
             {
                 // bounded number of invocations, estimate actual cost and favour least costly protocol
-                var naorPinkasCorrelatedChannel = new Adapters.CorrelatedFromStandardObliviousTransferChannel(
-                    naorPinkasChannel, cryptoContext.RandomNumberGenerator
+                var baseProtocolCorrelatedChannel = new Adapters.CorrelatedFromStandardObliviousTransferChannel(
+                    baseProtocolChannel, cryptoContext.RandomNumberGenerator
                 );
 
-                double naorPinkasCorrelatedCost = naorPinkasCorrelatedChannel.EstimateCost(
+                double pureBaseProtocolCost = baseProtocolCorrelatedChannel.EstimateCost(
                     _projection
                 );
                 double alszCorrelatedCost = alszCorrelatedChannel.EstimateCost(
                     _projection
                 );
 
-                if (naorPinkasCorrelatedCost < alszCorrelatedCost)
+                if (pureBaseProtocolCost < alszCorrelatedCost)
                 {
-                    return naorPinkasCorrelatedChannel;
+                    return baseProtocolCorrelatedChannel;
                 }
             }
             // Here either we have determined that for the given number of invocations extended OT is less costly,
@@ -155,33 +154,24 @@ namespace CompactOT
             IMessageChannel channel, CryptoContext? cryptoContext = null
         )
         {
-            if (cryptoContext == null)
-            {
-                cryptoContext = CryptoContext.CreateDefault(); // TODO: returns SHA1; determine how that factors into security level
-            }
+            cryptoContext = MakeCryptoContext(cryptoContext);
 
-            var cryptoGroup = MakeCryptoGroup();
-            Debug.Assert(cryptoGroup.SecurityLevel >= _projection.SecurityLevel);
-
-            var naorPinkasChannel = new StatelessObliviousTransferChannel(
-                new NaorPinkasObliviousTransfer<BigInteger, BigInteger>(
-                    cryptoGroup, cryptoContext
-                ),
-                channel
+            var baseProtocolChannel = _baseOtFactory.MakeChannel(
+                channel, cryptoContext, _projection.SecurityLevel
             );
 
             var alszRandomChannel = new ALSZRandomObliviousTransferChannel(
-                naorPinkasChannel, _projection.SecurityLevel, cryptoContext
+                baseProtocolChannel, _projection.SecurityLevel, cryptoContext
             );
 
             if (_projection.HasMaxNumberOfInvocations)
             {
                 // bounded number of invocations, estimate actual cost and favour least costly protocol
-                var naorPinkasRandomChannel = new Adapters.RandomFromStandardObliviousTransferChannel(
-                    naorPinkasChannel, cryptoContext.RandomNumberGenerator
+                var baseProtocolRandomChannel = new Adapters.RandomFromStandardObliviousTransferChannel(
+                    baseProtocolChannel, cryptoContext.RandomNumberGenerator
                 );
                 
-                double naorPinkasRandomCost = naorPinkasChannel.EstimateCost(
+                double pureBaseProtocolCost = baseProtocolChannel.EstimateCost(
                     _projection
                 );
 
@@ -189,9 +179,9 @@ namespace CompactOT
                     _projection
                 );
 
-                if (naorPinkasRandomCost < alszRandomCost)
+                if (pureBaseProtocolCost < alszRandomCost)
                 {
-                    return naorPinkasRandomChannel;
+                    return baseProtocolRandomChannel;
                 }
             }
             // Here either we have determined that for the given number of invocations extended OT is less costly,
