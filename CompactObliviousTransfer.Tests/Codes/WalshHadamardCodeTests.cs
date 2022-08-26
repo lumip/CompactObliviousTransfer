@@ -53,11 +53,16 @@ namespace CompactOT.Codes
         }
 
         [Fact]
-        public void TestCodeLength()
+        public void TestCreateWithDistance()
         {
-            int codeLength = 6;
-            var code = new WalshHadamardCode(codeLength);
-            Assert.Equal(codeLength, code.CodeLength);
+            int distance = 7;
+            var code = WalshHadamardCode.CreateWithDistance(distance);
+            int expectedDistance = 8;
+            int expectedCodeLength = 16;
+            int expectedMaximumMessage = 15;
+            Assert.Equal(expectedDistance, code.Distance);
+            Assert.Equal(expectedCodeLength, code.CodeLength);
+            Assert.Equal(expectedMaximumMessage, code.MaximumMessage);
         }
 
     }

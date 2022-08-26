@@ -37,11 +37,16 @@ namespace CompactOT.Codes
         }
 
         [Fact]
-        public void TestCodeLength()
+        public void TestCreateWithDistance()
         {
-            int codeLength = 6;
-            var code = new RepeatingBitCode(codeLength);
-            Assert.Equal(codeLength, code.CodeLength);
+            int distance = 7;
+            var code = RepeatingBitCode.CreateWithDistance(distance);
+            int expectedDistance = 7;
+            int expectedCodeLength = 7;
+            int expectedMaximumMessage = 1;
+            Assert.Equal(expectedDistance, code.Distance);
+            Assert.Equal(expectedCodeLength, code.CodeLength);
+            Assert.Equal(expectedMaximumMessage, code.MaximumMessage);
         }
 
     }

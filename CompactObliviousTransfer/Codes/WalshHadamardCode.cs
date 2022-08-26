@@ -12,12 +12,24 @@ namespace CompactOT.Codes
 
         public int CodeLength { get; }
 
+        public int Distance => CodeLength >> 1;
+
+        public int MaximumMessage => CodeLength - 1; 
+
         public WalshHadamardCode(int codeLength)
         {
             if ((codeLength & (codeLength - 1)) != 0)
                 throw new ArgumentException($"Code length must be a power of two, was {codeLength}.", nameof(codeLength));
 
             CodeLength = codeLength;
+        }
+
+        public static WalshHadamardCode CreateWithDistance(int distance)
+        {
+            int codeLength = MathUtil.NextPowerOfTwo(distance) << 1;
+            if (codeLength <= distance)
+                throw new ArgumentOutOfRangeException("Cannot instantiate a Walsh-Hadamard code with distance larger than 2^31 - 1.");
+            return new WalshHadamardCode(codeLength);
         }
 
         public static byte GetParity(int x)
@@ -41,7 +53,7 @@ namespace CompactOT.Codes
 
         public BitSequence Encode(int x)
         {
-            if (x >= CodeLength)
+            if (x > MaximumMessage)
             {
                 int requiredCodeLength = 1 << NumberLength.GetLength(x).InBits;
                 throw new ArgumentOutOfRangeException(

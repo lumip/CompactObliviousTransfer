@@ -85,7 +85,7 @@ namespace CompactOT
         )
         {
             cryptoContext = MakeCryptoContext(cryptoContext);
-            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+            var code = WalshHadamardCode.CreateWithDistance(_projection.SecurityLevel);
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
                 channel, cryptoContext, _projection.SecurityLevel
@@ -118,7 +118,7 @@ namespace CompactOT
         )
         {
             cryptoContext = MakeCryptoContext(cryptoContext);
-            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+            var code = WalshHadamardCode.CreateWithDistance(_projection.SecurityLevel);
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
                 channel, cryptoContext, _projection.SecurityLevel
@@ -158,7 +158,7 @@ namespace CompactOT
         )
         {
             cryptoContext = MakeCryptoContext(cryptoContext);
-            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+            var code = WalshHadamardCode.CreateWithDistance(_projection.SecurityLevel);
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
                 channel, cryptoContext, _projection.SecurityLevel

@@ -1,3 +1,5 @@
+using System;
+
 namespace CompactOT
 {
 
@@ -6,6 +8,20 @@ namespace CompactOT
         public static int DivideAndCeiling(int x, int y)
         {
             return (x + (y - 1)) / y;
+        }
+
+        public static int NextPowerOfTwo(int x)
+        {
+            int nextPowerOfTwo = 1;
+            for (int i = 0; i < 32 && x > nextPowerOfTwo; ++i)
+            {
+                nextPowerOfTwo <<= 1;
+            }
+            if (x > nextPowerOfTwo)
+            {
+                throw new ArgumentOutOfRangeException($"The next power of two for value {x} cannot be represented as an integer.");
+            }
+            return nextPowerOfTwo;
         }
     }
 }

@@ -7,6 +7,8 @@ namespace CompactOT.Codes
         public BitSequence Encode(int x);
 
         public int CodeLength { get; }
+        public int Distance { get; }
+        public int MaximumMessage { get; }
     }
 
 }

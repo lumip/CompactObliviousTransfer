@@ -32,7 +32,7 @@ namespace CompactOT
             var receiverBaseChannel = GetBaseTransferChannel(messageChannels.SecondPartyChannel);
 
             var cryptoContext = CryptoContext.CreateDefault();
-            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+            var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);
 
             var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
             var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
@@ -55,7 +55,7 @@ namespace CompactOT
             var receiverBaseChannel = GetBaseTransferChannel(messageChannels.SecondPartyChannel);
 
             var cryptoContext = CryptoContext.CreateDefault();
-            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+            var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);
 
             var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
             var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
@@ -93,7 +93,7 @@ namespace CompactOT
         [Fact]
         public void TestSenderBaseOTs()
         {
-            var securityParameter = NumberLength.FromBitLength(24);
+            var securityParameter = NumberLength.FromBitLength(16);
             int codeLength = 2 * securityParameter.InBits;
 
             var received = new ObliviousTransferResult(codeLength, securityParameter.InBits);
@@ -112,7 +112,7 @@ namespace CompactOT
                 .Returns(Task.FromResult(received));
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
-            var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010 11001100 10101010");
+            var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010");// 11001100 10101010");
             var rngMock = new Mock<RandomNumberGenerator>();
             rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
                 randomChoices.CopyTo(b);
@@ -122,7 +122,7 @@ namespace CompactOT
             var cryptoContext = new CryptoContext(
                 rngMock.Object, SHA1.Create()
             );
-            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+            var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
 
             var otProtocol = new ExtendedObliviousTransferChannel(
                 baseOTMock.Object, securityParameter.InBits, cryptoContext, code
@@ -140,15 +140,14 @@ namespace CompactOT
         [Fact]
         public void TestReceiverBaseOTs()
         {
-            var securityParameter = NumberLength.FromBitLength(3);
+            var securityParameter = NumberLength.FromBitLength(4);
             int codeLength = 2 * securityParameter.InBits;
-
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
             baseOTMock.Setup(ot => ot.SendAsync(It.IsAny<ObliviousTransferOptions>())).Returns(Task.CompletedTask);
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
-            var randomChoices = BitArray.FromBinaryString("00000000 01011010 11111111 11001100 1010");
+            var randomChoices = BitArray.FromBinaryString("00000000 01011010 11111111 11001100 10100101 00101101 10010110 01010101");
             var rngMock = new Mock<RandomNumberGenerator>();
             rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
                 randomChoices.CopyTo(b);
@@ -162,7 +161,7 @@ namespace CompactOT
             var cryptoContext = new CryptoContext(
                 rngMock.Object, SHA1.Create()
             );
-            var code = new WalshHadamardCode(2 * cryptoContext.SecurityLevel);
+            var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
 
             var otProtocol = new ExtendedObliviousTransferChannel(
                 baseOTMock.Object, securityParameter.InBits, cryptoContext, code
