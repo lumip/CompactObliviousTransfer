@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+
 using CompactOT.Codes;
 
 namespace CompactOT
@@ -80,12 +82,31 @@ namespace CompactOT
             return cryptoContext;
         }
 
+        private IBinaryCode MakeBinaryCode()
+        {
+            IBinaryCode code = WalshHadamardCode.CreateWithDistance(_projection.SecurityLevel);
+            if (_projection.HasMaxNumberOfOptions)
+            {
+                if (_projection.MaxNumberOfOptions == 2)
+                {
+                    code = RepeatingBitCode.CreateWithDistance(_projection.SecurityLevel);
+                }
+                else if (code.MaximumMessage >= _projection.MaxNumberOfOptions)
+                {
+                    code = WalshHadamardCode.CreateWithMaximumMessage(_projection.MaxNumberOfOptions - 1);
+                    Debug.Assert(code.Distance >= _projection.SecurityLevel);
+                }
+
+            }
+            return code;
+        }
+
         public IObliviousTransferChannel MakeObliviousTransferChannel(
             IMessageChannel channel, CryptoContext? cryptoContext = null
         )
         {
             cryptoContext = MakeCryptoContext(cryptoContext);
-            var code = WalshHadamardCode.CreateWithDistance(_projection.SecurityLevel);
+            var code = MakeBinaryCode();
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
                 channel, cryptoContext, _projection.SecurityLevel
@@ -118,7 +139,7 @@ namespace CompactOT
         )
         {
             cryptoContext = MakeCryptoContext(cryptoContext);
-            var code = WalshHadamardCode.CreateWithDistance(_projection.SecurityLevel);
+            var code = MakeBinaryCode();
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
                 channel, cryptoContext, _projection.SecurityLevel
@@ -158,7 +179,7 @@ namespace CompactOT
         )
         {
             cryptoContext = MakeCryptoContext(cryptoContext);
-            var code = WalshHadamardCode.CreateWithDistance(_projection.SecurityLevel);
+            var code = MakeBinaryCode();
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
                 channel, cryptoContext, _projection.SecurityLevel

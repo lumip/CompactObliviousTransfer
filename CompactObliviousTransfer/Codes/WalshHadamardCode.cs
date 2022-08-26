@@ -32,6 +32,12 @@ namespace CompactOT.Codes
             return new WalshHadamardCode(codeLength);
         }
 
+        public static WalshHadamardCode CreateWithMaximumMessage(int maximumMessage)
+        {
+            int codeLength = MathUtil.NextPowerOfTwo(maximumMessage);
+            return new WalshHadamardCode(codeLength);
+        }
+
         public static byte GetParity(int x)
         {
             int p = x;
@@ -66,5 +72,4 @@ namespace CompactOT.Codes
             return new EnumeratedBitSequence(EncodeToEnumerable(x), CodeLength);
         }
     }
-
 }

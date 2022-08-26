@@ -65,5 +65,18 @@ namespace CompactOT.Codes
             Assert.Equal(expectedMaximumMessage, code.MaximumMessage);
         }
 
+        [Fact]
+        public void TestCreateWithMaximumMessage()
+        {
+            int maximumMessage = 6;
+            var code = WalshHadamardCode.CreateWithMaximumMessage(maximumMessage);
+            int expectedMaximumMessage = 7;
+            int expectedCodeLength = 8;
+            int expectedDistance = 4;
+            Assert.Equal(expectedDistance, code.Distance);
+            Assert.Equal(expectedCodeLength, code.CodeLength);
+            Assert.Equal(expectedMaximumMessage, code.MaximumMessage);
+        }
+
     }
 }
