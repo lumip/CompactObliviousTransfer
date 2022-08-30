@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompactObliviousTransfer", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompactObliviousTransfer.Tests", "CompactObliviousTransfer.Tests\CompactObliviousTransfer.Tests.csproj", "{A10B21FB-EA58-4AC7-BC99-99062B9645E1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{56C32A15-45A8-4ACE-9E5C-C373ECD23C5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleXor", "Examples\SimpleXor\SimpleXor.csproj", "{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +48,20 @@ Global
 		{A10B21FB-EA58-4AC7-BC99-99062B9645E1}.Release|x64.Build.0 = Release|Any CPU
 		{A10B21FB-EA58-4AC7-BC99-99062B9645E1}.Release|x86.ActiveCfg = Release|Any CPU
 		{A10B21FB-EA58-4AC7-BC99-99062B9645E1}.Release|x86.Build.0 = Release|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Debug|x64.Build.0 = Debug|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Debug|x86.Build.0 = Debug|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Release|x64.ActiveCfg = Release|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Release|x64.Build.0 = Release|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Release|x86.ActiveCfg = Release|Any CPU
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD} = {56C32A15-45A8-4ACE-9E5C-C373ECD23C5E}
 	EndGlobalSection
 EndGlobal
