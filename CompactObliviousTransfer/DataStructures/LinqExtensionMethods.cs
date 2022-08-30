@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CompactOT.DataStructures
 {
@@ -31,6 +32,14 @@ namespace CompactOT.DataStructures
                 yield return (i, x);
                 i += 1;
             }
+        }
+
+        public static IEnumerable<T> Tile<T>(this IEnumerable<T> enumerable, int numberOfRepeats)
+        {
+            return Enumerable.Aggregate(
+                Enumerable.Repeat(enumerable, numberOfRepeats),
+                (accumulated, next) => accumulated.Concat(next)
+            );
         }
 
     }

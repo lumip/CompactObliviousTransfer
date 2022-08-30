@@ -69,7 +69,7 @@ namespace CompactOT.Codes
                 );
             }
             
-            return new EnumeratedBitSequence(EncodeToEnumerable(x), CodeLength);
+            return new EnumeratedBitArrayView(EncodeToEnumerable(x), CodeLength);
         }
     }
 }
