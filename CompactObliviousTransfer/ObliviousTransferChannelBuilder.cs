@@ -91,7 +91,7 @@ namespace CompactOT
                 {
                     code = RepeatingBitCode.CreateWithDistance(_projection.SecurityLevel);
                 }
-                else if (code.MaximumMessage >= _projection.MaxNumberOfOptions)
+                else if (code.MaximumMessage < _projection.MaxNumberOfOptions - 1)
                 {
                     code = WalshHadamardCode.CreateWithMaximumMessage(_projection.MaxNumberOfOptions - 1);
                     Debug.Assert(code.Distance >= _projection.SecurityLevel);
