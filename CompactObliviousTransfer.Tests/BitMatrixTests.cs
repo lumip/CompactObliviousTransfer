@@ -47,8 +47,6 @@ namespace CompactOT.DataStructures
                 BitArray.FromBinaryString("11")
             };
 
-            
-
             for (int i = 0; i < numberOfRows; ++i)
             {
                 Assert.Equal(expectedRows[i], matrix.GetRow(i));
@@ -379,6 +377,209 @@ namespace CompactOT.DataStructures
 
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix[0, numberOfColumns] = Bit.Zero);
         }
+
+        [Fact]
+        public void TestAsFlat()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 3;
+            var values = BitArray.FromBinaryString("000001010111");
+            var matrix = new BitMatrix(numberOfRows, numberOfColumns, values);
+
+            var result = matrix.AsFlat();
+            Assert.Equal(values, result);
+        }
+
+        [Fact]
+        public void TestOr()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 3;
+            var leftValues = BitArray.FromBinaryString("000001010111");
+            var leftMatrix = new BitMatrix(numberOfRows, numberOfColumns, leftValues);
+
+            var rightValues = BitArray.FromBinaryString("010101000101");
+            var rightMatrix = new BitMatrix(numberOfRows, numberOfColumns, rightValues);
+
+            var expectedValues = BitArray.FromBinaryString("010101010111");
+            var expectedMatrix = new BitMatrix(numberOfRows, numberOfColumns, expectedValues);
+
+            var result = leftMatrix.Or(rightMatrix);
+            Assert.Equal(expectedMatrix, result);
+
+            var operatorResult = leftMatrix | rightMatrix;
+            Assert.Equal(result, operatorResult);
+        }
+
+        [Fact]
+        public void TestXor()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 3;
+            var leftValues = BitArray.FromBinaryString("000001010111");
+            var leftMatrix = new BitMatrix(numberOfRows, numberOfColumns, leftValues);
+
+            var rightValues = BitArray.FromBinaryString("010101000101");
+            var rightMatrix = new BitMatrix(numberOfRows, numberOfColumns, rightValues);
+
+            var expectedValues = BitArray.FromBinaryString("010100010010");
+            var expectedMatrix = new BitMatrix(numberOfRows, numberOfColumns, expectedValues);
+
+            var result = leftMatrix.Xor(rightMatrix);
+
+            Assert.Equal(expectedMatrix, result);
+
+            var operatorResult = leftMatrix ^ rightMatrix;
+            Assert.Equal(result, operatorResult);
+        }
+
+        [Fact]
+        public void TestAnd()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 3;
+            var leftValues = BitArray.FromBinaryString("000001010111");
+            var leftMatrix = new BitMatrix(numberOfRows, numberOfColumns, leftValues);
+
+            var rightValues = BitArray.FromBinaryString("010101000101");
+            var rightMatrix = new BitMatrix(numberOfRows, numberOfColumns, rightValues);
+
+            var expectedValues = BitArray.FromBinaryString("000001000101");
+            var expectedMatrix = new BitMatrix(numberOfRows, numberOfColumns, expectedValues);
+
+            var result = leftMatrix.And(rightMatrix);
+
+            Assert.Equal(expectedMatrix, result);
+
+            var operatorResult = leftMatrix & rightMatrix;
+            Assert.Equal(result, operatorResult);
+        }
+
+        [Fact]
+        public void TestNot()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 3;
+            var values = BitArray.FromBinaryString("010101000101");
+            var matrix = new BitMatrix(numberOfRows, numberOfColumns, values);
+
+            var expectedValues = BitArray.FromBinaryString("101010111010");
+            var expectedMatrix = new BitMatrix(numberOfRows, numberOfColumns, expectedValues);
+
+            var result = matrix.Not();
+
+            Assert.Equal(expectedMatrix, result);
+
+            var operatorResult = ~matrix;
+            Assert.Equal(result, operatorResult);
+        }
+
+        [Fact]
+        public void TestOrDimensionMismatch()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 3;
+            var leftValues = BitArray.FromBinaryString("000001010111");
+            var leftMatrix = new BitMatrix(numberOfRows, numberOfColumns, leftValues);
+
+            var rightValues = BitArray.FromBinaryString("010101000101");
+            var rightMatrix = new BitMatrix(numberOfColumns, numberOfRows, rightValues);
+
+            Assert.Throws<ArgumentException>(() => leftMatrix.Or(rightMatrix));
+        }
+
+        [Fact]
+        public void TestXorDimensionMismatch()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 3;
+            var leftValues = BitArray.FromBinaryString("000001010111");
+            var leftMatrix = new BitMatrix(numberOfRows, numberOfColumns, leftValues);
+
+            var rightValues = BitArray.FromBinaryString("010101000101");
+            var rightMatrix = new BitMatrix(numberOfColumns, numberOfRows, rightValues);
+
+            Assert.Throws<ArgumentException>(() => leftMatrix.Xor(rightMatrix));
+        }
+
+        [Fact]
+        public void TestAndDimensionMismatch()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 3;
+            var leftValues = BitArray.FromBinaryString("000001010111");
+            var leftMatrix = new BitMatrix(numberOfRows, numberOfColumns, leftValues);
+
+            var rightValues = BitArray.FromBinaryString("010101000101");
+            var rightMatrix = new BitMatrix(numberOfColumns, numberOfRows, rightValues);
+
+            Assert.Throws<ArgumentException>(() => leftMatrix.And(rightMatrix));
+        }
+
+        [Fact]
+        public void TestEquals()
+        {
+            int numberOfRows = 2;
+            int numberOfColumns = 2;
+            var matrix = new BitMatrix(numberOfRows, numberOfColumns, BitArray.FromBinaryString("1001"));
+
+            var other = new BitMatrix(numberOfRows, numberOfColumns, BitArray.FromBinaryString("1001"));
+
+            Assert.True(matrix.Equals(other));
+        }
+
+        [Fact]
+        public void TestEqualsDifferentValues()
+        {
+            int numberOfRows = 2;
+            int numberOfColumns = 2;
+            var matrix = new BitMatrix(numberOfRows, numberOfColumns, BitArray.FromBinaryString("1001"));
+
+            var other = new BitMatrix(numberOfRows, numberOfColumns, BitArray.FromBinaryString("1010"));
+
+            Assert.False(matrix.Equals(other));
+        }
+        
+        [Fact]
+        public void TestEqualsDifferentRows()
+        {
+            int numberOfRows = 2;
+            int numberOfColumns = 2;
+            var matrix = new BitMatrix(numberOfRows, numberOfColumns, BitArray.FromBinaryString("1001"));
+
+            var other = new BitMatrix(1, numberOfColumns, BitArray.FromBinaryString("10"));
+
+            Assert.False(matrix.Equals(other));
+        }
+
+        [Fact]
+        public void TestEqualsDifferentColumns()
+        {
+            int numberOfRows = 2;
+            int numberOfColumns = 2;
+            var matrix = new BitMatrix(numberOfRows, numberOfColumns, BitArray.FromBinaryString("1001"));
+
+            var other = new BitMatrix(numberOfRows, 1, BitArray.FromBinaryString("10"));
+
+            Assert.False(matrix.Equals(other));
+        }
+
+        [Fact]
+        public void TestEqualsUnrelatedObject()
+        {
+            int numberOfRows = 2;
+            int numberOfColumns = 2;
+            var matrix = new BitMatrix(numberOfRows, numberOfColumns, BitArray.FromBinaryString("1001"));
+
+            var other = new object();
+
+            Assert.False(matrix.Equals(other));
+        }
+
+        
+
+        
+        
 
    }
 }

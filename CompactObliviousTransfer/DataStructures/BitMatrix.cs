@@ -26,12 +26,12 @@ namespace CompactOT.DataStructures
             _values = new BitArray(Length);
         }
 
-        public BitMatrix(int numberOfRows, int numberOfColumns, BitArray values) : this(numberOfRows, numberOfColumns)
+        public BitMatrix(int numberOfRows, int numberOfColumns, BitSequence values) : this(numberOfRows, numberOfColumns)
         {
             if (values.Length != Length)
                 throw new ArgumentException("Argument must be of the correct dimensions!", nameof(values));
 
-            _values = values.Clone();
+            _values = new BitArray(values);
         }
 
         private int GetValuesIndex(int row, int col)
@@ -109,6 +109,52 @@ namespace CompactOT.DataStructures
             {
                 _values[GetValuesIndex(i, col)] = v;
             }
+        }
+
+        public BitMatrix And(BitMatrix other)
+        {
+            if (Rows != other.Rows || Cols != other.Cols)
+                throw new ArgumentException("And operator can only be applied for two matrices of the same size.", nameof(other));
+            return new BitMatrix(Rows, Cols, _values & other._values);
+        }
+
+        public BitMatrix Or(BitMatrix other)
+        {
+            if (Rows != other.Rows || Cols != other.Cols)
+                throw new ArgumentException("Or operator can only be applied for two matrices of the same size.", nameof(other));
+            return new BitMatrix(Rows, Cols, _values | other._values);
+        }
+
+        public BitMatrix Xor(BitMatrix other)
+        {
+            if (Rows != other.Rows || Cols != other.Cols)
+                throw new ArgumentException("Xor operator can only be applied for two matrices of the same size.", nameof(other));
+            return new BitMatrix(Rows, Cols, _values ^ other._values);
+        }
+
+        public BitMatrix Not()
+        {
+            return new BitMatrix(Rows, Cols, ~_values);
+        }
+
+        public static BitMatrix operator &(BitMatrix left, BitMatrix right) => left.And(right);
+        public static BitMatrix operator |(BitMatrix left, BitMatrix right) => left.Or(right);
+        public static BitMatrix operator ^(BitMatrix left, BitMatrix right) => left.Xor(right);
+
+        public static BitMatrix operator ~(BitMatrix matrix) => matrix.Not();
+
+        public BitSequence AsFlat()
+        {
+            return _values;
+        }
+
+        public override bool Equals(object obj)
+        {
+            BitMatrix? other = obj as BitMatrix;
+            if (other == null)
+                return false;
+
+            return Rows == other.Rows && Cols == other.Cols && _values.Equals(other._values);
         }
 
     }
