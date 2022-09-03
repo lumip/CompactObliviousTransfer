@@ -128,6 +128,28 @@ namespace CompactOT
             return new BitArraySlice(_values, offset, end);
         }
 
+        private IEnumerable<IEnumerable<Bit>> GetOptionsAsEnumerable(int optionIndex)
+        {
+            for (int i = 0; i < NumberOfInvocations; ++i)
+            {
+                int offset = GetMessageOffset(i, optionIndex);
+                yield return new BitArraySlice(_values, offset, offset + NumberOfMessageBits);
+            }
+        }
+
+        public BitMatrix GetOptions(int optionIndex)
+        {
+            
+            if (optionIndex < 0 || optionIndex >= NumberOfOptions)
+                throw new ArgumentOutOfRangeException(nameof(optionIndex));
+
+            var values = new EnumeratedBitArrayView(
+                GetOptionsAsEnumerable(optionIndex).Flatten(), NumberOfInvocations * NumberOfMessageBits
+            );
+
+            return new BitMatrix(NumberOfInvocations, NumberOfMessageBits, values);
+        }
+
         /// <summary>
         /// Sets all messages for an invocation at once.
         /// </summary>
