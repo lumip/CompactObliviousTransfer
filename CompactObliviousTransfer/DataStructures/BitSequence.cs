@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Collections;
-using System;
 using System.Linq;
+using System.Numerics;
 
 namespace CompactOT.DataStructures
 {
@@ -32,37 +33,96 @@ namespace CompactOT.DataStructures
             AsByteEnumerable().WriteInto(buffer, offset);
         }
         
+        /// <summary>
+        /// Copies the bit sequence into a given buffer.
+        /// 
+        /// The buffer is filled from low to high indices (starting at the specified byte offset)
+        /// and each byte is filled from least to most significant bit.
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
         public void CopyTo(byte[] buffer, int offset = 0)
         {
+            var numBytes = BitArray.RequiredBytes(Length);
+            if (buffer.Length < numBytes + offset)
+            {
+                throw new ArgumentException("The target buffer is too small. " + 
+                    $"It has length {buffer.Length} but need to write {numBytes} with {offset} bytes offset.",
+                    nameof(buffer)
+                );
+            }
+
             CopyToInternal(buffer, offset);
             var nonAlignedBits = Length % 8;
             if (nonAlignedBits > 0)
             {
                 var mask = (byte)~(0xff << nonAlignedBits);
-                var numBytes = BitArray.RequiredBytes(Length);
                 buffer[offset + (numBytes - 1)] &= mask;
             }
         }
 
         public virtual void CopyTo(Bit[] buffer, int offset = 0)
         {
+            if (buffer.Length < Length + offset)
+            {
+                throw new ArgumentException("The target buffer is too small. " + 
+                    $"It has length {buffer.Length} but need to write {Length} with {offset} bits offset.",
+                    nameof(buffer)
+                );
+            }
+            
             ((IEnumerable<Bit>)this).WriteInto(buffer, offset);
         }
 
-        public virtual void CopyTo(Array array, int index)
+        public virtual void CopyTo(Array array, int offset)
         {
             if (array is Bit[])
             {
-                CopyTo((Bit[])array, index);
+                CopyTo((Bit[])array, offset);
             }
             else if (array is byte[])
             {
-                CopyTo((byte[])array, index);
+                CopyTo((byte[])array, offset);
             }
             else
             {
                 throw new NotSupportedException("Copying to any array other than Bit[] or byte[] is not supported.");
             }
+        }
+
+        public virtual byte[] ToBytes()
+        {
+            int bufferSize = BitArray.RequiredBytes(Length);
+            byte[] buffer = new byte[bufferSize];
+            CopyTo(buffer);
+            return buffer;
+        }
+
+        public virtual int ToInt32()
+        {
+            if (Length > 32)
+                throw new InvalidOperationException($"Can only convert a BitSequence to an integer if it contains no more than 32 bits, but had {Length} bits.");
+
+            return BitConverter.ToInt32(ToBytes(), 0);
+        }
+
+        public virtual BigInteger ToBigInteger(bool unsigned = false)
+        {
+            int bufferSize = BitArray.RequiredBytes(Length);
+            byte[] buffer;
+            if (unsigned)
+            {
+                buffer = new byte[bufferSize + 1];
+                buffer[bufferSize] = 0;
+            }
+            else
+            {
+                buffer = new byte[bufferSize];
+            }
+
+            CopyTo(buffer);
+
+            return new BigInteger(buffer);
         }
 
         public virtual string ToBinaryString()
@@ -106,14 +166,6 @@ namespace CompactOT.DataStructures
             return new EnumeratedBitArrayView(
                 ByteEnumerableOperations.Xor(AsByteEnumerable(), other.AsByteEnumerable()), Length
             );
-        }
-
-        public virtual byte[] ToBytes()
-        {
-            int bufferSize = BitArray.RequiredBytes(Length);
-            byte[] buffer = new byte[bufferSize];
-            CopyTo(buffer);
-            return buffer;
         }
 
         public virtual BitSequence And(Bit bit) => And(new ConstantBitArrayView(bit, Length));

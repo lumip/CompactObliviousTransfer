@@ -1,4 +1,8 @@
+using System;
+using System.Numerics;
+
 using Xunit;
+using Moq;
 
 namespace CompactOT.DataStructures
 {
@@ -44,6 +48,42 @@ namespace CompactOT.DataStructures
             byte[] bitsAsBytes = bits.ToBytes();
 
             Assert.Equal(expectedBytes, bitsAsBytes);
+        }
+
+        [Fact]
+        public void TestFromInt()
+        {
+            var bits = BitArray.FromInt(178464295);
+
+            var expectedBits = BitArray.FromBinaryString("1110 0100 0110 0100 1100 0101 0101");
+
+            Assert.Equal(expectedBits, bits);
+        }
+
+        [Fact]
+        public void TestToInt32()
+        {
+            var bits = BitArray.FromBinaryString("1110 0100 0110 0100 1100 0101 0101");
+            var expected = 178464295;
+
+            var result = bits.ToInt32();
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void FromBigInteger()
+        {
+            var bytes = new byte[] { 0x27, 0x26, 0xA3, 0xAF, 0x70, 0x99 };
+
+            var bitsMock = new Mock<BitSequence>() { CallBase = true };
+            bitsMock.Setup(b => b.ToBytes()).Returns(bytes);
+
+            var x = new BigInteger(0x9970AFA32727);
+            var result = BitArray.FromBigInteger(x);
+
+            var expected = BitArray.FromBinaryString("111001001110010011000101111101010000111010011001");
+
+            Assert.Equal(expected, result);
         }
 
         [Fact]

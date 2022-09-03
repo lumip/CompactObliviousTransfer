@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -69,6 +70,17 @@ namespace CompactOT.DataStructures
                 buffer[i] = enumerator.Current;
             }
             return FromBytes(buffer, numberOfElements);
+        }
+
+        public static BitArray FromInt(int i)
+        {
+            return FromBigInteger(new BigInteger(i));
+        }
+
+        public static BitArray FromBigInteger(BigInteger i)
+        {
+            int numberOfBits = NumberLength.GetLength(i).InBits;
+            return FromBytes(i.ToByteArray(), numberOfBits);
         }
 
         public static int RequiredBytes(int numberOfBits)
