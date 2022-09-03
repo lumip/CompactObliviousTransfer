@@ -42,5 +42,10 @@ namespace CompactOT.DataStructures
             );
         }
 
+        public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerable)
+        {
+            return enumerable.Aggregate(Enumerable.Empty<T>(), (flattened, next) => flattened.Concat(next));
+        }
+
     }
 }
