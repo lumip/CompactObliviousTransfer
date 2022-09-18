@@ -27,6 +27,7 @@ namespace CompactOT
         {
             var t0 = await ReceiverComputeAndSendU(selectionIndices, numberOfOptions, numberOfMessageBits);
             int numberOfInvocations = selectionIndices.Length;
+            int numberOfCorrelations = numberOfOptions - 1;
             Debug.Assert(_receiverState != null);
             Debug.Assert(t0.Rows == CodeLength);
             Debug.Assert(t0.Cols == numberOfInvocations);
@@ -35,7 +36,7 @@ namespace CompactOT
             Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
             var results = new ObliviousTransferResult(numberOfInvocations, numberOfMessageBits);
-            ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfOptions - 1, numberOfMessageBits);
+            ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfCorrelations, numberOfMessageBits);
 #if DEBUG
             DebugUtils.WriteLineReceiver("CorrelatedOT", "Receiving masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Reset();
@@ -70,7 +71,9 @@ namespace CompactOT
 
         public async Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions correlations)
         {
-            var qs = await SenderReceiveUAndComputeQ(correlations.NumberOfInvocations, correlations.NumberOfOptions, correlations.NumberOfMessageBits);
+            int numberOfCorrelations = correlations.NumberOfOptions;
+            int numberOfOptions = numberOfCorrelations + 1;
+            var qs = await SenderReceiveUAndComputeQ(correlations.NumberOfInvocations, numberOfOptions, correlations.NumberOfMessageBits);
             Debug.Assert(_senderState != null);
             Debug.Assert(qs.Rows == correlations.NumberOfInvocations);
             Debug.Assert(qs.Cols == CodeLength);
@@ -81,12 +84,12 @@ namespace CompactOT
             Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
             var firstOptions = new ObliviousTransferResult(correlations.NumberOfInvocations, numberOfMessageBits);
-            var maskedOptions = new ObliviousTransferOptions(correlations.NumberOfInvocations, correlations.NumberOfOptions, numberOfMessageBits);
+            var maskedOptions = new ObliviousTransferOptions(correlations.NumberOfInvocations, numberOfCorrelations, numberOfMessageBits);
 
             int totalNumberOfInvocationsOffset = TotalNumberOfInvocations - correlations.NumberOfInvocations;
             Debug.Assert(totalNumberOfInvocationsOffset >= 0);
             
-            for (int j = 0; j < correlations.NumberOfOptions; ++j)
+            for (int j = 0; j < numberOfOptions; ++j)
             {
                 var selectionCode = _code.Encode(j);
                 var queryMask = selectionCode & _senderState!.RandomChoices;

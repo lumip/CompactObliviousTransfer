@@ -25,7 +25,7 @@ namespace CompactOT
         public void TestRandomOTs()
         {
             const int numberOfOptions = 6;
-            const int numberOfInvocations = 2;
+            const int numberOfInvocations = 3;
             const int numberOfMessageBits = 5;
 
             var securityParameter = NumberLength.FromBitLength(8);
@@ -40,7 +40,7 @@ namespace CompactOT
             var otReceiver = new ALSZRandomObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
 
             // receiver data
-            var receiverIndices = new int[] { 0, 3 };
+            var receiverIndices = new int[] { 0, 3, numberOfOptions - 1 };
 
             // execute protocol
             var sendTask = otSender.SendAsync(numberOfInvocations, numberOfOptions, numberOfMessageBits);

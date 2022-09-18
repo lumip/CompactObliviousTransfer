@@ -57,20 +57,6 @@ namespace CompactOT
 
             Debug.Assert(receiverIndices.Length == numberOfInvocations);
 
-            // const int numberOfInvocations = 3;
-            // int numberOfOptions = TestUtils.TestOptions.Length;
-            // int numberOfMessageBits = TestUtils.TestOptions[0].Length * 8;
-
-            // // sender data
-            // var options = new ObliviousTransferOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
-
-            // options.SetInvocation(0, TestUtils.TestOptions.Select(s => Encoding.ASCII.GetBytes(s)).ToArray());
-            // options.SetInvocation(1, TestUtils.TestOptions.Select(s => Encoding.ASCII.GetBytes(s.ToLower())).ToArray());
-            // options.SetInvocation(2, TestUtils.TestOptions.Select(s => Encoding.ASCII.GetBytes(s.ToUpper())).ToArray());
-
-            // // receiver data
-            // var receiverIndices = new int[] { 0, 5, 3 };
-
             // protocol setup
             var otProtocol = new NaorPinkasObliviousTransfer<BigInteger, BigInteger>(
                 CryptoGroupDefaults.Create768BitMultiplicativeGroup(),

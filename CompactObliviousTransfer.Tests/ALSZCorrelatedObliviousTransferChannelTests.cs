@@ -38,7 +38,7 @@ namespace CompactOT
             var otSender = new ALSZCorrelatedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
             var otReceiver = new ALSZCorrelatedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
 
-            const int numberOfInvocations = 2;
+            const int numberOfInvocations = 3;
             int numberOfMessageBits = TestUtils.TestCorrelations[0].Length;
 
             // sender data
@@ -46,9 +46,10 @@ namespace CompactOT
 
             correlations.SetInvocation(0, TestUtils.TestCorrelations.ToArray());
             correlations.SetInvocation(1, TestUtils.TestCorrelations.ToArray());
+            correlations.SetInvocation(2, TestUtils.TestCorrelations.ToArray());
 
             // receiver data
-            var receiverIndices = new int[] { 0, 3 };
+            var receiverIndices = new int[] { 0, 3, numberOfOptions - 1 };
 
             // execute protocol
             var sendTask = otSender.SendAsync(correlations);
@@ -71,6 +72,10 @@ namespace CompactOT
             Debug.Assert(receiverIndices[1] != 0);
             var expectedSecond = correlations.GetMessage(1, receiverIndices[1] - 1) ^ senderResults.GetInvocationResult(1);
             Assert.Equal(expectedSecond, results.GetInvocationResult(1));
+
+            Debug.Assert(receiverIndices[2] == numberOfOptions - 1);
+            var expectedThird = correlations.GetMessage(2, receiverIndices[2] - 1) ^ senderResults.GetInvocationResult(2);
+            Assert.Equal(expectedThird, results.GetInvocationResult(2));
         }
 
     }
