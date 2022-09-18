@@ -28,6 +28,8 @@ namespace CompactOT.DataStructures
             return ((IEnumerable<Bit>)this).GetEnumerator();
         }
 
+        public static BitSequence Empty = new EmptyBitSequence();
+
         protected virtual void CopyToInternal(byte[] buffer, int offset)
         {
             AsByteEnumerable().WriteInto(buffer, offset);
@@ -130,6 +132,11 @@ namespace CompactOT.DataStructures
             return String.Concat(((IEnumerable<Bit>)this).Select(b => b ? '1' : '0'));
         }
 
+        public override string ToString()
+        {
+            return ToBinaryString();
+        }
+
         public virtual IEnumerable<int> ToSelectionIndices()
         {
             return ((IEnumerable<Bit>)this).Select(b => (int)b);
@@ -186,5 +193,34 @@ namespace CompactOT.DataStructures
 
         public static BitSequence operator ^(BitSequence left, Bit right) => left.Xor(right);
         public static BitSequence operator ^(Bit left, BitSequence right) => right.Xor(left);
+
+        public override bool Equals(object obj)
+        {
+            BitSequence? other = obj as BitSequence;
+            if (other == null) return false;
+
+            return AsByteEnumerable().SequenceEqual(other.AsByteEnumerable());
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 3697;
+
+            foreach (var b in AsByteEnumerable())
+            {
+                hash = hash * 5573 + b;
+            }
+            return hash;
+        }
+
+        public virtual bool IsZero
+        {
+            get
+            {
+                byte aggregated = AsByteEnumerable().Aggregate((a, b) => (byte)(b | a));
+                return aggregated == 0;
+            }
+        }
     }
+
 }

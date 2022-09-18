@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
+﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
 // SPDX-License-Identifier: MIT
 // Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
 
@@ -189,19 +189,5 @@ namespace CompactOT.DataStructures
             }
         }
 
-        /// <inheritdoc/>
-        public override bool Equals(object? obj)
-        {
-            BitArray? other = obj as BitArray;
-            if (other == null) return false;
-            if (other.Length != Length) return false;
-            return other.AsByteEnumerable().SequenceEqual(this.AsByteEnumerable());
-        }
-
-        /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            return Buffer.GetHashCode();
-        }
     }
 }

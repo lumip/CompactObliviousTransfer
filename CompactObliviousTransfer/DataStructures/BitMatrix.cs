@@ -157,5 +157,10 @@ namespace CompactOT.DataStructures
             return Rows == other.Rows && Cols == other.Cols && _values.Equals(other._values);
         }
 
+        public override int GetHashCode()
+        {
+            return 15527 * Rows + 37307 * Cols + 8599 * Rows.GetHashCode();
+        }
+
     }
 }
