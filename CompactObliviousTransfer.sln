@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleXor", "Examples\Simpl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeaverTriples", "Examples\BeaverTriples\BeaverTriples.csproj", "{D41E0A08-EB08-4FCA-A368-2E6ADA7DF454}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarbledCircuit", "Examples\GarbledCircuit\GarbledCircuit.csproj", "{B0AC03CE-8121-42A0-BB04-D9871D42073A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,9 +76,22 @@ Global
 		{D41E0A08-EB08-4FCA-A368-2E6ADA7DF454}.Release|x64.Build.0 = Release|Any CPU
 		{D41E0A08-EB08-4FCA-A368-2E6ADA7DF454}.Release|x86.ActiveCfg = Release|Any CPU
 		{D41E0A08-EB08-4FCA-A368-2E6ADA7DF454}.Release|x86.Build.0 = Release|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Debug|x64.Build.0 = Debug|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Debug|x86.Build.0 = Debug|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Release|x64.ActiveCfg = Release|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Release|x64.Build.0 = Release|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Release|x86.ActiveCfg = Release|Any CPU
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{61F93195-30E0-4EEE-BCF5-B7F59F47BDFD} = {56C32A15-45A8-4ACE-9E5C-C373ECD23C5E}
 		{D41E0A08-EB08-4FCA-A368-2E6ADA7DF454} = {56C32A15-45A8-4ACE-9E5C-C373ECD23C5E}
+		{B0AC03CE-8121-42A0-BB04-D9871D42073A} = {56C32A15-45A8-4ACE-9E5C-C373ECD23C5E}
 	EndGlobalSection
 EndGlobal
