@@ -87,6 +87,15 @@ namespace CompactOT.DataStructures
         }
 
         [Fact]
+        public void FromBigIntegerZero()
+        {
+            var expected = BitArray.FromBinaryString("0");
+            var result = BitArray.FromBigInteger(BigInteger.Zero);
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
         public void TestOr()
         {
             var leftBits  = BitArray.FromBinaryString("01110100 01001");

@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
+// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
 // SPDX-License-Identifier: MIT
 // Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
 
@@ -79,6 +79,12 @@ namespace CompactOT.DataStructures
 
         public static BitArray FromBigInteger(BigInteger i)
         {
+            if (i == BigInteger.Zero)
+            {
+                byte[] zeros = new byte[] { 0 };
+                return new BitArray(zeros, 1);
+            }
+
             int numberOfBits = NumberLength.GetLength(i).InBits;
             return FromBytes(i.ToByteArray(), numberOfBits);
         }
