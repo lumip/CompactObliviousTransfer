@@ -34,6 +34,15 @@ namespace CompactOT.DataStructures
             _values = new BitArray(values);
         }
 
+        public static BitMatrix Zeros(int numberOfRows, int numberOfColumns)
+        {
+            return new BitMatrix(
+                numberOfRows,
+                numberOfColumns,
+                new ConstantBitArrayView(Bit.Zero, numberOfRows * numberOfColumns)
+            );
+        }
+
         private int GetValuesIndex(int row, int col)
         {
             return (row * Cols + col);
