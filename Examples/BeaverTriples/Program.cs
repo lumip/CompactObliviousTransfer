@@ -73,12 +73,12 @@ namespace CompactOT.Examples.BeaverTriples
                 var secondPartyTripleShare = secondPartyTripleShares.GetTripleShare(i);
 
                 Console.WriteLine(
-                    $"{i} Triple: ({firstPartyTripleShare.Item1.ToBinaryString()} ^ {secondPartyTripleShare.Item1.ToBinaryString()}) & "+
-                    $"({firstPartyTripleShare.Item2.ToBinaryString()} ^ {secondPartyTripleShare.Item2.ToBinaryString()}) = " +
-                    $"{(firstPartyTripleShare.Item1 ^ secondPartyTripleShare.Item1).ToBinaryString()} & " + 
-                    $"{(firstPartyTripleShare.Item2 ^ secondPartyTripleShare.Item2).ToBinaryString()} = " + 
-                    $"{(firstPartyTripleShare.Item3 ^ secondPartyTripleShare.Item3).ToBinaryString()} = " +
-                    $"{firstPartyTripleShare.Item3.ToBinaryString()} ^ {secondPartyTripleShare.Item3.ToBinaryString()}" 
+                    $"{i} Triple: ({firstPartyTripleShare.Item1} ^ {secondPartyTripleShare.Item1}) & "+
+                    $"({firstPartyTripleShare.Item2} ^ {secondPartyTripleShare.Item2}) = " +
+                    $"{(firstPartyTripleShare.Item1 ^ secondPartyTripleShare.Item1)} & " + 
+                    $"{(firstPartyTripleShare.Item2 ^ secondPartyTripleShare.Item2)} = " + 
+                    $"{(firstPartyTripleShare.Item3 ^ secondPartyTripleShare.Item3)} = " +
+                    $"{firstPartyTripleShare.Item3} ^ {secondPartyTripleShare.Item3}" 
                 );
 
                 var firstPartyInput = firstPartyInputs.GetRow(i);
@@ -87,9 +87,9 @@ namespace CompactOT.Examples.BeaverTriples
                 var secondPartyOutputShare = secondPartyOutputShares.GetRow(i);
 
                 Console.WriteLine(
-                    $"{i} Outputs: {firstPartyInput.ToBinaryString()} & {secondPartyInput.ToBinaryString()} = " +
-                    $"{firstPartyOutputShare.ToBinaryString()} ^ {secondPartyOutputShare.ToBinaryString()} = " +
-                    $"{(firstPartyOutputShare ^ secondPartyOutputShare).ToBinaryString()}"
+                    $"{i} Outputs: {firstPartyInput} & {secondPartyInput} = " +
+                    $"{firstPartyOutputShare} ^ {secondPartyOutputShare} = " +
+                    $"{(firstPartyOutputShare ^ secondPartyOutputShare)}"
                 );
             }
         }
@@ -146,7 +146,6 @@ namespace CompactOT.Examples.BeaverTriples
 
         static async Task<TripleShareSet> MakeTripleFirstParty(IRandomObliviousTransferChannel rotChannel, int numberOfTriples, RandomNumberGenerator randomNumberGenerator)
         {
-
             (var a, var u) = await MakeHalfTripleFromCOTReceiver(rotChannel, numberOfTriples, randomNumberGenerator);
             (var b, var v) = await MakeHalfTripleFromCOTSender(rotChannel, numberOfTriples);
             var c = (a & b) ^ u ^ v;
@@ -156,7 +155,6 @@ namespace CompactOT.Examples.BeaverTriples
 
         static async Task<TripleShareSet> MakeTripleSecondParty(IRandomObliviousTransferChannel rotChannel, int numberOfTriples, RandomNumberGenerator randomNumberGenerator)
         {
-        
             (var b, var v) = await MakeHalfTripleFromCOTSender(rotChannel, numberOfTriples);
             (var a, var u) = await MakeHalfTripleFromCOTReceiver(rotChannel, numberOfTriples, randomNumberGenerator);
             var c = (a & b) ^ u ^ v;
@@ -199,10 +197,10 @@ namespace CompactOT.Examples.BeaverTriples
             return opened;
         }
 
-        static async Task<BitMatrix> MultiplyWithTriplesFirstParty(BitMatrix inputs, TripleShareSet tripleShares, IMessageChannel channel)
+        static async Task<BitMatrix> MultiplyWithTriples(BitMatrix firstInputs, BitMatrix secondInputs, TripleShareSet tripleShares, IMessageChannel channel)
         {
-            var alphaShares = inputs ^ tripleShares.FirstFactorShare;
-            var betaShares = tripleShares.SecondFactorShare;
+            var alphaShares = firstInputs ^ tripleShares.FirstFactorShare;
+            var betaShares = secondInputs ^ tripleShares.SecondFactorShare;
             
             var alphas = await OpenShares(alphaShares, channel);
             var betas = await OpenShares(betaShares, channel);
@@ -210,17 +208,15 @@ namespace CompactOT.Examples.BeaverTriples
             var outputs = tripleShares.ProductShare ^ (tripleShares.FirstFactorShare & betas) ^ (tripleShares.SecondFactorShare & alphas) ^ (alphas & betas);
             return outputs;
         }
-        
-        static async Task<BitMatrix> MultiplyWithTriplesSecondParty(BitMatrix inputs, TripleShareSet tripleShares, IMessageChannel channel)
-        {
-            var alphaShares = tripleShares.FirstFactorShare;
-            var betaShares = inputs ^ tripleShares.SecondFactorShare;
-            
-            var alphas = await OpenShares(alphaShares, channel);
-            var betas = await OpenShares(betaShares, channel);
 
-            var outputs = tripleShares.ProductShare ^ (tripleShares.FirstFactorShare & betas) ^ (tripleShares.SecondFactorShare & alphas);
-            return outputs;
+        static Task<BitMatrix> MultiplyWithTriplesFirstParty(BitMatrix inputs, TripleShareSet tripleShares, IMessageChannel channel)
+        {
+            return MultiplyWithTriples(inputs, BitMatrix.Zeros(inputs.Rows, inputs.Cols), tripleShares, channel);
+        }
+
+        static Task<BitMatrix> MultiplyWithTriplesSecondParty(BitMatrix inputs, TripleShareSet tripleShares, IMessageChannel channel)
+        {
+            return MultiplyWithTriples(BitMatrix.Zeros(inputs.Rows, inputs.Cols), inputs, tripleShares, channel);
         }
 
 #endregion

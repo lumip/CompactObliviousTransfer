@@ -29,8 +29,8 @@ namespace CompactOT.Examples.SimpleXor
             Task<BitSequence> receiverTask = ExecuteReceiver(channelBuilder, receiverInput);
             Task.WaitAll(senderTask, receiverTask);
             BitSequence receiverResult = receiverTask.Result;
-            Console.WriteLine($"Sender input {senderInput.ToBinaryString()} and receiver input" + 
-                $" {receiverInput.ToBinaryString()}. Receiver received: {receiverResult.ToBinaryString()}.");
+            Console.WriteLine($"Sender input {senderInput} and receiver input" + 
+                $" {receiverInput}. Receiver received: {receiverResult}.");
         }
 
         static async Task ExecuteSender(ObliviousTransferChannelBuilder otChannelBuilder, BitSequence senderInput)
