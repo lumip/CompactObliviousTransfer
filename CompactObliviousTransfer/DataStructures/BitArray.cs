@@ -77,6 +77,11 @@ namespace CompactOT.DataStructures
             return FromBigInteger(new BigInteger(i));
         }
 
+        public static BitArray FromInt(int i, int numberOfBits)
+        {
+            return FromBigInteger(new BigInteger(i), numberOfBits);
+        }
+
         public static BitArray FromBigInteger(BigInteger i)
         {
             if (i == BigInteger.Zero)
@@ -86,6 +91,13 @@ namespace CompactOT.DataStructures
             }
 
             int numberOfBits = NumberLength.GetLength(i).InBits;
+            return FromBigInteger(i, numberOfBits);
+        }
+
+        public static BitArray FromBigInteger(BigInteger i, int numberOfBits)
+        {
+            if (numberOfBits < 0)
+                throw new ArgumentOutOfRangeException("Number of bits must not be negative.", nameof(numberOfBits));
             return FromBytes(i.ToByteArray(), numberOfBits);
         }
 

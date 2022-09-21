@@ -95,6 +95,20 @@ namespace CompactOT.DataStructures
             Assert.Equal(expected, result);
         }
 
+        [Theory]
+        [InlineData(129, 8, "10000001")]
+        [InlineData(129, 9, "100000010")]
+        [InlineData(129, 7, "1000000")]
+        public void FromBigIntegerFixedLength(int i, int numberOfBits, string expectedString)
+        {
+            var input = new BigInteger(i);
+            var result = BitArray.FromBigInteger(input, numberOfBits);
+
+            var expected = BitArray.FromBinaryString(expectedString);
+
+            Assert.Equal(expected, result);
+        }
+
         [Fact]
         public void TestOr()
         {
