@@ -30,7 +30,6 @@ namespace CompactOT.Examples.GarbledCircuit
 
             Console.WriteLine($"{firstPartyInput} + {secondPartyInput} = {secondPartyTask.Result}");
         }
-
         
         static async Task RunFirstParty(ObliviousTransferChannelBuilder otChannelBuilder, BitArray input)
         {
@@ -66,38 +65,40 @@ namespace CompactOT.Examples.GarbledCircuit
                     var wireValueFirstPartyInputLsb = wireZeroValueFirstPartyInputLsb ^ (input[0] & wireDelta);
                     var wireValueFirstPartyInputMsb = wireZeroValueFirstPartyInputMsb ^ (input[1] & wireDelta);
 
-                    var wireZeroValueLsbXorLsb = GateBuilder.MakeFreeXor(
+                    var gateLsbXorLsb = new FreeXorGate();
+                    var wireZeroValueLsbXorLsb = gateLsbXorLsb.Apply(
                         wireZeroValueFirstPartyInputLsb, wireZeroValueSecondPartyInputLsb
                     );
 
-                    var wireZeroValueMsbXorMsb = GateBuilder.MakeFreeXor(
+                    var gateMsbXorMsb = new FreeXorGate();
+                    var wireZeroValueMsbXorMsb = gateMsbXorMsb.Apply(
                         wireZeroValueFirstPartyInputMsb, wireZeroValueSecondPartyInputMsb
                     );
 
-                    var wireZeroValueLsbAndLsb = randomNumberGenerator.GetBits(wireValueLength);
-                    var gateLsbAndLsb = GateBuilder.MakeAnd(
-                        wireZeroValueFirstPartyInputLsb, wireZeroValueSecondPartyInputLsb,
-                        wireZeroValueLsbAndLsb, wireDelta
+                    var gateLsbAndLsb = new SenderAndGate(randomNumberGenerator, wireDelta);
+
+                    var wireZeroValueLsbAndLsb = gateLsbAndLsb.Apply(
+                        wireZeroValueFirstPartyInputLsb, wireZeroValueSecondPartyInputLsb
                     );
                     var wireZeroValueCarryLsb = wireZeroValueLsbAndLsb;
 
-                    var wireZeroValueMsbXorMsbXorCarryLsb = GateBuilder.MakeFreeXor(
+                    var gateMsbXorMsbXorCarryLsb = new FreeXorGate();
+                    var wireZeroValueMsbXorMsbXorCarryLsb = gateMsbXorMsbXorCarryLsb.Apply(
                         wireZeroValueMsbXorMsb, wireZeroValueCarryLsb
                     );
 
-                    var wireZeroValueMsbAndMsb = randomNumberGenerator.GetBits(wireValueLength);
-                    var gateMsbAndMasb = GateBuilder.MakeAnd(
-                        wireZeroValueFirstPartyInputMsb, wireZeroValueSecondPartyInputMsb,
-                        wireZeroValueMsbAndMsb, wireDelta
+                    var gateMsbAndMsb = new SenderAndGate(randomNumberGenerator, wireDelta);
+                    var wireZeroValueMsbAndMsb = gateMsbAndMsb.Apply(
+                        wireZeroValueFirstPartyInputMsb, wireZeroValueSecondPartyInputMsb
                     );
 
-                    var wireZeroValueMsbXorMsbAndCarryLsb = randomNumberGenerator.GetBits(wireValueLength);
-                    var gateMsbXorMsbAndCarryLsb = GateBuilder.MakeAnd(
-                        wireZeroValueMsbXorMsb, wireZeroValueCarryLsb,
-                        wireZeroValueMsbXorMsbAndCarryLsb, wireDelta
+                    var gateMsbXorMsbAndCarryLsb = new SenderAndGate(randomNumberGenerator, wireDelta);
+                    var wireZeroValueMsbXorMsbAndCarryLsb = gateMsbXorMsbAndCarryLsb.Apply(
+                        wireZeroValueMsbXorMsb, wireZeroValueCarryLsb
                     );
 
-                    var wireZeroValueCarryMsb = GateBuilder.MakeFreeXor(
+                    var gateCarryMsb = new FreeXorGate();
+                    var wireZeroValueCarryMsb = gateCarryMsb.Apply(
                         wireZeroValueMsbXorMsbAndCarryLsb, wireZeroValueMsbAndMsb
                     );
 
@@ -108,19 +109,19 @@ namespace CompactOT.Examples.GarbledCircuit
                     var gateLsbAndLsbSerialized = gateLsbAndLsb.SerializeToBytes(randomNumberGenerator);
                     await channel.WriteMessageAsync(gateLsbAndLsbSerialized);
 
-                    var gateMsbAndMsbSerialized = gateMsbAndMasb.SerializeToBytes(randomNumberGenerator);
+                    var gateMsbAndMsbSerialized = gateMsbAndMsb.SerializeToBytes(randomNumberGenerator);
                     await channel.WriteMessageAsync(gateMsbAndMsbSerialized);
 
                     var gateMsbXorMsbAndCarryLsbSerialized = gateMsbXorMsbAndCarryLsb.SerializeToBytes(randomNumberGenerator);
                     await channel.WriteMessageAsync(gateMsbXorMsbAndCarryLsbSerialized);
 
-                    var circuitWireMap = BitSequence.Empty
+                    var circuitSerialization = BitSequence.Empty
                                             .Concatenate(wireValueFirstPartyInputLsb)
                                             .Concatenate(wireValueFirstPartyInputMsb)
                                             .Concatenate(wireZeroValueOutputLsb)
                                             .Concatenate(wireZeroValueOutputMsb)
                                             .Concatenate(wireZeroValueOutputCarry);
-                    await channel.WriteMessageAsync(circuitWireMap.ToBytes());
+                    await channel.WriteMessageAsync(circuitSerialization.ToBytes());
                 }
             }
         }
@@ -141,13 +142,13 @@ namespace CompactOT.Examples.GarbledCircuit
                     var wireValueSecondPartyInputMsb = wireValuesInputs.GetRow(1);
 
                     var gateLsbAndLsbSerialized = await channel.ReadMessageAsync();
-                    var gateLsbAndLsb = GenericDoubleInputGate.Deserialize(gateLsbAndLsbSerialized);
+                    var gateLsbAndLsb = ReceiverAndGate.Deserialize(gateLsbAndLsbSerialized);
 
                     var gateMsbAndMsbSerialized = await channel.ReadMessageAsync();
-                    var gateMsbAndMsb = GenericDoubleInputGate.Deserialize(gateMsbAndMsbSerialized);
+                    var gateMsbAndMsb = ReceiverAndGate.Deserialize(gateMsbAndMsbSerialized);
 
                     var gateMsbXorMsbAndCarryLsbSerialized = await channel.ReadMessageAsync();
-                    var gateMsbXorMsbAndCarryLsb = GenericDoubleInputGate.Deserialize(gateMsbXorMsbAndCarryLsbSerialized);
+                    var gateMsbXorMsbAndCarryLsb = ReceiverAndGate.Deserialize(gateMsbXorMsbAndCarryLsbSerialized);
 
                     var circuitWireMapBytes = await channel.ReadMessageAsync();
                     var circuitWireMap = BitArray.FromBytes(circuitWireMapBytes, 5 * wireValueLength);

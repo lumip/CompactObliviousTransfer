@@ -1,9 +1,6 @@
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Security.Cryptography;
 
 using CompactOT.DataStructures;
@@ -11,7 +8,7 @@ using CompactOT.DataStructures;
 namespace CompactOT.Examples.GarbledCircuit
 {
 
-    class GenericDoubleInputGate : DoubleInputGate
+    class GenericDoubleInputGate
     {
         private Dictionary<BitSequence, SingleInputGate> _gateLookup;
 
@@ -25,7 +22,6 @@ namespace CompactOT.Examples.GarbledCircuit
             return _gateLookup[firstInput].Apply(secondInput);
         }
 
-        
         public BitSequence SerializeToBits(RandomNumberGenerator randomNumberGenerator)
         {
             BitSequence[] lookupSequences = _gateLookup.Select(
@@ -73,6 +69,19 @@ namespace CompactOT.Examples.GarbledCircuit
             int wireValueLength = BitConverter.ToInt32(bytes, 0);
             var bits = BitArray.FromBytes(bytes, wireValueLength * 10, 4);
             return Deserialize(bits);
+        }
+
+        public static GenericDoubleInputGate MakeAnd(
+            BitSequence firstIn0, BitSequence secondIn0,
+            BitSequence out0, BitSequence delta
+        )
+        {
+            return new GenericDoubleInputGate(new Dictionary<BitSequence, SingleInputGate>()
+                {
+                    { firstIn0, SingleInputGate.MakeConstant(secondIn0, out0, delta) },
+                    { firstIn0 ^ delta, SingleInputGate.MakeIdentity(secondIn0, out0, delta) }
+                }
+            );
         }
 
     }
