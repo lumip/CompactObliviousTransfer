@@ -12,17 +12,17 @@ namespace CompactOT
     /// N bit-strings x_0, ..., x_N and the receiver inputs a selection index s.
     /// The sender receives no outputs. The receiver receives as output the bit-string x_s.
     /// </summary>
-    public interface IStatelessObliviousTransfer
+    public interface IStatelessObliviousTransfer : ICostEstimator
     {
         /// <summary>
         /// Starts a K-fold 1-out-of-N Oblivious Transfer as the sender with the given options.
         /// </summary>
-        public Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options);
+        Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options);
 
         /// <summary>
         /// Starts  K-fold 1-out-of-N Oblivious Transfer as the receiver with the given choice indices.
         /// </summar>
-        public Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
+        Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits);
                 
         /// <summary>
         /// Security level provided by the Oblious Transfer.
@@ -30,9 +30,7 @@ namespace CompactOT
         /// The security level λ is the power-of-two exponent such that the expected runtime for an attacker
         /// to break the OT protocol with probability p is at least p * 2^λ in the semi-honest model.
         /// </summary>
-        public int SecurityLevel { get; }
-
-        public double EstimateCost(ObliviousTransferUsageProjection usageProjection);
+        int SecurityLevel { get; }
 
     }
 }

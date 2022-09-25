@@ -101,22 +101,8 @@ namespace CompactOT
             return code;
         }
 
-        public IObliviousTransferChannel MakeObliviousTransferChannel(
-            IMessageChannel channel, CryptoContext? cryptoContext = null
-        )
+        private T SelectBaseOrExtendedChannel<T>(T baseProtocolChannel, T extendedOtChannel) where T : ICostEstimator
         {
-            cryptoContext = MakeCryptoContext(cryptoContext);
-            var code = MakeBinaryCode();
-
-            var baseProtocolChannel = _baseOtFactory.MakeChannel(
-                channel, cryptoContext, _projection.SecurityLevel
-            );
-
-            var extendedOtChannel = new ExtendedObliviousTransferChannel(
-                baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
-            );
-
-
             if (_projection.HasMaxNumberOfInvocations)
             {
                 // bounded number of invocations, estimate actual cost and favour least costly protocol
@@ -134,6 +120,24 @@ namespace CompactOT
             return extendedOtChannel;
         }
 
+        public IObliviousTransferChannel MakeObliviousTransferChannel(
+            IMessageChannel channel, CryptoContext? cryptoContext = null
+        )
+        {
+            cryptoContext = MakeCryptoContext(cryptoContext);
+            var code = MakeBinaryCode();
+
+            var baseProtocolChannel = _baseOtFactory.MakeChannel(
+                channel, cryptoContext, _projection.SecurityLevel
+            );
+
+            var extendedOtChannel = new ExtendedObliviousTransferChannel(
+                baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
+            );
+
+            return SelectBaseOrExtendedChannel<IObliviousTransferChannel>(baseProtocolChannel, extendedOtChannel);
+        }
+
         public ICorrelatedObliviousTransferChannel MakeCorrelatedObliviousTransferChannel(
             IMessageChannel channel, CryptoContext? cryptoContext = null
         )
@@ -145,33 +149,15 @@ namespace CompactOT
                 channel, cryptoContext, _projection.SecurityLevel
             );
 
+            var baseProtocolCorrelatedChannel = new Adapters.CorrelatedFromStandardObliviousTransferChannel(
+                baseProtocolChannel, cryptoContext.RandomNumberGenerator
+            );
+
             var alszCorrelatedChannel = new ALSZCorrelatedObliviousTransferChannel(
                 baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
             );
 
-            if (_projection.HasMaxNumberOfInvocations)
-            {
-                // bounded number of invocations, estimate actual cost and favour least costly protocol
-                var baseProtocolCorrelatedChannel = new Adapters.CorrelatedFromStandardObliviousTransferChannel(
-                    baseProtocolChannel, cryptoContext.RandomNumberGenerator
-                );
-
-                double pureBaseProtocolCost = baseProtocolCorrelatedChannel.EstimateCost(
-                    _projection
-                );
-                double alszCorrelatedCost = alszCorrelatedChannel.EstimateCost(
-                    _projection
-                );
-
-                if (pureBaseProtocolCost < alszCorrelatedCost)
-                {
-                    return baseProtocolCorrelatedChannel;
-                }
-            }
-            // Here either we have determined that for the given number of invocations extended OT is less costly,
-            // or the maximum number of invocations is unbounded. Since extended OT is less costly asymptotically,
-            // we prefer it in the latter case as well. Therefore, we return the extended OT channel here.
-            return alszCorrelatedChannel;
+            return SelectBaseOrExtendedChannel<ICorrelatedObliviousTransferChannel>(baseProtocolCorrelatedChannel, alszCorrelatedChannel);
         }
 
         public IRandomObliviousTransferChannel MakeRandomObliviousTransferChannel(
@@ -185,37 +171,16 @@ namespace CompactOT
                 channel, cryptoContext, _projection.SecurityLevel
             );
 
+            var baseProtocolRandomChannel = new Adapters.RandomFromStandardObliviousTransferChannel(
+                baseProtocolChannel, cryptoContext.RandomNumberGenerator
+            );
+
             var alszRandomChannel = new ALSZRandomObliviousTransferChannel(
                 baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
             );
 
-            if (_projection.HasMaxNumberOfInvocations)
-            {
-                // bounded number of invocations, estimate actual cost and favour least costly protocol
-                var baseProtocolRandomChannel = new Adapters.RandomFromStandardObliviousTransferChannel(
-                    baseProtocolChannel, cryptoContext.RandomNumberGenerator
-                );
-                
-                double pureBaseProtocolCost = baseProtocolChannel.EstimateCost(
-                    _projection
-                );
-
-                double alszRandomCost = alszRandomChannel.EstimateCost(
-                    _projection
-                );
-
-                if (pureBaseProtocolCost < alszRandomCost)
-                {
-                    return baseProtocolRandomChannel;
-                }
-            }
-            // Here either we have determined that for the given number of invocations extended OT is less costly,
-            // or the maximum number of invocations is unbounded. Since extended OT is less costly asymptotically,
-            // we prefer it in the latter case as well. Therefore, we return the extended OT channel here.
-            return alszRandomChannel;
+            return SelectBaseOrExtendedChannel<IRandomObliviousTransferChannel>(baseProtocolRandomChannel, alszRandomChannel);
         }
-
-        // TODO: can reduce duplicated logic in the above using a generic-typed method?
 
     }
 }

@@ -13,11 +13,9 @@ namespace CompactOT
     /// N bit-strings x_0, ..., x_N and the receiver inputs a selection index s.
     /// The sender receives no outputs. The receiver receives as output the bit-string x_s.
     /// </summary>
-    public interface IObliviousTransferChannel : IObliviousTransferChannelReceiverEndpoint
+    public interface IObliviousTransferChannel : IObliviousTransferChannelReceiverEndpoint, ICostEstimator
     {
-        public Task SendAsync(ObliviousTransferOptions options);
-
-        public double EstimateCost(ObliviousTransferUsageProjection usageProjection);
+        Task SendAsync(ObliviousTransferOptions options);
     }
 
 }

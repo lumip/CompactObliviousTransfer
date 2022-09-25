@@ -16,11 +16,9 @@ namespace CompactOT
     /// the bit-string x_s = x_0 ^ c_s (with c_0 = 0).
     /// </summary>
     /// 
-    public interface ICorrelatedObliviousTransferChannel : IObliviousTransferChannelReceiverEndpoint
+    public interface ICorrelatedObliviousTransferChannel : IObliviousTransferChannelReceiverEndpoint, ICostEstimator
     {
-        public Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions correlations);
-
-        public double EstimateCost(ObliviousTransferUsageProjection usageProjection);
+        Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions correlations);
     }
     
 }

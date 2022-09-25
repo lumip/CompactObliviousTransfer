@@ -14,11 +14,9 @@ namespace CompactOT
     /// The sender receives as output N random bit-strings x_0, ..., X_N. The receiver receives
     /// as output the bit-string x_s.
     /// </summary>
-    public interface IRandomObliviousTransferChannel : IObliviousTransferChannelReceiverEndpoint
+    public interface IRandomObliviousTransferChannel : IObliviousTransferChannelReceiverEndpoint, ICostEstimator
     {
-        public Task<ObliviousTransferOptions> SendAsync(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits);
-
-        public double EstimateCost(ObliviousTransferUsageProjection usageProjection);
+        Task<ObliviousTransferOptions> SendAsync(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits);
     }
     
 }
