@@ -15,6 +15,11 @@ using CompactCryptoGroupAlgebra;
 namespace CompactOT.DataStructures
 {
 
+    /// <summary>
+    /// A (packed) mutable array of bits.
+    /// 
+    /// Write access is not threadsafe.
+    /// </summary>
     public class BitArray : BitSequence, IReadOnlyList<Bit> // it is also a IList but does not support any operations changing length...
     {
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -111,7 +111,13 @@ namespace CompactOT
                     // todo: think about whether we want to use a static set of Cs for each sender for all
                     //  connection to reduce the required amount of computation per OT. Would require to
                     //  maintain state in this class and negate the points made in the note above.
-                    maskedOptions.SetMessage(j, i, MaskOption(options.GetMessage(j, i), e, j, i));
+                    var maskedOption = MaskOption(options.GetMessage(j, i), e, j, i);
+
+                    // Writing into ObliviousTransferOptions is not threadsafe, need to lock
+                    lock (maskedOptions)
+                    {
+                        maskedOptions.SetMessage(j, i, maskedOption);
+                    }
                 });
             });
 
@@ -185,7 +191,12 @@ namespace CompactOT
             {
                 int i = selectionIndices[j];
 
-                selectedOptions.SetRow(j, MaskOption(maskedOptions.GetMessage(j, i), listOfEs[j], j, i));
+                var unmaskedMessage = MaskOption(maskedOptions.GetMessage(j, i), listOfEs[j], j, i);
+                // Writing into ObliviousTransferResult is not threadsafe, need to lock
+                lock (selectedOptions)
+                {
+                    selectedOptions.SetRow(j, unmaskedMessage);
+                }
             });
 
 #if DEBUG
