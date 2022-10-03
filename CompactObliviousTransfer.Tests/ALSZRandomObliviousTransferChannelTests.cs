@@ -36,6 +36,7 @@ namespace CompactOT
 
             var cryptoContext = CryptoContext.CreateDefault();
             var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);
+
             var otSender = new ALSZRandomObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
             var otReceiver = new ALSZRandomObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
 

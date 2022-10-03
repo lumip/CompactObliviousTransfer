@@ -11,14 +11,14 @@ namespace CompactOT
     public sealed class CryptoContext : IDisposable
     {
         public RandomNumberGenerator RandomNumberGenerator { get; private set; }
-        public HashAlgorithm HashAlgorithm { get; private set; }
+        public HashAlgorithmProvider HashAlgorithmProvider { get; private set; }
 
-        public int SecurityLevel => HashAlgorithm.HashSize / 2;
+        public int SecurityLevel => HashAlgorithmProvider.SecurityLevel;
 
-        public CryptoContext(RandomNumberGenerator randomNumberGenerator, HashAlgorithm hashAlgorithm)
+        public CryptoContext(RandomNumberGenerator randomNumberGenerator, HashAlgorithmProvider hashAlgorithmProvider)
         {
             RandomNumberGenerator = randomNumberGenerator;
-            HashAlgorithm = hashAlgorithm;
+            HashAlgorithmProvider = hashAlgorithmProvider;
         }
 
         public static CryptoContext CreateDefault()
@@ -29,14 +29,14 @@ namespace CompactOT
         public static CryptoContext CreateWithSecurityLevel(int securityLevel)
         {
             // based on https://en.wikipedia.org/wiki/Hash_function_security_summary
-            HashAlgorithm hashAlgorithm;
+            HashAlgorithmProvider hashAlgorithmProvider;
             if (securityLevel <= 128)
             {
-                hashAlgorithm = SHA256.Create();
+                hashAlgorithmProvider = new SHA256Provider();
             }
             else if (securityLevel <= 256)
             {
-                hashAlgorithm = SHA512.Create();
+                hashAlgorithmProvider = new SHA512Provider();
             }
             else
             {
@@ -47,14 +47,13 @@ namespace CompactOT
             }
             return new CryptoContext(
                 RandomNumberGenerator.Create(),
-                hashAlgorithm
+                hashAlgorithmProvider
             );
         }
 
         public void Dispose()
         {
             RandomNumberGenerator.Dispose();
-            HashAlgorithm.Dispose();
         }
 
     }

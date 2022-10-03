@@ -60,7 +60,7 @@ namespace CompactOT
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
-            
+
             var randomOptions = new ObliviousTransferOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
 
             int totalNumberOfInvocationsOffset = TotalNumberOfInvocations - numberOfInvocations;

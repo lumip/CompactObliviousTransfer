@@ -120,7 +120,7 @@ namespace CompactOT
 
 
             var cryptoContext = new CryptoContext(
-                rngMock.Object, SHA1.Create()
+                rngMock.Object, new SHA256Provider()
             );
             var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
 
@@ -159,7 +159,7 @@ namespace CompactOT
 
 
             var cryptoContext = new CryptoContext(
-                rngMock.Object, SHA1.Create()
+                rngMock.Object, new SHA256Provider()
             );
             var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -34,7 +34,7 @@ namespace CompactOT
         public NaorPinkasObliviousTransfer(CryptoGroup<TSecret, TCrypto> cryptoGroup, CryptoContext cryptoContext)
         {
             _group = cryptoGroup;
-            _randomOracle = new HashRandomOracle(cryptoContext.HashAlgorithm);
+            _randomOracle = new HashRandomOracle(cryptoContext.HashAlgorithmProvider);
             _randomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
 #if DEBUG
             Console.WriteLine("Security parameters:");

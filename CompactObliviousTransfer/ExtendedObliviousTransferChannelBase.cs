@@ -94,7 +94,7 @@ namespace CompactOT
             }
 
             RandomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
-            RandomOracle = new HashRandomOracle(cryptoContext.HashAlgorithm);
+            RandomOracle = new HashRandomOracle(cryptoContext.HashAlgorithmProvider);
             _securityParameter = NumberLength.FromBitLength(securityParameter);
             _senderState = null;
             _receiverState = null;
@@ -275,6 +275,7 @@ namespace CompactOT
                 var row = t0Col ^ t1Col ^ selectionCode;
                 us.SetRow(j, row);
             }
+
 #if DEBUG
             DebugUtils.WriteLineReceiver("ExtendedOT", "Generating random Ts and U took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Reset();

@@ -14,25 +14,18 @@ namespace CompactOT
 {
     public class HashRandomOracle : RandomOracle
     {
-        private HashAlgorithm _hashAlgorithm;
-        private object _hashAlgorithmLock;
+        private HashAlgorithmProvider _hashAlgorithmProvider;
 
-        public HashRandomOracle(HashAlgorithm hashAlgorithm)
+        public HashRandomOracle(HashAlgorithmProvider hashAlgorithmProvider)
         {
-            if (hashAlgorithm == null)
-                throw new ArgumentNullException(nameof(hashAlgorithm));
-
-            _hashAlgorithm = hashAlgorithm;
-            _hashAlgorithmLock = new object();
+            _hashAlgorithmProvider = hashAlgorithmProvider;
         }
 
         public IEnumerator<byte> InvokeForEnumerator(byte[] query)
         {
-            byte[] seed;
-            lock (_hashAlgorithmLock)
-            {
-                seed = _hashAlgorithm.ComputeHash(query);
-            }
+            HashAlgorithm hashAlgorithm = _hashAlgorithmProvider.CreateHashAlgorithm();
+
+            byte[] seed = hashAlgorithm.ComputeHash(query);
 
             using (MemoryStream stream = new MemoryStream(seed.Length + 4))
             {
@@ -45,11 +38,7 @@ namespace CompactOT
                     stream.Write(BitConverter.GetBytes(counter), 0, 4);
                     stream.Position = 0;
 
-                    byte[] block;
-                    lock (_hashAlgorithmLock)
-                    {
-                        block = _hashAlgorithm.ComputeHash(stream);
-                    }
+                    byte[] block = hashAlgorithm.ComputeHash(stream);
 
                     foreach (byte blockByte in block)
                         yield return blockByte;

@@ -70,7 +70,7 @@ namespace CompactOT
             }
             else
             {
-                if (cryptoContext.HashAlgorithm.HashSize / 2 < _projection.SecurityLevel)
+                if (cryptoContext.HashAlgorithmProvider.SecurityLevel < _projection.SecurityLevel)
                 {
                     throw new ArgumentException(
                         $"Hash algorithm in the provided crypto context cannot satisfy required security level {_projection.SecurityLevel}." +
