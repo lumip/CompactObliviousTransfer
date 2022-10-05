@@ -20,6 +20,12 @@ namespace CompactOT
     ///
     /// Further implementation details: Seung Geol Choi et al.: Secure Multi-Party Computation of Boolean Circuits with Applications
     /// to Privacy in On-Line Marketplaces. https://link.springer.com/chapter/10.1007/978-3-642-27954-6_26
+    /// 
+    /// Note that this implemenatation is slightly modified so as to remove special treatment for the first options: In the notation
+    /// of Naor and Pinkas, the sender chooses an additional constant C_0, the receiver/chooser computes and sends PK = C_sigma / PK_sigma
+    /// for any choice sigma (instead of only for sigma > 0), which the sender uses in subsequent computations in place of PK_0 of Naor
+    /// and Pinkas' protocol description. Realising that the sender must transmit g^r in addition to C_1, ..., C_(N-1), we set
+    /// C_0 = g^r and thus incur no transmission cost for the additional C_0.
     /// </remarks>
     public class NaorPinkasObliviousTransfer<TSecret, TCrypto> : IStatelessObliviousTransfer where TSecret: notnull where TCrypto: notnull
     {
@@ -72,7 +78,7 @@ namespace CompactOT
             Task<CryptoGroupElement<TSecret, TCrypto>[]> readDsTask = ReadGroupElements(channel, options.NumberOfInvocations);
 
             var listOfExponentiatedCs = new CryptoGroupElement<TSecret, TCrypto>[options.NumberOfOptions];
-            Parallel.For(1, options.NumberOfOptions, i =>
+            Parallel.For(0, options.NumberOfOptions, i =>
             {
                 listOfExponentiatedCs[i] = listOfCs[i] * alpha;
             });
@@ -95,9 +101,7 @@ namespace CompactOT
 
                 Parallel.For(0, maskedOptions.NumberOfOptions, i =>
                 {
-                    var e = exponentiatedD;
-                    if (i > 0)
-                        e = listOfExponentiatedCs[i] + inverseExponentiatedD;
+                    var e = listOfExponentiatedCs[i] + inverseExponentiatedD;
 
                     Debug.Assert(!e.Value.Equals(_group.Algebra.NeutralElement));
                         
@@ -156,14 +160,13 @@ namespace CompactOT
 
             Parallel.For(0, numberOfInvocations, j =>
             {
-                (listOfBetas[j], listOfDs[j]) = GenerateGroupElement();
-                if (selectionIndices[j] > 0)
-                    listOfDs[j] = listOfCs[selectionIndices[j]] - listOfDs[j];
+                (listOfBetas[j], listOfDs[j]) = _group.GenerateRandom(_randomNumberGenerator);
+                listOfDs[j] = listOfCs[selectionIndices[j]] - listOfDs[j];
             });
 
 #if DEBUG
             stopwatch.Stop();
-            DebugUtils.WriteLineReceiver("NaorPinkas", "Generating and d took {0} ms.", stopwatch.ElapsedMilliseconds);
+            DebugUtils.WriteLineReceiver("NaorPinkas", "Generating d took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Restart();
 #endif
 
@@ -205,11 +208,6 @@ namespace CompactOT
 #endif
             
             return selectedOptions;
-        }
-
-        private (TSecret, CryptoGroupElement<TSecret, TCrypto>) GenerateGroupElement()
-        {
-            return _group.GenerateRandom(_randomNumberGenerator);
         }
 
         private Task WriteGroupElements(IMessageChannel channel, IReadOnlyList<CryptoGroupElement<TSecret, TCrypto>> groupElements)
