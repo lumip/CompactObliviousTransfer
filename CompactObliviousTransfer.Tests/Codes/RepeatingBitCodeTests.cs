@@ -9,7 +9,7 @@ namespace CompactOT.Codes
     {
 
         [Fact]
-        public void TestComputeCodeOnes()
+        public void TestEncodeOne()
         {
             var code = new RepeatingBitCode(8);
             var result = code.Encode(1);
@@ -20,7 +20,7 @@ namespace CompactOT.Codes
 
 
         [Fact]
-        public void TestComputeCodeZeros()
+        public void TestEncodeZero()
         {
             var code = new RepeatingBitCode(8);
             var result = code.Encode(0);
@@ -30,7 +30,7 @@ namespace CompactOT.Codes
         } 
 
         [Fact]
-        public void TestComputeCodeTooLargeValue()
+        public void TestEncodeRejectsTooLargeValue()
         {
             var code = new RepeatingBitCode(4);
             Assert.Throws<ArgumentOutOfRangeException>(() => code.Encode(2));

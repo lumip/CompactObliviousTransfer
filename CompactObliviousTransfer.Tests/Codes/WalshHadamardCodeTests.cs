@@ -17,39 +17,31 @@ namespace CompactOT.Codes
             Assert.Equal(1, WalshHadamardCode.GetParity(((int)0x19959C17)));
         }
 
-        [Fact]
-        public void TestComputeWalshHadamardCode()
+        [Theory]
+        [InlineData(15, "0110100110010110")]
+        [InlineData(12, "0000111111110000")]
+        [InlineData(7,  "0110100101101001")]
+        [InlineData(0,  "0000000000000000")]
+        public void TestEncode(int value, string expectedString)
         {
-            var code = new WalshHadamardCode(8);
-            var result = code.Encode(0b101);
+            var code = new WalshHadamardCode(16);
 
-            var expected = BitArray.FromBinaryString("01011010");
+            var expected = BitArray.FromBinaryString(expectedString);
+            var result = code.Encode(value);
             Assert.Equal(expected, result);
-        } 
-
-
-        [Fact]
-        public void TestComputeWalshHadamardCodeUpperBound()
-        {
-            var code = new WalshHadamardCode(8);
-            var result = code.Encode(0b111);
-
-            var expected = BitArray.FromBinaryString("01101001");
-            Assert.Equal(expected, result);
-        } 
-
-
-        [Fact]
-        public void TestComputeWalshHadamardCodeInvalidCodeLength()
-        {
-            Assert.Throws<ArgumentException>(() => new WalshHadamardCode(3));
         }
 
         [Fact]
-        public void TestComputeWalshHadamardCodeTooLargeValue()
+        public void TestEncodeRejectsTooLargeValue()
         {
             var code = new WalshHadamardCode(4);
             Assert.Throws<ArgumentOutOfRangeException>(() => code.Encode(0b10000));
+        }
+
+        [Fact]
+        public void TestConstructorRejectsInvalidCodeLength()
+        {
+            Assert.Throws<ArgumentException>(() => new WalshHadamardCode(3));
         }
 
         [Fact]

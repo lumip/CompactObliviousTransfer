@@ -18,7 +18,7 @@ namespace CompactOT.Codes
 
         public WalshHadamardCode(int codeLength)
         {
-            if ((codeLength & (codeLength - 1)) != 0)
+            if (!MathUtil.IsPowerOfTwo(codeLength))
                 throw new ArgumentException($"Code length must be a power of two, was {codeLength}.", nameof(codeLength));
 
             CodeLength = codeLength;

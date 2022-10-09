@@ -23,5 +23,10 @@ namespace CompactOT
             }
             return nextPowerOfTwo;
         }
+
+        public static bool IsPowerOfTwo(int x)
+        {
+            return (x & (x - 1)) == 0;
+        }
     }
 }
