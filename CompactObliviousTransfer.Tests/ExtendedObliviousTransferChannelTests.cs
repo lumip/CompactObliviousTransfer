@@ -112,7 +112,7 @@ namespace CompactOT
                 .Returns(Task.FromResult(received));
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
-            var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010");// 11001100 10101010");
+            var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010");
             var rngMock = new Mock<RandomNumberGenerator>();
             rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
                 randomChoices.CopyTo(b);

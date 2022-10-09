@@ -6,6 +6,27 @@ using CompactOT.Codes;
 namespace CompactOT
 {
 
+    /// <summary>
+    /// Allows to specify required specifications for an oblivious transfer channel and constructs and optimal OT channel instance.
+    /// 
+    /// Required specifications include e.g.,
+    ///     - the required security parameter,
+    ///     - the maximum and expected number of message options,
+    ///     - the maximum number of total invocations
+    ///     - the expected number of invocations that are executed in a single batch (call to Send/ReceiveAsync),
+    ///     - the expected number of bits in a message.
+    /// Based on this information, the ObliviousTransferChannelBuilder will primarily decide whether to instantiate
+    /// a basic or extended oblivous transfer protocol channel, depending on which is expected to result in less communication cost.
+    /// 
+    /// If no requirements are given, ObliviousTransferChannelBuilder will default to a security level of 128 and an unlimited
+    /// number of total invocations with an expected single invocation per call to Send/ReceiveAsync. The number of expected message
+    /// options defaults to 2 and the expected number of bits in a message to 1.
+    /// 
+    /// Note that ObliviousTransferChannelBuilder only guarantees optimality for the returned channel object when used within the
+    /// requirements it was provided. In some cases, it may be possible to use the returned channel object outside of the specification
+    /// provided to the builder, e.g., by exceeding the maximum number of total invocations, without encountering a failure/exception.
+    /// However, in this case optimality with respect to communication cost is no longer guaranteed.
+    /// </summary>
     public class ObliviousTransferChannelBuilder
     {
 
