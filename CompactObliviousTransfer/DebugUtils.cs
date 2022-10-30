@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace CompactOT
 {
-    public static class DebugUtils
+    internal static class DebugUtils
     {
         public static void WriteLine(string role, string protocol, string message, params object[] formatArgs)
         {
