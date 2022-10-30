@@ -11,7 +11,7 @@ using CompactOT.Codes;
 
 namespace CompactOT
 {
-    public class ALSZRandomObliviousTransferChannelTests
+    public class RandomObliviousTransferChannelTests
     {
 
         private IObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
@@ -37,8 +37,8 @@ namespace CompactOT
             var cryptoContext = CryptoContext.CreateDefault();
             var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);
 
-            var otSender = new ALSZRandomObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
-            var otReceiver = new ALSZRandomObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otSender = new RandomObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otReceiver = new RandomObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
 
             // receiver data
             var receiverIndices = new int[] { 0, 3, numberOfOptions - 1 };

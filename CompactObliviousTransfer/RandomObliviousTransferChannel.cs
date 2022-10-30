@@ -12,10 +12,10 @@ namespace CompactOT
     /// Asharov, Lindell, Schneider, Zohner: More Efficient Oblivious Transfer and Extensions for Faster Secure Computation. 2013. https://thomaschneider.de/papers/ALSZ13.pdf
     /// describes the protocol for 1oo2-OT; adapted for the 1ooN case in this implementation.
     /// </remarks>
-    public class ALSZRandomObliviousTransferChannel : ExtendedObliviousTransferChannelBase, IRandomObliviousTransferChannel
+    public class RandomObliviousTransferChannel : ExtendedObliviousTransferChannelBase, IRandomObliviousTransferChannel
     {
 
-        public ALSZRandomObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext, IBinaryCode code)
+        public RandomObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext, IBinaryCode code)
             : base(baseOT, securityParameter, cryptoContext, code)
         {
         }

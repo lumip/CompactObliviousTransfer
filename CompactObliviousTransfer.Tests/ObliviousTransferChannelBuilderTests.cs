@@ -113,7 +113,7 @@ namespace CompactOT
                 .MakeRandomObliviousTransferChannel(channelStub.Object);
 
             Assert.True(otChannel.SecurityLevel >= securityLevel);
-            Assert.False(otChannel is ALSZRandomObliviousTransferChannel);
+            Assert.False(otChannel is RandomObliviousTransferChannel);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace CompactOT
                 .MakeRandomObliviousTransferChannel(channelStub.Object);
 
             Assert.True(otChannel.SecurityLevel >= securityLevel);
-            Assert.True(otChannel is ALSZRandomObliviousTransferChannel);
+            Assert.True(otChannel is RandomObliviousTransferChannel);
         }
 
         [Fact]
@@ -148,7 +148,7 @@ namespace CompactOT
                 .MakeRandomObliviousTransferChannel(channelStub.Object);
 
             Assert.True(otChannel.SecurityLevel >= securityLevel);
-            Assert.True(otChannel is ALSZRandomObliviousTransferChannel);
+            Assert.True(otChannel is RandomObliviousTransferChannel);
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace CompactOT
                 .MakeCorrelatedObliviousTransferChannel(channelStub.Object);
 
             Assert.True(otChannel.SecurityLevel >= securityLevel);
-            Assert.False(otChannel is ALSZCorrelatedObliviousTransferChannel);
+            Assert.False(otChannel is CorrelatedObliviousTransferChannel);
         }
 
         [Fact]
@@ -184,7 +184,7 @@ namespace CompactOT
                 .MakeCorrelatedObliviousTransferChannel(channelStub.Object);
 
             Assert.True(otChannel.SecurityLevel >= securityLevel);
-            Assert.True(otChannel is ALSZCorrelatedObliviousTransferChannel);
+            Assert.True(otChannel is CorrelatedObliviousTransferChannel);
         }
 
         [Fact]
@@ -201,7 +201,7 @@ namespace CompactOT
                 .MakeCorrelatedObliviousTransferChannel(channelStub.Object);
 
             Assert.True(otChannel.SecurityLevel >= securityLevel);
-            Assert.True(otChannel is ALSZCorrelatedObliviousTransferChannel);
+            Assert.True(otChannel is CorrelatedObliviousTransferChannel);
         }
     }
 

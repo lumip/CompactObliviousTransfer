@@ -174,7 +174,7 @@ namespace CompactOT
                 baseProtocolChannel, cryptoContext.RandomNumberGenerator
             );
 
-            var alszCorrelatedChannel = new ALSZCorrelatedObliviousTransferChannel(
+            var alszCorrelatedChannel = new CorrelatedObliviousTransferChannel(
                 baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
             );
 
@@ -196,7 +196,7 @@ namespace CompactOT
                 baseProtocolChannel, cryptoContext.RandomNumberGenerator
             );
 
-            var alszRandomChannel = new ALSZRandomObliviousTransferChannel(
+            var alszRandomChannel = new RandomObliviousTransferChannel(
                 baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
             );
 

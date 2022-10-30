@@ -12,7 +12,7 @@ using CompactOT.Codes;
 
 namespace CompactOT
 {
-    public class ALSZCorrelatedObliviousTransferChannelTests
+    public class CorrelatedObliviousTransferChannelTests
     {
 
         private IObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
@@ -35,8 +35,8 @@ namespace CompactOT
 
             var cryptoContext = CryptoContext.CreateDefault();
             var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);
-            var otSender = new ALSZCorrelatedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
-            var otReceiver = new ALSZCorrelatedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otSender = new CorrelatedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otReceiver = new CorrelatedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
 
             const int numberOfInvocations = 3;
             int numberOfMessageBits = TestUtils.TestCorrelations[0].Length;
