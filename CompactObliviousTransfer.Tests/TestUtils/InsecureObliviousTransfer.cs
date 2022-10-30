@@ -29,15 +29,8 @@ namespace CompactOT
                 message.Write(index);
             }
             await channel.WriteMessageAsync(message.Compose());
-#if DEBUG
-            DebugUtils.WriteLineReceiver("Insecure", "Sending selection indices took {0} ms.", stopwatch.ElapsedMilliseconds);
-            stopwatch.Reset();
-#endif
 
             var response = new MessageDecomposer(await channel.ReadMessageAsync());
-#if DEBUG
-            DebugUtils.WriteLineReceiver("Insecure", "Response received after {0} ms.", stopwatch.ElapsedMilliseconds);
-#endif
             var receivedOptions = new ObliviousTransferResult(selectionIndices.Length, numberOfMessageBits);
             for (int j = 0; j < selectionIndices.Length; ++j)
             {
@@ -48,15 +41,7 @@ namespace CompactOT
 
         public async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options)
         {
-#if DEBUG
-            Stopwatch stopwatch = Stopwatch.StartNew();
-#endif
             var indexMessage = new MessageDecomposer(await channel.ReadMessageAsync());
-#if DEBUG
-            DebugUtils.WriteLineSender("Insecure", "Selection indices message received after {0} ms.", stopwatch.ElapsedMilliseconds);
-            stopwatch.Reset();
-#endif
-
             var transferMessage = new MessageComposer(options.NumberOfInvocations);
             for (int j = 0; j < options.NumberOfInvocations; ++j)
             {
@@ -64,9 +49,6 @@ namespace CompactOT
                 transferMessage.Write(options.GetMessage(j, index));
             }
             await channel.WriteMessageAsync(transferMessage.Compose());
-#if DEBUG
-            DebugUtils.WriteLineSender("Insecure", "Sending selected messages took {0} ms.", stopwatch.ElapsedMilliseconds);
-#endif
         }
 
         public double EstimateCost(ObliviousTransferUsageProjection usageProjection)
