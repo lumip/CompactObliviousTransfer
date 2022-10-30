@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 using Xunit;
 using System.Collections.Generic;
 using System.Linq;

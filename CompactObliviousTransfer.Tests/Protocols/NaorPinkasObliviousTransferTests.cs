@@ -1,10 +1,13 @@
+// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Xunit;
-using Moq;
 
 using System.Numerics;
+using CompactCryptoGroupAlgebra.EllipticCurves;
 
 namespace CompactOT
 {
@@ -58,15 +61,17 @@ namespace CompactOT
             Debug.Assert(receiverIndices.Length == numberOfInvocations);
 
             // protocol setup
-            var otProtocol = new NaorPinkasObliviousTransfer<BigInteger, BigInteger>(
-                CryptoGroupDefaults.Create768BitMultiplicativeGroup(),
+            var otProtocol = new NaorPinkasObliviousTransfer<BigInteger, CurvePoint>(
+                CurveGroupAlgebra.CreateCryptoGroup(securityLevel: 64),  
                 CryptoContext.CreateDefault()
             );
             var channels = new TestMessageChannels();
 
             // execute protocol
             var sendTask = otProtocol.SendAsync(channels.FirstPartyChannel, options);
-            var receiverTask = otProtocol.ReceiveAsync(channels.SecondPartyChannel, receiverIndices, numberOfOptions, numberOfMessageBits);
+            var receiverTask = otProtocol.ReceiveAsync(
+                channels.SecondPartyChannel, receiverIndices, numberOfOptions, numberOfMessageBits
+            );
 
             TestUtils.WaitAllOrFail(sendTask, receiverTask);
 

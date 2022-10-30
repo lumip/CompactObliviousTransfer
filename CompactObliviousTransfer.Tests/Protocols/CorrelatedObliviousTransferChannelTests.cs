@@ -1,13 +1,13 @@
+// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 using System;
 using Xunit;
 using Moq;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
 using System.Linq;
 using System.Diagnostics;
 
 using CompactCryptoGroupAlgebra;
-using CompactOT.DataStructures;
 using CompactOT.Codes;
 
 namespace CompactOT

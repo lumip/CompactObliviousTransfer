@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
+# SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+# SPDX-License-Identifier: GPL-3.0-or-later
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompactObliviousTransfer", "CompactObliviousTransfer\CompactObliviousTransfer.csproj", "{62B5F35C-F482-4956-8199-08BDDA79721A}"

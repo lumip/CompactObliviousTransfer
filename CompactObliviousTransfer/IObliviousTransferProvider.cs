@@ -1,4 +1,7 @@
-﻿namespace CompactOT
+﻿// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+namespace CompactOT
 {
     /// <summary>
     /// Provides stateful Oblivious Transfer channel instances of the specific type indicated by the template argument

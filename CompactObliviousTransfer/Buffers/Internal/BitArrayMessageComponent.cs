@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
+// SPDX-License-Identifier: MIT
+// Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
+
 using CompactOT.DataStructures;
 
 namespace CompactOT.Buffers.Internal

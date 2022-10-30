@@ -1,6 +1,8 @@
+// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 using System.Threading.Tasks;
 using System.Threading;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
 
 namespace CompactOT
