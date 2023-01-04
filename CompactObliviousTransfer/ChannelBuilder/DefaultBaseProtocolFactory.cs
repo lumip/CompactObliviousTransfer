@@ -31,20 +31,14 @@ namespace CompactOT
             try
             {
                 CryptoGroup<BigInteger, CurvePoint> cryptoGroup = CurveGroupAlgebra.CreateCryptoGroup(securityLevel);
-                return new StatelessObliviousTransferChannel(
-                    new NaorPinkasObliviousTransfer<BigInteger, CurvePoint>(cryptoGroup, cryptoContext),
-                    channel
-                );
+                return new NaorPinkasObliviousTransferChannel<BigInteger, CurvePoint>(channel, cryptoGroup, cryptoContext);
             }
             catch (ArgumentOutOfRangeException)
             {
                 CryptoGroup<BigInteger, BigInteger> cryptoGroup = MultiplicativeGroupAlgebra.CreateCryptoGroup(
                     securityLevel, cryptoContext.RandomNumberGenerator
                 );
-                return new StatelessObliviousTransferChannel(
-                    new NaorPinkasObliviousTransfer<BigInteger, BigInteger>(cryptoGroup, cryptoContext),
-                    channel
-                );
+                return new NaorPinkasObliviousTransferChannel<BigInteger, BigInteger>(channel, cryptoGroup, cryptoContext);
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -30,8 +30,10 @@ namespace CompactOT
     /// and Pinkas' protocol description. Realising that the sender must transmit g^r in addition to C_1, ..., C_(N-1), we set
     /// C_0 = g^r and thus incur no transmission cost for the additional C_0.
     /// </remarks>
-    public class NaorPinkasObliviousTransfer<TSecret, TCrypto> : IStatelessObliviousTransfer where TSecret: notnull where TCrypto: notnull
+    public class NaorPinkasObliviousTransferChannel<TSecret, TCrypto> : IObliviousTransferChannel where TSecret: notnull where TCrypto: notnull
     {
+
+        private IMessageChannel _channel;
 
         private CryptoGroup<TSecret, TCrypto> _group;
 
@@ -39,9 +41,16 @@ namespace CompactOT
         private RandomNumberGenerator _randomNumberGenerator;
 
         public int SecurityLevel => _group.SecurityLevel;
+
+        public IMessageChannel Channel => _channel;
         
-        public NaorPinkasObliviousTransfer(CryptoGroup<TSecret, TCrypto> cryptoGroup, CryptoContext cryptoContext)
+        public NaorPinkasObliviousTransferChannel(
+            IMessageChannel channel,
+            CryptoGroup<TSecret, TCrypto> cryptoGroup,
+            CryptoContext cryptoContext
+        )
         {
+            _channel = channel;
             _group = cryptoGroup;
             _randomOracle = new HashRandomOracle(cryptoContext.HashAlgorithmProvider);
             _randomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
@@ -55,7 +64,7 @@ namespace CompactOT
         }
 
         /// <inheritdoc/>
-        public async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options)
+        public async Task SendAsync(ObliviousTransferOptions options)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -77,8 +86,8 @@ namespace CompactOT
             stopwatch.Restart();
 #endif
 
-            Task writeCsTask = WriteGroupElements(channel, listOfCs);
-            Task<CryptoGroupElement<TSecret, TCrypto>[]> readDsTask = ReadGroupElements(channel, options.NumberOfInvocations);
+            Task writeCsTask = WriteGroupElements(_channel, listOfCs);
+            Task<CryptoGroupElement<TSecret, TCrypto>[]> readDsTask = ReadGroupElements(_channel, options.NumberOfInvocations);
 
             var listOfExponentiatedCs = new CryptoGroupElement<TSecret, TCrypto>[options.NumberOfOptions];
             Parallel.For(0, options.NumberOfOptions, i =>
@@ -134,7 +143,7 @@ namespace CompactOT
             stopwatch.Restart();
 #endif
 
-            await WriteOptions(channel, maskedOptions);
+            await WriteOptions(_channel, maskedOptions);
 
 #if DEBUG
             stopwatch.Stop();
@@ -143,14 +152,14 @@ namespace CompactOT
         }
 
         /// <inheritdoc/>
-        public async Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public async Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
             int numberOfInvocations = selectionIndices.Length;
 
-            var listOfCs = await ReadGroupElements(channel, numberOfOptions);
+            var listOfCs = await ReadGroupElements(_channel, numberOfOptions);
 
 #if DEBUG
             stopwatch.Stop();
@@ -173,8 +182,8 @@ namespace CompactOT
             stopwatch.Restart();
 #endif
 
-            Task writeDsTask = WriteGroupElements(channel, listOfDs);
-            Task<ObliviousTransferOptions> readMaskedOptionsTask = ReadOptions(channel, numberOfInvocations, numberOfOptions, numberOfMessageBits);
+            Task writeDsTask = WriteGroupElements(_channel, listOfDs);
+            Task<ObliviousTransferOptions> readMaskedOptionsTask = ReadOptions(_channel, numberOfInvocations, numberOfOptions, numberOfMessageBits);
 
             var listOfEs = new CryptoGroupElement<TSecret, TCrypto>[numberOfInvocations];
 

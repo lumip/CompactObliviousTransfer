@@ -12,7 +12,7 @@ using CompactCryptoGroupAlgebra.EllipticCurves;
 namespace CompactOT
 {
 
-    public class NaorPinkasObliviousTransferTests
+    public class NaorPinkasObliviousTransferChannelTests
     {
 
         [Fact]
@@ -60,17 +60,23 @@ namespace CompactOT
 
             Debug.Assert(receiverIndices.Length == numberOfInvocations);
 
-            // protocol setup
-            var otProtocol = new NaorPinkasObliviousTransfer<BigInteger, CurvePoint>(
-                CurveGroupAlgebra.CreateCryptoGroup(securityLevel: 64),  
-                CryptoContext.CreateDefault()
-            );
             var channels = new TestMessageChannels();
+            var cryptoGroup = CurveGroupAlgebra.CreateCryptoGroup(securityLevel: 64);
+            var cryptoContext = CryptoContext.CreateDefault();
+
+            // protocol setup
+            var senderOtChannel = new NaorPinkasObliviousTransferChannel<BigInteger, CurvePoint>(
+                channels.FirstPartyChannel, cryptoGroup, cryptoContext
+            );
+
+            var receiverOtChannel = new NaorPinkasObliviousTransferChannel<BigInteger, CurvePoint>(
+                channels.SecondPartyChannel, cryptoGroup, cryptoContext
+            );
 
             // execute protocol
-            var sendTask = otProtocol.SendAsync(channels.FirstPartyChannel, options);
-            var receiverTask = otProtocol.ReceiveAsync(
-                channels.SecondPartyChannel, receiverIndices, numberOfOptions, numberOfMessageBits
+            var sendTask = senderOtChannel.SendAsync(options);
+            var receiverTask = receiverOtChannel.ReceiveAsync(
+                receiverIndices, numberOfOptions, numberOfMessageBits
             );
 
             TestUtils.WaitAllOrFail(sendTask, receiverTask);
