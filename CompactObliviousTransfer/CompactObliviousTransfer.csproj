@@ -8,28 +8,32 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>CompactObliviousTransfer</AssemblyName>
     <RootNamespace>CompactOT</RootNamespace>
+    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>CS8602;CS8603;CS8600;CS8625;CS8610</WarningsAsErrors>
     <Title>CompactObliviousTransfer</Title>
     <PackageId>CompactObliviousTransfer</PackageId>
-    <LicenseId>GPL-3.0-or-later</LicenseId>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <PackageReleaseNotes>https://github.com/lumip/CompactObliviousTransfer/blob/master/CHANGELOG.txt</PackageReleaseNotes>
     <Authors>Lukas "lumip" Prediger</Authors>
-    <VersionPrefix>1.0.0</VersionPrefix>
-    <Copyright>Copyright © 2021 Lukas Prediger</Copyright>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <Copyright>Copyright © 2022 Lukas Prediger</Copyright>
     <Description>A compact library for oblivous transport protocols, fully written in C#.</Description>
+    <PackageTags>Cryptography; Oblivious Transfer; Secure Multi-Party Computation</PackageTags>
+    <ProjectUrl>https://github.com/lumip/CompactObliviousTransfer</ProjectUrl>
+    <RepositoryUrl>https://github.com/lumip/CompactObliviousTransfer</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <!-- <DocumentationFile>bin/$(Configuration)/CompactObliviousTransfer.xml</DocumentationFile> -->
     <DebugType>full</DebugType>
     <OutputPath>bin/$(Configuration)/</OutputPath>
-    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <!-- <DocumentationFile>bin/$(Configuration)/CompactObliviousTransfer.xml</DocumentationFile> -->
+    <DocumentationFile>bin/$(Configuration)/CompactObliviousTransfer.xml</DocumentationFile>
     <OutputPath>bin/$(Configuration)/</OutputPath>
-    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
