@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Linq;
@@ -9,7 +9,7 @@ using Xunit;
 namespace CompactOT
 {
 
-    public class InsecureObliviousTransferTests
+    public class InsecureObliviousTransferChannelTests
     {
 
         [Fact]
@@ -58,12 +58,13 @@ namespace CompactOT
             Debug.Assert(receiverIndices.Length == numberOfInvocations);
 
             // protocol setup
-            var otProtocol = new InsecureObliviousTransfer();
             var channels = new TestMessageChannels();
+            var senderOtChannel = new InsecureObliviousTransferChannel(channels.FirstPartyChannel);
+            var receiverOtChannel = new InsecureObliviousTransferChannel(channels.SecondPartyChannel);
 
             // execute protocol
-            var sendTask = otProtocol.SendAsync(channels.FirstPartyChannel, options);
-            var receiverTask = otProtocol.ReceiveAsync(channels.SecondPartyChannel, receiverIndices, numberOfOptions, numberOfMessageBits);
+            var sendTask = senderOtChannel.SendAsync(options);
+            var receiverTask = receiverOtChannel.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits);
 
             TestUtils.WaitAllOrFail(sendTask, receiverTask);
 

@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Linq;
 using System.Threading.Tasks;
+using Moq;
 
 using CompactOT.DataStructures;
 
@@ -42,5 +43,13 @@ namespace CompactOT
         public static readonly string[] TestOptions = {
             "Alicia", "Briann", "Charly", "Dennis", "Elenor", "Frieda"
         };
+
+        public static IObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
+        {
+            var otMock = new Mock<InsecureObliviousTransferChannel>(messageChannel) { CallBase = true };
+            otMock.Setup(ot => ot.SecurityLevel).Returns(10000000);
+            return otMock.Object;
+        }
+        
     }
 }

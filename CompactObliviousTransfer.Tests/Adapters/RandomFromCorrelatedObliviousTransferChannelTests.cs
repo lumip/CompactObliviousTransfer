@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using Moq;
@@ -14,11 +14,9 @@ namespace CompactOT.Adapters
 
         private ICorrelatedObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
         {
-            var otMock = new Mock<InsecureObliviousTransfer>() { CallBase = true };
-            otMock.Setup(ot => ot.SecurityLevel).Returns(10000000);
             // TODO: heavily now depends on other objects; possible to create better mocks to make this really a unit test?
             return new CorrelatedFromStandardObliviousTransferChannel(
-                new StatelessObliviousTransferChannel(otMock.Object, messageChannel),
+                TestUtils.GetBaseTransferChannel(messageChannel),
                 RandomNumberGenerator.Create()
             );
         }

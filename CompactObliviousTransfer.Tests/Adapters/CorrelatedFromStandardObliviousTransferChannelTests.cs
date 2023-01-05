@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using Moq;
@@ -12,19 +12,12 @@ namespace CompactOT.Adapters
     public class CorrelatedFromStandardObliviousTransferChannelTests
     {
 
-        private IObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
-        {
-            var otMock = new Mock<InsecureObliviousTransfer>() { CallBase = true };
-            otMock.Setup(ot => ot.SecurityLevel).Returns(10000000);
-            return new StatelessObliviousTransferChannel(otMock.Object, messageChannel);
-        }
-
         [Fact]
         public void TestSecurityLevel()
         {
             
             var messageChannels = new TestMessageChannels();
-            var baseOt = GetBaseTransferChannel(messageChannels.FirstPartyChannel);
+            var baseOt = TestUtils.GetBaseTransferChannel(messageChannels.FirstPartyChannel);
             var cot = new CorrelatedFromStandardObliviousTransferChannel(
                 baseOt, RandomNumberGenerator.Create()
             );
@@ -35,7 +28,7 @@ namespace CompactOT.Adapters
         public void TestChannel()
         {
             var messageChannels = new TestMessageChannels();
-            var baseOt = GetBaseTransferChannel(messageChannels.FirstPartyChannel);
+            var baseOt = TestUtils.GetBaseTransferChannel(messageChannels.FirstPartyChannel);
             var cot = new CorrelatedFromStandardObliviousTransferChannel(
                 baseOt, RandomNumberGenerator.Create()
             );
@@ -47,10 +40,10 @@ namespace CompactOT.Adapters
         {
             var messageChannels = new TestMessageChannels();
             var otSender = new CorrelatedFromStandardObliviousTransferChannel(
-                GetBaseTransferChannel(messageChannels.FirstPartyChannel), RandomNumberGenerator.Create()
+                TestUtils.GetBaseTransferChannel(messageChannels.FirstPartyChannel), RandomNumberGenerator.Create()
             );
             var otReceiver = new CorrelatedFromStandardObliviousTransferChannel(
-                GetBaseTransferChannel(messageChannels.SecondPartyChannel), RandomNumberGenerator.Create()
+                TestUtils.GetBaseTransferChannel(messageChannels.SecondPartyChannel), RandomNumberGenerator.Create()
             );
 
             int numberOfInvocations = 2;

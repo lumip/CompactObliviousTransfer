@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -10,15 +10,22 @@ using CompactOT.Buffers;
 namespace CompactOT
 {
 
-    public class InsecureObliviousTransfer : IStatelessObliviousTransfer
+    public class InsecureObliviousTransferChannel : IObliviousTransferChannel
     {
+
+        public virtual IMessageChannel Channel { get; set; }
+
+        public InsecureObliviousTransferChannel(IMessageChannel channel)
+        {
+            Channel = channel;
+        }
 
         public virtual int SecurityLevel => 0;
         // TODO: Only virtual because it is used for base OTs during tests of OT extension protocols.
         //              Should arguably not be virtual for regular use. However, do not want to duplicate all
         //              this code in tests project again.. What to do?
 
-        public async Task<ObliviousTransferResult> ReceiveAsync(IMessageChannel channel, int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public async Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -28,9 +35,9 @@ namespace CompactOT
             {
                 message.Write(index);
             }
-            await channel.WriteMessageAsync(message.Compose());
+            await Channel.WriteMessageAsync(message.Compose());
 
-            var response = new MessageDecomposer(await channel.ReadMessageAsync());
+            var response = new MessageDecomposer(await Channel.ReadMessageAsync());
             var receivedOptions = new ObliviousTransferResult(selectionIndices.Length, numberOfMessageBits);
             for (int j = 0; j < selectionIndices.Length; ++j)
             {
@@ -39,16 +46,17 @@ namespace CompactOT
             return receivedOptions;
         }
 
-        public async Task SendAsync(IMessageChannel channel, ObliviousTransferOptions options)
+        public async Task SendAsync(ObliviousTransferOptions options)
         {
-            var indexMessage = new MessageDecomposer(await channel.ReadMessageAsync());
+            if (Channel == null) throw new InvalidOperationException("SendAsync cannot be executed while Channel is null.");
+            var indexMessage = new MessageDecomposer(await Channel.ReadMessageAsync());
             var transferMessage = new MessageComposer(options.NumberOfInvocations);
             for (int j = 0; j < options.NumberOfInvocations; ++j)
             {
                 int index = indexMessage.ReadInt();
                 transferMessage.Write(options.GetMessage(j, index));
             }
-            await channel.WriteMessageAsync(transferMessage.Compose());
+            await Channel.WriteMessageAsync(transferMessage.Compose());
         }
 
         public double EstimateCost(ObliviousTransferUsageProjection usageProjection)

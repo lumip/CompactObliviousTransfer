@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -15,13 +15,6 @@ namespace CompactOT
     public class CorrelatedObliviousTransferChannelTests
     {
 
-        private IObliviousTransferChannel GetBaseTransferChannel(IMessageChannel messageChannel)
-        {
-            var otMock = new Mock<InsecureObliviousTransfer>() { CallBase = true };
-            otMock.Setup(ot => ot.SecurityLevel).Returns(10000000);
-            return new StatelessObliviousTransferChannel(otMock.Object, messageChannel);
-        }
-
         [Fact]
         public void TestCorrleatedOTs()
         {
@@ -30,8 +23,8 @@ namespace CompactOT
             var securityParameter = NumberLength.FromBitLength(8);
 
             var messageChannels = new TestMessageChannels();
-            var senderBaseChannel = GetBaseTransferChannel(messageChannels.FirstPartyChannel);
-            var receiverBaseChannel = GetBaseTransferChannel(messageChannels.SecondPartyChannel);
+            var senderBaseChannel = TestUtils.GetBaseTransferChannel(messageChannels.FirstPartyChannel);
+            var receiverBaseChannel = TestUtils.GetBaseTransferChannel(messageChannels.SecondPartyChannel);
 
             var cryptoContext = CryptoContext.CreateDefault();
             var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);

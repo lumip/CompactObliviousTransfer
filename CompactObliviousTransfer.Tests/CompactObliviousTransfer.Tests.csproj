@@ -6,7 +6,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
