@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+      - GithubTests
+  pull_request:
+    branches:
+      - master
+    
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '3.1.x'
+    - name: Generate coverage report
+      run: dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+    - name: Copy coveralls report
+      run: |
+        mkdir ./CoverageResults
+        cp -v ./CompactObliviousTransfer.Tests/TestResults/*/coverage.info ./CoverageResults/
+    - name: Publish coverage report to coveralls.io
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ./CoverageResults/coverage.info
