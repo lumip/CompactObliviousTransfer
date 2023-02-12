@@ -1,5 +1,7 @@
 # CompactObliviousTransfer
 
+[![Tests](https://github.com/lumip/CompactObliviousTransfer/actions/workflows/main.yml/badge.svg)](https://github.com/lumip/CompactObliviousTransfer/actions/workflows/main.yml) [![Coverage Status](https://coveralls.io/repos/github/lumip/CompactObliviousTransfer/badge.svg?branch=GithubTests)](https://coveralls.io/github/lumip/CompactObliviousTransfer?branch=GithubTests)
+
 A C# library implementing oblivious transfer. Oblivious transfer (OT) is a family of cryptographic protocols which enable a receiver to select one out of several options offered by a sender, without the sender learning which (and without the receiver learning the contents of the other options offered by the sender).
 
 ## Features
