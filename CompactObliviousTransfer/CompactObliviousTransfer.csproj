@@ -40,8 +40,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
-    <!-- <PackageReference Include="CompactCryptoGroupAlgebra" Version="2.0.0-alpha*" /> -->
-    <ProjectReference Include="../../CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra.csproj" />
+    <PackageReference Include="CompactCryptoGroupAlgebra" Version="2.*" />
+    <!-- <ProjectReference Include="../../CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra.csproj" /> -->
   </ItemGroup>
 
 </Project>
