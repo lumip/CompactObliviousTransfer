@@ -1,11 +1,10 @@
-// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
 using Xunit;
 using Moq;
 
-using CompactCryptoGroupAlgebra;
 using CompactOT.Codes;
 
 namespace CompactOT
@@ -20,7 +19,7 @@ namespace CompactOT
             const int numberOfInvocations = 3;
             const int numberOfMessageBits = 5;
 
-            var securityParameter = NumberLength.FromBitLength(8);
+            int securityLevel = 8;
 
             var messageChannels = new TestMessageChannels();
             var senderBaseChannel = TestUtils.GetBaseTransferChannel(messageChannels.FirstPartyChannel);
@@ -29,8 +28,8 @@ namespace CompactOT
             var cryptoContext = CryptoContext.CreateDefault();
             var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);
 
-            var otSender = new RandomObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
-            var otReceiver = new RandomObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otSender = new RandomObliviousTransferChannel(senderBaseChannel, securityLevel, cryptoContext, code);
+            var otReceiver = new RandomObliviousTransferChannel(receiverBaseChannel, securityLevel, cryptoContext, code);
 
             // receiver data
             var receiverIndices = new int[] { 0, 3, numberOfOptions - 1 };

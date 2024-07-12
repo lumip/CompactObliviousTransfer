@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -18,8 +18,8 @@ namespace CompactOT
     public class CorrelatedObliviousTransferChannel : ExtendedObliviousTransferChannelBase, ICorrelatedObliviousTransferChannel
     {
 
-        public CorrelatedObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext, IBinaryCode code)
-            : base(baseOT, securityParameter, cryptoContext, code)
+        public CorrelatedObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityLevel, CryptoContext cryptoContext, IBinaryCode code)
+            : base(baseOT, securityLevel, cryptoContext, code)
         {
         }
 

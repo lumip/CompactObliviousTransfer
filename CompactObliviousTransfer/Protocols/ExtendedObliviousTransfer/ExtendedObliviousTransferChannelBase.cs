@@ -29,8 +29,8 @@ namespace CompactOT
 
         private IObliviousTransferChannel _baseOT;
 
-        private NumberLength _securityParameter;
-        public int SecurityLevel => _securityParameter.InBits;
+        private NumberLength _securityLevel;
+        public int SecurityLevel => _securityLevel.InBits;
         protected int CodeLength => _code.CodeLength;
 
         protected RandomOracle RandomOracle { get; }
@@ -79,44 +79,44 @@ namespace CompactOT
         /// </summary>
         public int TotalNumberOfInvocations { get; private set; }
 
-        public ExtendedObliviousTransferChannelBase(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext, IBinaryCode code)
+        public ExtendedObliviousTransferChannelBase(IObliviousTransferChannel baseOT, int securityLevel, CryptoContext cryptoContext, IBinaryCode code)
         {
-            if (securityParameter < 1)
+            if (securityLevel < 1)
             {
                 throw new ArgumentOutOfRangeException(
-                    $"Security level must not be less than 1, was {securityParameter}",
-                    nameof(securityParameter)
+                    $"Security level must not be less than 1, was {securityLevel}",
+                    nameof(securityLevel)
                 );
             }
 
             _baseOT = baseOT;
-            if (_baseOT.SecurityLevel < securityParameter)
+            if (_baseOT.SecurityLevel < securityLevel)
             {
                 throw new ArgumentException(
                     $"The provided base OT must provided at least the requested security level of "+
-                    $"{securityParameter} but only provides {baseOT.SecurityLevel}.", nameof(baseOT)
+                    $"{securityLevel} but only provides {baseOT.SecurityLevel}.", nameof(baseOT)
                 );
             }
 
             _code = code;
-            if (_code.Distance < securityParameter)
+            if (_code.Distance < securityLevel)
             {
                 throw new ArgumentException(
                     $"The provided binary code must have a distance of at least the requested security "+
-                    $"level {securityParameter} but only has distance {code.Distance}.", nameof(code)
+                    $"level {securityLevel} but only has distance {code.Distance}.", nameof(code)
                 );
             }
 
             RandomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
             RandomOracle = new HashRandomOracle(cryptoContext.HashAlgorithmProvider);
-            _securityParameter = NumberLength.FromBitLength(securityParameter);
+            _securityLevel = NumberLength.FromBitLength(securityLevel);
             _senderState = null;
             _receiverState = null;
             TotalNumberOfInvocations = 0;
         }
 
         /// <summary>
-        /// Performs 2k many 1-out-of-2 OTs on k bits for the sender, where k is the security parameter, using the base OT implementation.
+        /// Performs 2k many 1-out-of-2 OTs on k bits for the sender, where k is the security level, using the base OT implementation.
         /// 
         /// These are subsequently expanded into m many 1ooN OTs on arbitrarily long messages
         /// by the SendAsync method, where m is only bounded by the amount of secure randomness the random
@@ -130,13 +130,13 @@ namespace CompactOT
 
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
-            DebugUtils.WriteLineSender("ExtendedOT", $"Performing base transfers ({CodeLength} times {_securityParameter.InBits} bits).");
+            DebugUtils.WriteLineSender("ExtendedOT", $"Performing base transfers ({CodeLength} times {_securityLevel.InBits} bits).");
 #endif
-            // retrieve seeds for OT extension via _securityParameter many base OTs
+            // retrieve seeds for OT extension via _securityLevel many base OTs
             ObliviousTransferResult seeds = await _baseOT.ReceiveAsync(
                 _senderState.RandomChoices.ToSelectionIndices().ToArray(),
                 numBaseOTOptions,
-                numberOfMessageBits: _securityParameter.InBits
+                numberOfMessageBits: _securityLevel.InBits
             );
 #if DEBUG
             DebugUtils.WriteLineSender("ExtendedOT", "Base transfers completed after {0} ms.", stopwatch.ElapsedMilliseconds);
@@ -145,7 +145,7 @@ namespace CompactOT
             {
                 throw new ProtocolException("Base transfer received unexpected number of invocations!");
             }
-            if (seeds.NumberOfMessageBits != _securityParameter.InBits)
+            if (seeds.NumberOfMessageBits != _securityLevel.InBits)
             {
                 throw new ProtocolException("Base transfer received messages with unexpected lengths!");
             }
@@ -158,7 +158,7 @@ namespace CompactOT
         }
 
         /// <summary>
-        /// Performs 2k many 1-out-of-2 OTs on k bits for the receiver, where k is the security parameter, using the base OT implementation.
+        /// Performs 2k many 1-out-of-2 OTs on k bits for the receiver, where k is the security level, using the base OT implementation.
         /// 
         /// These are subsequently expanded into m many 1ooN OTs on arbitrarily long messages
         /// by the SendAsync method, where m is only bounded by the amount of secure randomness the random
@@ -169,12 +169,12 @@ namespace CompactOT
             int numBaseOTOptions = 2;
             _receiverState = new ReceiverState(CodeLength, numBaseOTOptions);
 
-            // generating _securityParameter many pairs of random seeds of length _securityParameter
-            var seeds = ObliviousTransferOptions.CreateRandom(CodeLength, numBaseOTOptions, _securityParameter.InBits, RandomNumberGenerator);
+            // generating CodeLength many pairs of random seeds of length _securityLevel
+            var seeds = ObliviousTransferOptions.CreateRandom(CodeLength, numBaseOTOptions, _securityLevel.InBits, RandomNumberGenerator);
 
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
-            DebugUtils.WriteLineReceiver("ExtendedOT", $"Performing base transfers ({CodeLength} times {_securityParameter.InBits} bits).");
+            DebugUtils.WriteLineReceiver("ExtendedOT", $"Performing base transfers ({CodeLength} times {_securityLevel.InBits} bits).");
 #endif
 
             // base OTs as _sender_ with the seeds as inputs
@@ -204,7 +204,7 @@ namespace CompactOT
         {
             if (numberOfOptions > _code.MaximumMessage)
             {
-                throw new ArgumentException($"Extended Oblivious Transfer with security level {_securityParameter.InBits} requires " +
+                throw new ArgumentException($"Extended Oblivious Transfer with security level {_securityLevel.InBits} requires " +
                     $"the number of options to be less than {_code.MaximumMessage}; was {numberOfOptions}", nameof(numberOfOptions));
             }
             if (_senderState == null) await ExecuteSenderBaseTransferAsync();
@@ -249,7 +249,7 @@ namespace CompactOT
         {
             if (numberOfOptions >= _code.MaximumMessage)
             {
-                throw new ArgumentException($"Extended Oblivious Transfer with security level {_securityParameter.InBits} requires " +
+                throw new ArgumentException($"Extended Oblivious Transfer with security level {_securityLevel.InBits} requires " +
                     $"the number of options to be less than {_code.MaximumMessage}; was {numberOfOptions}", nameof(numberOfOptions));
             }
             if (_receiverState == null) await ExecuteReceiverBaseTransferAsync();

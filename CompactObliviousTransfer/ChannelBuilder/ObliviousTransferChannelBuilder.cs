@@ -13,7 +13,7 @@ namespace CompactOT
     /// Allows to specify required specifications for an oblivious transfer channel and constructs and optimal OT channel instance.
     /// 
     /// Required specifications include e.g.,
-    ///     - the required security parameter,
+    ///     - the required security level,
     ///     - the maximum and expected (/average) number of message options,
     ///     - the maximum number of total invocations (or unlimited)
     ///     - the expected (/average) number of invocations that are executed in a single batch (call to Send/ReceiveAsync),

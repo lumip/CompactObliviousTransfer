@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -56,6 +56,7 @@ namespace CompactOT
             _randomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
 #if DEBUG
             Console.WriteLine("Security parameters:");
+            Console.WriteLine("level = {0}", SecurityLevel);
             Console.WriteLine("order = {0}", _group.Order);
             Console.WriteLine("generator = {0}", _group.Generator);
             Console.WriteLine("group element size = {0} bytes", _group.ElementLength.InBytes);

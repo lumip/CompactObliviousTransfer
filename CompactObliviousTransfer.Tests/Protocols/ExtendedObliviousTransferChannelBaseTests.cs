@@ -20,43 +20,43 @@ namespace CompactOT
         [Fact]
         public void TestConstructorAndProperties()
         {
-            int securityParameter = 128;
+            int securityLevel = 128;
 
             var channelMock = new Mock<IMessageChannel>();
             var baseOtMock = new Mock<IObliviousTransferChannel>();
-            baseOtMock.Setup(ot => ot.SecurityLevel).Returns(securityParameter);
+            baseOtMock.Setup(ot => ot.SecurityLevel).Returns(securityLevel);
             baseOtMock.Setup(ot => ot.Channel).Returns(channelMock.Object);
 
             var codeMock = new Mock<IBinaryCode>();
-            codeMock.Setup(c => c.Distance).Returns(securityParameter);
+            codeMock.Setup(c => c.Distance).Returns(securityLevel);
 
             var cryptoContext = CryptoContext.CreateDefault();
 
-            var otChannel = new ExtendedObliviousTransferChannelBase(baseOtMock.Object, securityParameter, cryptoContext, codeMock.Object);
+            var otChannel = new ExtendedObliviousTransferChannelBase(baseOtMock.Object, securityLevel, cryptoContext, codeMock.Object);
 
             Assert.Same(channelMock.Object, otChannel.Channel);
-            Assert.Equal(securityParameter, otChannel.SecurityLevel);
+            Assert.Equal(securityLevel, otChannel.SecurityLevel);
             Assert.Equal(0, otChannel.TotalNumberOfInvocations);
         }
 
         [Fact]
-        public void TestConstructorRejectsBadSecurityParameter()
+        public void TestConstructorRejectsBadSecurityLevel()
         {
-            int securityParameter = 0;
+            int securityLevel = 0;
 
             var baseOtMock = new Mock<IObliviousTransferChannel>();
             var codeMock = new Mock<IBinaryCode>();
             var cryptoContext = CryptoContext.CreateDefault();
 
             Assert.Throws<ArgumentOutOfRangeException>(
-                () => new ExtendedObliviousTransferChannelBase(baseOtMock.Object, securityParameter, cryptoContext, codeMock.Object)
+                () => new ExtendedObliviousTransferChannelBase(baseOtMock.Object, securityLevel, cryptoContext, codeMock.Object)
             );
         }
 
         [Fact]
         public void TestConstructorRejectsBadBaseOT()
         {
-            int securityParameter = 32;
+            int securityLevel = 32;
 
             var baseOtMock = new Mock<IObliviousTransferChannel>();
             baseOtMock.Setup(ot => ot.SecurityLevel).Returns(30);
@@ -65,21 +65,21 @@ namespace CompactOT
             var cryptoContext = CryptoContext.CreateDefault();
 
             Assert.Throws<ArgumentException>(
-                () => new ExtendedObliviousTransferChannelBase(baseOtMock.Object, securityParameter, cryptoContext, codeMock.Object)
+                () => new ExtendedObliviousTransferChannelBase(baseOtMock.Object, securityLevel, cryptoContext, codeMock.Object)
             );
         }
 
         [Fact]
         public void TestConstructorRejectsBadCode()
         {
-            int securityParameter = 128;
+            int securityLevel = 128;
 
             var channelMock = new Mock<IMessageChannel>();
             var baseOtMock = new Mock<IObliviousTransferChannel>();
-            baseOtMock.Setup(ot => ot.SecurityLevel).Returns(securityParameter);
+            baseOtMock.Setup(ot => ot.SecurityLevel).Returns(securityLevel);
             baseOtMock.Setup(ot => ot.Channel).Returns(channelMock.Object);
 
-            int codeLength = 2*securityParameter;
+            int codeLength = 2*securityLevel;
             var codeMock = new Mock<IBinaryCode>();
             codeMock.Setup(c => c.CodeLength).Returns(codeLength);
             codeMock.Setup(c => c.Distance).Returns(32);
@@ -87,14 +87,14 @@ namespace CompactOT
             var cryptoContext = CryptoContext.CreateDefault();
 
             Assert.Throws<ArgumentException>(
-                () => new ExtendedObliviousTransferChannelBase(baseOtMock.Object, securityParameter, cryptoContext, codeMock.Object)
+                () => new ExtendedObliviousTransferChannelBase(baseOtMock.Object, securityLevel, cryptoContext, codeMock.Object)
             );
         }
 
         [Fact]
         public void TestBaseOTs()
         {
-            var securityParameter = NumberLength.FromBitLength(24);
+            int securityLevel = 24;
 
             var messageChannels = new TestMessageChannels();
             var senderBaseChannel = TestUtils.GetBaseTransferChannel(messageChannels.FirstPartyChannel);
@@ -103,8 +103,8 @@ namespace CompactOT
             var cryptoContext = CryptoContext.CreateDefault();
             var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);
 
-            var otSender = new ExtendedObliviousTransferChannelBase(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
-            var otReceiver = new ExtendedObliviousTransferChannelBase(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otSender = new ExtendedObliviousTransferChannelBase(senderBaseChannel, securityLevel, cryptoContext, code);
+            var otReceiver = new ExtendedObliviousTransferChannelBase(receiverBaseChannel, securityLevel, cryptoContext, code);
             
             var senderTask = otSender.ExecuteSenderBaseTransferAsync();
             var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
@@ -115,19 +115,19 @@ namespace CompactOT
         [Fact]
         public async void TestSenderBaseOTs()
         {
-            var securityParameter = NumberLength.FromBitLength(16);
-            var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
+            var securityLevel = NumberLength.FromBitLength(16);
+            var code = WalshHadamardCode.CreateWithDistance(securityLevel.InBits);
             int codeLength = code.CodeLength;
 
-            var received = new ObliviousTransferResult(codeLength, securityParameter.InBits);
+            var received = new ObliviousTransferResult(codeLength, securityLevel.InBits);
             for (int j = 0; j < codeLength; ++j)
             {
-                byte[] receivedAsBytes = new byte[securityParameter.InBytes];
-                for (int i = 0; i < securityParameter.InBytes; ++i)
+                byte[] receivedAsBytes = new byte[securityLevel.InBytes];
+                for (int i = 0; i < securityLevel.InBytes; ++i)
                 {
                     receivedAsBytes[i] = (byte)(j*10 + i);
                 }
-                received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityParameter.InBits));
+                received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityLevel.InBits));
             }
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
@@ -147,7 +147,7 @@ namespace CompactOT
             );
 
             var otProtocol = new ExtendedObliviousTransferChannelBase(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
+                baseOTMock.Object, securityLevel.InBits, cryptoContext, code
             );
 
             await otProtocol.ExecuteSenderBaseTransferAsync();
@@ -156,25 +156,25 @@ namespace CompactOT
             baseOTMock.Verify(ot => ot.ReceiveAsync(
                 It.Is<int[]>(b => randomChoices.ToSelectionIndices().SequenceEqual(b)),
                 It.Is<int>(o => o == 2),
-                It.Is<int>(i => i == securityParameter.InBits)), Times.Once());
+                It.Is<int>(i => i == securityLevel.InBits)), Times.Once());
         }
 
         [Fact]
         public async void TestSenderBaseOTsGetReplyWithWrongNumberOfInvocations()
         {
-            var securityParameter = NumberLength.FromBitLength(16);
-            var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
+            var securityLevel = NumberLength.FromBitLength(16);
+            var code = WalshHadamardCode.CreateWithDistance(securityLevel.InBits);
             int numberOfInvocationsInResponse = 2;
 
-            var received = new ObliviousTransferResult(numberOfInvocationsInResponse, securityParameter.InBits);
+            var received = new ObliviousTransferResult(numberOfInvocationsInResponse, securityLevel.InBits);
             for (int j = 0; j < numberOfInvocationsInResponse; ++j)
             {
-                byte[] receivedAsBytes = new byte[securityParameter.InBytes];
-                for (int i = 0; i < securityParameter.InBytes; ++i)
+                byte[] receivedAsBytes = new byte[securityLevel.InBytes];
+                for (int i = 0; i < securityLevel.InBytes; ++i)
                 {
                     receivedAsBytes[i] = (byte)(j*10 + i);
                 }
-                received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityParameter.InBits));
+                received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityLevel.InBits));
             }
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
@@ -191,7 +191,7 @@ namespace CompactOT
             var cryptoContext = CryptoContext.CreateDefault();
 
             var otProtocol = new ExtendedObliviousTransferChannelBase(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
+                baseOTMock.Object, securityLevel.InBits, cryptoContext, code
             );
 
             await Assert.ThrowsAsync<ProtocolException>(
@@ -202,8 +202,8 @@ namespace CompactOT
         [Fact]
         public async void TestSenderBaseOTsGetReplyWithWrongNumberOfMessageBits()
         {
-            var securityParameter = NumberLength.FromBitLength(16);
-            var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
+            int securityLevel = 16;
+            var code = WalshHadamardCode.CreateWithDistance(securityLevel);
             int numberOfInvocationsInResponse = code.CodeLength;
             var messageLength = NumberLength.FromBitLength(2);
 
@@ -232,7 +232,7 @@ namespace CompactOT
             var cryptoContext = CryptoContext.CreateDefault();
 
             var otProtocol = new ExtendedObliviousTransferChannelBase(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
+                baseOTMock.Object, securityLevel, cryptoContext, code
             );
 
             await Assert.ThrowsAsync<ProtocolException>(
@@ -243,8 +243,8 @@ namespace CompactOT
         [Fact]
         public async void TestReceiverBaseOTs()
         {
-            var securityParameter = NumberLength.FromBitLength(4);
-            var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
+            int securityLevel = 4;
+            var code = WalshHadamardCode.CreateWithDistance(securityLevel);
             int codeLength = code.CodeLength;
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
@@ -262,11 +262,11 @@ namespace CompactOT
             );
 
             var expectedOptions = ObliviousTransferOptions.FromBitArray(
-                randomChoices, codeLength, 2, securityParameter.InBits
+                randomChoices, codeLength, 2, securityLevel
             );
 
             var otProtocol = new ExtendedObliviousTransferChannelBase(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
+                baseOTMock.Object, securityLevel, cryptoContext, code
             );
 
             await otProtocol.ExecuteReceiverBaseTransferAsync();
@@ -279,16 +279,16 @@ namespace CompactOT
         [Fact]
         public void TestEstimateCostNoMaxNumberOfInvocations()
         {
-            var securityParameter = NumberLength.FromBitLength(4);
+            int securityLevel = 4;
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
             var cryptoContext = CryptoContext.CreateDefault();
-            var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
+            var code = WalshHadamardCode.CreateWithDistance(securityLevel);
 
             var otProtocol = new ExtendedObliviousTransferChannelBase(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
+                baseOTMock.Object, securityLevel, cryptoContext, code
             );
 
             var usageProjection = new ObliviousTransferUsageProjection();

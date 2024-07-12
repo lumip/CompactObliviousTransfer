@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -7,7 +7,6 @@ using Moq;
 using System.Linq;
 using System.Diagnostics;
 
-using CompactCryptoGroupAlgebra;
 using CompactOT.Codes;
 
 namespace CompactOT
@@ -20,7 +19,7 @@ namespace CompactOT
         {
             int numberOfOptions = TestUtils.TestCorrelations.Length + 1;
 
-            var securityParameter = NumberLength.FromBitLength(8);
+            int securityLevel = 8;
 
             var messageChannels = new TestMessageChannels();
             var senderBaseChannel = TestUtils.GetBaseTransferChannel(messageChannels.FirstPartyChannel);
@@ -28,8 +27,8 @@ namespace CompactOT
 
             var cryptoContext = CryptoContext.CreateDefault();
             var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);
-            var otSender = new CorrelatedObliviousTransferChannel(senderBaseChannel, securityParameter.InBits, cryptoContext, code);
-            var otReceiver = new CorrelatedObliviousTransferChannel(receiverBaseChannel, securityParameter.InBits, cryptoContext, code);
+            var otSender = new CorrelatedObliviousTransferChannel(senderBaseChannel, securityLevel, cryptoContext, code);
+            var otReceiver = new CorrelatedObliviousTransferChannel(receiverBaseChannel, securityLevel, cryptoContext, code);
 
             const int numberOfInvocations = 3;
             int numberOfMessageBits = TestUtils.TestCorrelations[0].Length;

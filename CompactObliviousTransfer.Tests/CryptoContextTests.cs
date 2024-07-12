@@ -33,7 +33,7 @@ namespace CompactOT
             var hashAlgorithmProvider = hashAlgorithmProviderMock.Object;
 
             var cryptoContext = new CryptoContext(RandomNumberGenerator.Create(), hashAlgorithmProvider);
-            var securityLevel = cryptoContext.SecurityLevel;
+            int securityLevel = cryptoContext.SecurityLevel;
 
             Assert.Equal(expected, securityLevel);
             hashAlgorithmProviderMock.Verify(hap => hap.SecurityLevel, Times.Once);

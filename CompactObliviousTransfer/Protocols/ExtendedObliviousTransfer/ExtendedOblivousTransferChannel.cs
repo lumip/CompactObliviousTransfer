@@ -23,8 +23,8 @@ namespace CompactOT
     public class ExtendedObliviousTransferChannel : ExtendedObliviousTransferChannelBase, IObliviousTransferChannel
     {
 
-        public ExtendedObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityParameter, CryptoContext cryptoContext, IBinaryCode code)
-            : base(baseOT, securityParameter, cryptoContext, code)
+        public ExtendedObliviousTransferChannel(IObliviousTransferChannel baseOT, int securityLevel, CryptoContext cryptoContext, IBinaryCode code)
+            : base(baseOT, securityLevel, cryptoContext, code)
         {
         }
 
