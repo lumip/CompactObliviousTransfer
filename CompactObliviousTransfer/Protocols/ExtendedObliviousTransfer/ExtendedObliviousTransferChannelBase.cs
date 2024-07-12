@@ -371,8 +371,7 @@ namespace CompactOT
                 MaxNumberOfOptions = 2,
                 MaxNumberOfInvocations = codeLength,
                 MaxNumberOfBatches = 1,
-                AverageMessageBits = usageProjection.SecurityLevel,
-                SecurityLevel = usageProjection.SecurityLevel
+                AverageMessageBits = SecurityLevel,
             };
             double baseOtCost = _baseOT.EstimateCost(baseOtUsageProjection);
 

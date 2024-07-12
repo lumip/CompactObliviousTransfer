@@ -22,25 +22,6 @@ namespace CompactOT
             Assert.Throws<InvalidOperationException>(() => projection.MaxNumberOfOptions);
 
             Assert.Equal(1, projection.AverageInvocationsPerBatch);
-            Assert.Equal(128, projection.SecurityLevel);
-            Assert.Equal(1, projection.AverageMessageBits);
-            Assert.Equal(2, projection.AverageNumberOfOptions);
-        }
-
-        [Fact]
-        public void TestSecurityLevel()
-        {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.SecurityLevel = 200;
-
-            Assert.Throws<ArgumentOutOfRangeException>(() => projection.SecurityLevel = -1);
-
-            Assert.False(projection.HasMaxNumberOfBatches);
-            Assert.False(projection.HasMaxNumberOfInvocations);
-            Assert.False(projection.HasMaxNumberOfOptions);
-
-            Assert.Equal(1, projection.AverageInvocationsPerBatch);
-            Assert.Equal(200, projection.SecurityLevel);
             Assert.Equal(1, projection.AverageMessageBits);
             Assert.Equal(2, projection.AverageNumberOfOptions);
         }
@@ -59,7 +40,6 @@ namespace CompactOT
             Assert.False(projection.HasMaxNumberOfOptions);
 
             Assert.Equal(1, projection.AverageInvocationsPerBatch);
-            Assert.Equal(128, projection.SecurityLevel);
             Assert.Equal(3532, projection.AverageMessageBits);
             Assert.Equal(2, projection.AverageNumberOfOptions);
         }
@@ -78,7 +58,6 @@ namespace CompactOT
             Assert.False(projection.HasMaxNumberOfOptions);
 
             Assert.Equal(7, projection.AverageInvocationsPerBatch);
-            Assert.Equal(128, projection.SecurityLevel);
             Assert.Equal(1, projection.AverageMessageBits);
             Assert.Equal(2, projection.AverageNumberOfOptions);
         }
@@ -111,7 +90,6 @@ namespace CompactOT
             Assert.False(projection.HasMaxNumberOfOptions);
 
             Assert.Equal(1, projection.AverageInvocationsPerBatch);
-            Assert.Equal(128, projection.SecurityLevel);
             Assert.Equal(1, projection.AverageMessageBits);
             Assert.Equal(2, projection.AverageNumberOfOptions);
         }
@@ -145,7 +123,6 @@ namespace CompactOT
             Assert.False(projection.HasMaxNumberOfOptions);
 
             Assert.Equal(1, projection.AverageInvocationsPerBatch);
-            Assert.Equal(128, projection.SecurityLevel);
             Assert.Equal(1, projection.AverageMessageBits);
             Assert.Equal(2, projection.AverageNumberOfOptions);
         }
@@ -178,7 +155,6 @@ namespace CompactOT
             Assert.Equal(5, projection.MaxNumberOfOptions);
 
             Assert.Equal(1, projection.AverageInvocationsPerBatch);
-            Assert.Equal(128, projection.SecurityLevel);
             Assert.Equal(1, projection.AverageMessageBits);
             Assert.Equal(5, projection.AverageNumberOfOptions);
         }
@@ -196,7 +172,6 @@ namespace CompactOT
             Assert.False(projection.HasMaxNumberOfOptions);
 
             Assert.Equal(1, projection.AverageInvocationsPerBatch);
-            Assert.Equal(128, projection.SecurityLevel);
             Assert.Equal(1, projection.AverageMessageBits);
             Assert.Equal(7, projection.AverageNumberOfOptions);
         }
@@ -224,7 +199,6 @@ namespace CompactOT
             template.MaxNumberOfOptions = 5;
             template.AverageNumberOfOptions = 3;
             template.MaxNumberOfBatches = 10;
-            template.SecurityLevel = 200;
             template.AverageMessageBits = 23;
 
             var projection = new ObliviousTransferUsageProjection(template);
@@ -239,7 +213,6 @@ namespace CompactOT
             Assert.Equal(template.AverageInvocationsPerBatch, projection.AverageInvocationsPerBatch);
             Assert.Equal(template.AverageMessageBits, projection.AverageMessageBits);
             Assert.Equal(template.AverageNumberOfOptions, projection.AverageNumberOfOptions);
-            Assert.Equal(template.SecurityLevel, projection.SecurityLevel);
         }
 
         [Fact]
@@ -258,7 +231,6 @@ namespace CompactOT
             projection.MaxNumberOfOptions = 5;
             projection.AverageNumberOfOptions = 3;
             projection.MaxNumberOfBatches = 10;
-            projection.SecurityLevel = 200;
             projection.AverageMessageBits = 23;
 
             var other = new ObliviousTransferUsageProjection(projection);
@@ -272,11 +244,6 @@ namespace CompactOT
 
             other = new ObliviousTransferUsageProjection(projection);
             other.AverageNumberOfOptions = projection.AverageNumberOfOptions + 1;
-            Assert.False(projection.Equals(other));
-            Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
-
-            other = new ObliviousTransferUsageProjection(projection);
-            other.SecurityLevel = projection.SecurityLevel + 1;
             Assert.False(projection.Equals(other));
             Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
 

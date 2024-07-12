@@ -5,12 +5,37 @@ using System;
 
 namespace CompactOT
 {
+    /// <summary>
+    /// A projection/forecast of the oblivious transfer (OT) usage for a channel
+    /// in terms of the number of OT invocations, the number of message
+    /// options/choices in each OT invocation and the bit-length of messages.
+    /// 
+    /// Invocations refer to single instance of the oblivious transfer protocol, i.e.,
+    /// an exchange resulting in a single message retrieved by the client. Invocations
+    /// can occur in batches, that is, several messages can be retrieved by the client
+    /// simultaneously in a single round-trip of the protocol implement (i.e., a
+    /// call to the <see cref="IObliviousTransfer"/> interface). 
+    /// 
+    /// Primarily used in <see cref="ObliviousTransferChannelBuilder"/> to determine
+    /// an optimal (respective communication cost) channel implementation for the projected
+    /// usage.
+    /// </summary>
     public class ObliviousTransferUsageProjection
     {
         private int? _maxNumberOfOptions;
 
+        /// <summary>
+        /// True if a <see cref="MaxNumberOfOptions"/> has been set. 
+        /// </summary>
         public bool HasMaxNumberOfOptions => _maxNumberOfOptions.HasValue;
 
+        /// <summary>
+        /// The maximum number of message options that is estimated to occur in any
+        /// of the oblivious transfer invocations.
+        /// 
+        /// While some of the invocations may involve fewer options, none is estimated
+        /// to exceed this number.
+        /// </summary>
         public int MaxNumberOfOptions
         {
             get
@@ -42,6 +67,14 @@ namespace CompactOT
         }
 
         private int? _avgNumberOfOptions;
+
+        /// <summary>
+        /// The estimated average number of message options over all
+        /// oblivious transfer invocations.
+        /// 
+        /// If not set explicitly it is equal to <see cref="MaxNumberOfOptions"/>,
+        /// if that is set; otherwise 2.
+        /// </summary>
         public int AverageNumberOfOptions
         {
             get
@@ -80,6 +113,14 @@ namespace CompactOT
 
         public bool HasMaxNumberOfInvocations => (_maxNumberOfInvocations.HasValue || _avgInvocationsPerBatch.HasValue);
 
+        /// <summary>
+        /// The maximum number of invocations, i.e., oblivious transfer instances,
+        /// that is estimated to occur.
+        /// 
+        /// If both, <see cref="MaxNumberOfBatches"/> and  <see cref="AverageInvocationsPerBatch"/>,
+        /// are set but <see cref="MaxNumberOfInvocations"/> is not, it is derived as the product
+        /// of the former.
+        /// </summary>
         public int MaxNumberOfInvocations
         {
             get
@@ -123,6 +164,13 @@ namespace CompactOT
 
         public bool HasMaxNumberOfBatches => _maxNumberOfBatches.HasValue || _maxNumberOfInvocations.HasValue;
 
+        /// <summary>
+        /// The estimated maximum number of batches, i.e., protocol round-trips.
+        /// 
+        /// If both, <see cref="MaxNumberOfInvocations"/> and  <see cref="AverageInvocationsPerBatch"/>,
+        /// are set but <see cref="MaxNumberOfBatches"/> is not, it is derived as the quotient
+        /// of the former.
+        /// </summary>
         public int MaxNumberOfBatches
         {
             get
@@ -163,6 +211,14 @@ namespace CompactOT
         }
 
         private int? _avgInvocationsPerBatch;
+
+        /// <summary>
+        /// The estimated average number of invocations over all batches, i.e., protocol round-trips.
+        /// 
+        /// If both, <see cref="MaxNumberOfInvocations"/> and  <see cref="MaxNumberOfBatches"/>,
+        /// are set but <see cref="AverageInvocationsPerBatch"/> is not, it is derived as the quotient
+        /// of the former. If either of the former is not set, a worst-case estimate of 1 is returned.
+        /// </summary>
         public int AverageInvocationsPerBatch
         {
             get
@@ -196,23 +252,11 @@ namespace CompactOT
             }
         }
 
-        private int _securityLevel;
-        public int SecurityLevel
-        {
-            get => _securityLevel;
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        $"The security level must not be negative, was {value}."
-                    );
-                }
-                _securityLevel = value;
-            }
-        }
-
         private int _avgMessageBits;
+
+        /// <summary>
+        /// The estimated average number of bits in a message over all invocations.
+        /// </summary>
         public int AverageMessageBits
         {
             get => _avgMessageBits;
@@ -228,6 +272,11 @@ namespace CompactOT
             }
         }
 
+        /// <summary>
+        /// Instantiates an unconfigured <see cref="ObliviousTransferUsageProjection"/> object
+        /// with all properties unspecified, except <see cref="AverageMessageBits"/>, which defaults
+        /// to 1.
+        /// </summary>
         public ObliviousTransferUsageProjection()
         {
             _maxNumberOfOptions = null;
@@ -235,10 +284,14 @@ namespace CompactOT
             _maxNumberOfInvocations = null;
             _maxNumberOfBatches = null;
             _avgInvocationsPerBatch = null;
-            SecurityLevel = 128;
             AverageMessageBits = 1;
         }
 
+        /// <summary>
+        /// Instantiates a <see cref="ObliviousTransferUsageProjection" /> object that is an
+        /// exact copy of the provided one.
+        /// </summary>
+        /// <param name="toClone">The usage projection of which a copy will be made.</param>
         public ObliviousTransferUsageProjection(ObliviousTransferUsageProjection toClone)
         {
             _maxNumberOfOptions = toClone._maxNumberOfOptions;
@@ -246,10 +299,10 @@ namespace CompactOT
             _maxNumberOfInvocations = toClone._maxNumberOfInvocations;
             _maxNumberOfBatches = toClone._maxNumberOfBatches;
             _avgInvocationsPerBatch = toClone._avgInvocationsPerBatch;
-            SecurityLevel = toClone.SecurityLevel;
             AverageMessageBits = toClone.AverageMessageBits; 
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             var other = obj as ObliviousTransferUsageProjection;
@@ -260,13 +313,13 @@ namespace CompactOT
                 _maxNumberOfInvocations == other._maxNumberOfInvocations &&
                 _maxNumberOfBatches == other._maxNumberOfBatches &&
                 _avgInvocationsPerBatch == other._avgInvocationsPerBatch &&
-                _securityLevel == other._securityLevel &&
                 _avgMessageBits == other._avgMessageBits;
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return 777247 * _securityLevel +
+            return
                 586541 * (_maxNumberOfOptions ?? 0) +
                 587813 * (_maxNumberOfInvocations ?? 0) +
                 960863 * (_maxNumberOfBatches ?? 0) +

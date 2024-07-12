@@ -35,11 +35,13 @@ namespace CompactOT
     {
 
         private ObliviousTransferUsageProjection _projection;
+        private int _securityLevel;
         private IBaseProtocolFactory _baseOtFactory;
 
         public ObliviousTransferChannelBuilder()
         {
             _projection = new ObliviousTransferUsageProjection();
+            _securityLevel = 128;
             _baseOtFactory = new DefaultBaseProtocolFactory();
         }
 
@@ -81,7 +83,13 @@ namespace CompactOT
 
         public ObliviousTransferChannelBuilder WithSecurityLevel(int securityLevel)
         {
-            _projection.SecurityLevel = securityLevel;
+            if (securityLevel < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    $"The security level must not be negative, was {securityLevel}."
+                );
+            }
+            _securityLevel = securityLevel;
             return this;
         }
 
@@ -97,14 +105,14 @@ namespace CompactOT
         {
             if (cryptoContext == null)
             {
-                cryptoContext = CryptoContext.CreateWithSecurityLevel(_projection.SecurityLevel);
+                cryptoContext = CryptoContext.CreateWithSecurityLevel(_securityLevel);
             }
             else
             {
-                if (cryptoContext.SecurityLevel < _projection.SecurityLevel)
+                if (cryptoContext.SecurityLevel < _securityLevel)
                 {
                     throw new ArgumentException(
-                        $"Hash algorithm in the provided crypto context cannot satisfy required security level {_projection.SecurityLevel}." +
+                        $"Hash algorithm in the provided crypto context cannot satisfy required security level {_securityLevel}." +
                         " The length of the hash must be at least twice the security level.",
                         nameof(cryptoContext)
                     );
@@ -118,7 +126,7 @@ namespace CompactOT
             // first create a WalshHadamardCode to satisfy the desired SecurityLevel.
             // we then check if the maximum number of options is known and ensure that
             // the code supports it, increasing the code length if necessary
-            IBinaryCode code = WalshHadamardCode.CreateWithDistance(_projection.SecurityLevel);
+            IBinaryCode code = WalshHadamardCode.CreateWithDistance(_securityLevel);
             if (_projection.HasMaxNumberOfOptions)
             {
                 if (_projection.MaxNumberOfOptions == 2)
@@ -126,12 +134,12 @@ namespace CompactOT
                     // in this case the RepeatingBitCode is applicable and more efficient,
                     // since its code length is only SecurityLevel, while that of WalshHadamardCode
                     // is 2*SecurityLevel .
-                    code = RepeatingBitCode.CreateWithDistance(_projection.SecurityLevel);
+                    code = RepeatingBitCode.CreateWithDistance(_securityLevel);
                 }
                 else if (code.MaximumMessage < _projection.MaxNumberOfOptions - 1)
                 {
                     code = WalshHadamardCode.CreateWithMaximumMessage(_projection.MaxNumberOfOptions - 1);
-                    Debug.Assert(code.Distance >= _projection.SecurityLevel);
+                    Debug.Assert(code.Distance >= _securityLevel);
                 }
 
             }
@@ -165,11 +173,11 @@ namespace CompactOT
             var code = MakeBinaryCode();
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
-                channel, cryptoContext, _projection.SecurityLevel
+                channel, cryptoContext, _securityLevel
             );
 
             var extendedOtChannel = new ExtendedObliviousTransferChannel(
-                baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
+                baseProtocolChannel, _securityLevel, cryptoContext, code
             );
 
             return SelectBaseOrExtendedChannel<IObliviousTransferChannel>(baseProtocolChannel, extendedOtChannel);
@@ -183,7 +191,7 @@ namespace CompactOT
             var code = MakeBinaryCode();
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
-                channel, cryptoContext, _projection.SecurityLevel
+                channel, cryptoContext, _securityLevel
             );
 
             var baseProtocolCorrelatedChannel = new Adapters.CorrelatedFromStandardObliviousTransferChannel(
@@ -191,7 +199,7 @@ namespace CompactOT
             );
 
             var alszCorrelatedChannel = new CorrelatedObliviousTransferChannel(
-                baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
+                baseProtocolChannel, _securityLevel, cryptoContext, code
             );
 
             return SelectBaseOrExtendedChannel<ICorrelatedObliviousTransferChannel>(baseProtocolCorrelatedChannel, alszCorrelatedChannel);
@@ -205,7 +213,7 @@ namespace CompactOT
             var code = MakeBinaryCode();
 
             var baseProtocolChannel = _baseOtFactory.MakeChannel(
-                channel, cryptoContext, _projection.SecurityLevel
+                channel, cryptoContext, _securityLevel
             );
 
             var baseProtocolRandomChannel = new Adapters.RandomFromStandardObliviousTransferChannel(
@@ -213,7 +221,7 @@ namespace CompactOT
             );
 
             var alszRandomChannel = new RandomObliviousTransferChannel(
-                baseProtocolChannel, _projection.SecurityLevel, cryptoContext, code
+                baseProtocolChannel, _securityLevel, cryptoContext, code
             );
 
             return SelectBaseOrExtendedChannel<IRandomObliviousTransferChannel>(baseProtocolRandomChannel, alszRandomChannel);

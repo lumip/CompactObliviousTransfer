@@ -298,7 +298,7 @@ namespace CompactOT
         [Fact]
         public void TestEstimateCost()
         {
-            var securityParameter = NumberLength.FromBitLength(4);
+            int securityLevel = 4;
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
@@ -310,11 +310,11 @@ namespace CompactOT
             int codeLength = 15;
             var codeMock = new Mock<IBinaryCode>();
             codeMock.Setup(c => c.CodeLength).Returns(codeLength);
-            codeMock.Setup(c => c.Distance).Returns(securityParameter.InBits);
+            codeMock.Setup(c => c.Distance).Returns(securityLevel);
             var code = codeMock.Object;
 
             var otProtocol = new ExtendedObliviousTransferChannelBase(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
+                baseOTMock.Object, securityLevel, cryptoContext, code
             );
 
             var usageProjection = new ObliviousTransferUsageProjection
@@ -322,7 +322,6 @@ namespace CompactOT
                 MaxNumberOfInvocations = 7,
                 AverageNumberOfOptions = 3,
                 AverageMessageBits = 11,
-                SecurityLevel = securityParameter.InBits,
             };
 
             double expectedCost = baseCost +
@@ -337,8 +336,7 @@ namespace CompactOT
                 MaxNumberOfInvocations = code.CodeLength,
                 MaxNumberOfOptions = 2,
                 MaxNumberOfBatches = 1,
-                AverageMessageBits = securityParameter.InBits,
-                SecurityLevel = securityParameter.InBits,
+                AverageMessageBits = securityLevel,
             };
 
             baseOTMock.Verify(

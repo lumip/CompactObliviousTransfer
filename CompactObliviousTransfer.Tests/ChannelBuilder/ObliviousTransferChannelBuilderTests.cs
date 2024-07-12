@@ -12,6 +12,15 @@ namespace CompactOT
     {
 
         [Fact]
+        public void TestWithSecurityLevelNegativeValue()
+        {
+            var builder = new ObliviousTransferChannelBuilder();
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => builder.WithSecurityLevel(-1)
+            );
+        }
+
+        [Fact]
         public void TestMakeObliviousTransferChannelFewInvocations()
         {
             var builder = new ObliviousTransferChannelBuilder();
