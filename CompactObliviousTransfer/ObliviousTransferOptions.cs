@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -173,6 +173,17 @@ namespace CompactOT
             }
         }
 
+        public void SetInvocation(int invocation, BitMatrix messages)
+        {
+            if (messages.Rows != NumberOfOptions)
+                throw new ArgumentException("The matrix given as invocation message options must have a number of rows equal to the number of options.", nameof(messages));
+
+            if (messages.Cols != NumberOfMessageBits)
+                throw new ArgumentException("The matrix given as invocation message options must have a number of columns equal to the number of message bits.", nameof(messages));
+
+            SetInvocation(invocation, messages.AsFlat());
+        }
+
         public void SetInvocation(int invocation, BitSequence[] messages)
         {
             if (messages.Length != NumberOfOptions)
@@ -188,6 +199,9 @@ namespace CompactOT
         {
             if (messages.Length != NumberOfOptions)
                 throw new ArgumentException("Number of given messages must match oblivious transfer option count.", nameof(messages));
+
+            if (NumberOfMessageBits % 8 != 0)
+                throw new NotSupportedException("The number of message bits is not a multiple of a byte length, therefore SetInvocation cannot be called with byte array arguments.");
 
             foreach ((int i, var message) in messages.Enumerate())
             {

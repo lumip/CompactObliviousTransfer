@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -14,10 +14,11 @@ namespace CompactOT
     /// 
     /// Required specifications include e.g.,
     ///     - the required security parameter,
-    ///     - the maximum and expected number of message options,
-    ///     - the maximum number of total invocations
-    ///     - the expected number of invocations that are executed in a single batch (call to Send/ReceiveAsync),
-    ///     - the expected number of bits in a message.
+    ///     - the maximum and expected (/average) number of message options,
+    ///     - the maximum number of total invocations (or unlimited)
+    ///     - the expected (/average) number of invocations that are executed in a single batch (call to Send/ReceiveAsync),
+    ///     - the expected (/average) number of bits in a message.
+    ///     
     /// Based on this information, the ObliviousTransferChannelBuilder will primarily decide whether to instantiate
     /// a basic or extended oblivous transfer protocol channel, depending on which is expected to result in less communication cost.
     /// 
@@ -40,6 +41,12 @@ namespace CompactOT
         {
             _projection = new ObliviousTransferUsageProjection();
             _baseOtFactory = new DefaultBaseProtocolFactory();
+        }
+
+        public ObliviousTransferChannelBuilder WithAverageMessageBits(int averageMessageBits)
+        {
+            _projection.AverageMessageBits = averageMessageBits;
+            return this;
         }
 
         public ObliviousTransferChannelBuilder WithMaximumNumberOfOptions(int maxNumberOfOptions)
@@ -94,7 +101,7 @@ namespace CompactOT
             }
             else
             {
-                if (cryptoContext.HashAlgorithmProvider.SecurityLevel < _projection.SecurityLevel)
+                if (cryptoContext.SecurityLevel < _projection.SecurityLevel)
                 {
                     throw new ArgumentException(
                         $"Hash algorithm in the provided crypto context cannot satisfy required security level {_projection.SecurityLevel}." +
@@ -108,11 +115,17 @@ namespace CompactOT
 
         private IBinaryCode MakeBinaryCode()
         {
+            // first create a WalshHadamardCode to satisfy the desired SecurityLevel.
+            // we then check if the maximum number of options is known and ensure that
+            // the code supports it, increasing the code length if necessary
             IBinaryCode code = WalshHadamardCode.CreateWithDistance(_projection.SecurityLevel);
             if (_projection.HasMaxNumberOfOptions)
             {
                 if (_projection.MaxNumberOfOptions == 2)
                 {
+                    // in this case the RepeatingBitCode is applicable and more efficient,
+                    // since its code length is only SecurityLevel, while that of WalshHadamardCode
+                    // is 2*SecurityLevel .
                     code = RepeatingBitCode.CreateWithDistance(_projection.SecurityLevel);
                 }
                 else if (code.MaximumMessage < _projection.MaxNumberOfOptions - 1)

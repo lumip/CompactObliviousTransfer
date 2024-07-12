@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -249,6 +249,32 @@ namespace CompactOT
             SecurityLevel = toClone.SecurityLevel;
             AverageMessageBits = toClone.AverageMessageBits; 
         }
+
+        public override bool Equals(object? obj)
+        {
+            var other = obj as ObliviousTransferUsageProjection;
+            if (other == null) return false;
+
+            return _maxNumberOfOptions == other._maxNumberOfOptions &&
+                _avgNumberOfOptions == other._avgNumberOfOptions &&
+                _maxNumberOfInvocations == other._maxNumberOfInvocations &&
+                _maxNumberOfBatches == other._maxNumberOfBatches &&
+                _avgInvocationsPerBatch == other._avgInvocationsPerBatch &&
+                _securityLevel == other._securityLevel &&
+                _avgMessageBits == other._avgMessageBits;
+        }
+
+        public override int GetHashCode()
+        {
+            return 777247 * _securityLevel +
+                586541 * (_maxNumberOfOptions ?? 0) +
+                587813 * (_maxNumberOfInvocations ?? 0) +
+                960863 * (_maxNumberOfBatches ?? 0) +
+                486179 * (_avgNumberOfOptions ?? 0) +
+                944233 * (_avgInvocationsPerBatch ?? 0) +
+                666871 * _avgMessageBits;
+        }
+
     }
 
 }

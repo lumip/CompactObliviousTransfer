@@ -73,10 +73,20 @@ namespace CompactOT.DataStructures
             var bits = BitArray.FromBytes(bytes, 28); // "0011100110101101110101111001"
             var slice = new BitArraySlice(bits, sliceOffset, sliceStop);
 
-            var bbytes = slice.AsByteEnumerable().ToArray();
-
             Assert.Equal(expected.Length, slice.AsByteEnumerable().Count());
             Assert.Equal(expected, slice.AsByteEnumerable());
+        }
+
+        [Fact]
+        public void TestCollectionProperties()
+        {
+            byte[] bytes = new byte[] { 0x9c, 0xb5, 0xeb, 0x69 }; // 10011100 10110101 11101011 01101001
+            var bits = BitArray.FromBytes(bytes, 28); // "0011100110101101110101111001"
+            var slice = new BitArraySlice(bits, 3, 10);
+
+            Assert.False(slice.IsSynchronized);
+            Assert.Same(bits.SyncRoot, slice.SyncRoot);
+            Assert.True(slice.IsReadOnly);
         }
     }
 }

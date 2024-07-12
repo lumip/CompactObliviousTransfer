@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -15,9 +15,9 @@ namespace CompactOT.DataStructures
     /// The first bit in the incoming bit sequence is the lsb of the first byte,
     /// the 9th bit is the lsb of the second byte and so on.
     /// </summary>
-    public class ShiftedByteArrayEnumerable : IEnumerable<byte>
+    public class ShiftedByteArrayEnumerable : BaseEnumerable<byte>
     {
-        public class Enumerator : IEnumerator<byte>
+        public class Enumerator : BaseEnumerator<byte>
         {
             private IEnumerator<byte> _baseEnumerator;
             private int _offset;
@@ -39,17 +39,22 @@ namespace CompactOT.DataStructures
                 _hasEnded = false;
             }
 
+            private byte _current;
+            public override byte Current {
+                get
+                {
+                    if (_isReset)
+                        throw new InvalidOperationException("Enumeration has not started. Call MoveNext.");
+                    return _current;
+                }
+            }
 
-            public byte Current { get; private set; }
-
-            object IEnumerator.Current => ((IEnumerator<byte>)this).Current;
-
-            public void Dispose()
+            public override void Dispose()
             {
                 _baseEnumerator.Dispose();
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 if (_hasEnded) return false;
 
@@ -63,18 +68,18 @@ namespace CompactOT.DataStructures
                 if (_baseEnumerator.MoveNext())
                 {
                     byte baseCurrent = _baseEnumerator.Current;
-                    Current = (byte)(_last | (baseCurrent << (8 - _offset)));
+                    _current = (byte)(_last | (baseCurrent << (8 - _offset)));
                     _last = (byte)(baseCurrent >> _offset);
                 }
                 else
                 {
-                    Current = _last;
+                    _current = _last;
                     _hasEnded = true;
                 }
                 return true;
             }
 
-            public void Reset()
+            public override void Reset()
             {
                 _isReset = true;
                 _hasEnded = false;
@@ -94,15 +99,11 @@ namespace CompactOT.DataStructures
             _offset = offset;
         }
 
-        public IEnumerator<byte> GetEnumerator()
+        public override IEnumerator<byte> GetEnumerator()
         {
             return new Enumerator(_baseEnumerable.GetEnumerator(), _offset);
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable<byte>)this).GetEnumerator();
-        }
     }
 
 }

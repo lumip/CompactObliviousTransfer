@@ -1,20 +1,16 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace CompactOT
 {
     /// <summary>
     /// A message channel based on a <see cref="System.Net.Sockets.NetworkStream" />.
     /// </summary>
-    /// <remarks>
-    /// For implementers: Note that this implementation relies on the stream to block
-    /// upon reading until data is available. It can therefore not be used as is for
-    /// generic <see cref="System.IO.Stream" />s, which may not behave in this way.
-    /// </remarks>
     public class NetworkStreamMessageChannel : IMessageChannel
     {
 
@@ -28,15 +24,34 @@ namespace CompactOT
             _stream = stream;
         }
 
+        private async Task ReadAllAsync(byte[] buffer)
+        {
+            int bytesToRead = buffer.Length;
+            int bytesRead = 0;
+
+            while (bytesToRead > 0)
+            {
+                int bytesJustRead = await _stream.ReadAsync(buffer, bytesRead, bytesToRead);
+                bytesRead += bytesJustRead;
+                bytesToRead = buffer.Length - bytesRead;
+            }
+        }
+
         public async Task<byte[]> ReadMessageAsync()
         {
             byte[] messageLengthBuffer = new byte[4];
             
-            await _stream.ReadAsync(messageLengthBuffer, 0, messageLengthBuffer.Length);
+            await ReadAllAsync(messageLengthBuffer);
             int messageLength = BitConverter.ToInt32(messageLengthBuffer, 0);
 
+            if (messageLength < 0)
+                throw new ProtocolException("Received a message with negative length");
+
             byte[] messageBuffer = new byte[messageLength];
-            await _stream.ReadAsync(messageBuffer, 0, messageLength);
+
+            if (messageLength > 0)
+                await ReadAllAsync(messageBuffer);
+
             return messageBuffer;
         }
 

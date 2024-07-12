@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using Xunit;
@@ -96,6 +96,25 @@ namespace CompactOT.DataStructures
         }
 
         [Fact]
+        public void TestZeros()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 2;
+            var matrix = BitMatrix.Zeros(numberOfRows, numberOfColumns);
+
+            Assert.Equal(numberOfRows, matrix.Rows);
+            Assert.Equal(numberOfColumns, matrix.Cols);
+            
+            for (int i = 0; i < numberOfRows; ++i)
+            {
+                for (int j = 0; j < numberOfColumns; ++j)
+                {
+                    Assert.Equal(Bit.Zero, matrix[i, j]);
+                }
+            }
+        }
+
+        [Fact]
         public void TestGetRowIndexTooLarge()
         {
             int numberOfRows = 4;
@@ -113,6 +132,30 @@ namespace CompactOT.DataStructures
             var matrix = new BitMatrix(numberOfRows, numberOfColumns);
 
             Assert.Throws<ArgumentOutOfRangeException>(() => matrix.GetRow(-1));
+        }
+
+        [Fact]
+        public void TestSetRow()
+        {
+            int numberOfRows = 4;
+            int numberOfColumns = 2;
+            var values = BitArray.FromBinaryString("00011011");
+            var matrix = new BitMatrix(numberOfRows, numberOfColumns, values);
+
+            var newRow = BitArray.FromBinaryString("10");
+            matrix.SetRow(1, newRow);
+
+            var expectedRows = new BitArray[] {
+                BitArray.FromBinaryString("00"),
+                BitArray.FromBinaryString("10"),
+                BitArray.FromBinaryString("10"),
+                BitArray.FromBinaryString("11")
+            };
+            
+            for (int i = 0; i < numberOfRows; ++i)
+            {
+                Assert.Equal(expectedRows[i], matrix.GetRow(i));
+            }
         }
 
         [Fact]
@@ -529,6 +572,7 @@ namespace CompactOT.DataStructures
             var other = new BitMatrix(numberOfRows, numberOfColumns, BitArray.FromBinaryString("1001"));
 
             Assert.True(matrix.Equals(other));
+            Assert.Equal(matrix.GetHashCode(), other.GetHashCode());
         }
 
         [Fact]
@@ -541,6 +585,7 @@ namespace CompactOT.DataStructures
             var other = new BitMatrix(numberOfRows, numberOfColumns, BitArray.FromBinaryString("1010"));
 
             Assert.False(matrix.Equals(other));
+            Assert.NotEqual(matrix.GetHashCode(), other.GetHashCode());
         }
         
         [Fact]
@@ -553,6 +598,7 @@ namespace CompactOT.DataStructures
             var other = new BitMatrix(1, numberOfColumns, BitArray.FromBinaryString("10"));
 
             Assert.False(matrix.Equals(other));
+            Assert.NotEqual(matrix.GetHashCode(), other.GetHashCode());
         }
 
         [Fact]
@@ -565,10 +611,11 @@ namespace CompactOT.DataStructures
             var other = new BitMatrix(numberOfRows, 1, BitArray.FromBinaryString("10"));
 
             Assert.False(matrix.Equals(other));
+            Assert.NotEqual(matrix.GetHashCode(), other.GetHashCode());
         }
 
         [Fact]
-        public void TestEqualsUnrelatedObject()
+        public void TestEqualsUnrelatedObjectOrNull()
         {
             int numberOfRows = 2;
             int numberOfColumns = 2;
@@ -577,12 +624,8 @@ namespace CompactOT.DataStructures
             var other = new object();
 
             Assert.False(matrix.Equals(other));
+            Assert.False(matrix.Equals(null));
         }
-
-        
-
-        
-        
 
    }
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -33,7 +33,7 @@ namespace CompactOT
             var projection = new ObliviousTransferUsageProjection();
             projection.SecurityLevel = 200;
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => projection.AverageMessageBits = -1);
+            Assert.Throws<ArgumentOutOfRangeException>(() => projection.SecurityLevel = -1);
 
             Assert.False(projection.HasMaxNumberOfBatches);
             Assert.False(projection.HasMaxNumberOfInvocations);
@@ -52,6 +52,7 @@ namespace CompactOT
             projection.AverageMessageBits = 3532;
 
             Assert.Throws<ArgumentOutOfRangeException>(() => projection.AverageMessageBits = 0);
+            Assert.Throws<ArgumentOutOfRangeException>(() => projection.AverageMessageBits = -1);
 
             Assert.False(projection.HasMaxNumberOfBatches);
             Assert.False(projection.HasMaxNumberOfInvocations);
@@ -213,6 +214,86 @@ namespace CompactOT
 
             Assert.Equal(7, projection.MaxNumberOfOptions);
             Assert.Equal(5, projection.AverageNumberOfOptions);
+        }
+
+        [Fact]
+        public void TestCopyConstructor()
+        {
+            var template = new ObliviousTransferUsageProjection();
+            template.MaxNumberOfInvocations = 17;
+            template.MaxNumberOfOptions = 5;
+            template.AverageNumberOfOptions = 3;
+            template.MaxNumberOfBatches = 10;
+            template.SecurityLevel = 200;
+            template.AverageMessageBits = 23;
+
+            var projection = new ObliviousTransferUsageProjection(template);
+
+            Assert.Equal(template.HasMaxNumberOfBatches, projection.HasMaxNumberOfBatches);
+            Assert.Equal(template.HasMaxNumberOfInvocations, projection.HasMaxNumberOfInvocations);
+            Assert.Equal(template.HasMaxNumberOfOptions, projection.HasMaxNumberOfOptions);
+
+            Assert.Equal(template.MaxNumberOfBatches, projection.MaxNumberOfBatches);
+            Assert.Equal(template.MaxNumberOfInvocations, projection.MaxNumberOfInvocations);
+            Assert.Equal(template.MaxNumberOfOptions, projection.MaxNumberOfOptions);
+            Assert.Equal(template.AverageInvocationsPerBatch, projection.AverageInvocationsPerBatch);
+            Assert.Equal(template.AverageMessageBits, projection.AverageMessageBits);
+            Assert.Equal(template.AverageNumberOfOptions, projection.AverageNumberOfOptions);
+            Assert.Equal(template.SecurityLevel, projection.SecurityLevel);
+        }
+
+        [Fact]
+        public void TestEqualsDifferentObjects()
+        {
+            var projection = new ObliviousTransferUsageProjection();
+            Assert.False(projection.Equals(new object()));
+            Assert.False(projection.Equals(null));
+        }
+
+        [Fact]
+        public void TestEquals()
+        {
+            var projection = new ObliviousTransferUsageProjection();
+            projection.MaxNumberOfInvocations = 17;
+            projection.MaxNumberOfOptions = 5;
+            projection.AverageNumberOfOptions = 3;
+            projection.MaxNumberOfBatches = 10;
+            projection.SecurityLevel = 200;
+            projection.AverageMessageBits = 23;
+
+            var other = new ObliviousTransferUsageProjection(projection);
+            Assert.True(projection.Equals(other));
+            Assert.Equal(projection.GetHashCode(), other.GetHashCode());
+
+            other = new ObliviousTransferUsageProjection(projection);
+            other.AverageMessageBits = projection.AverageMessageBits + 1;
+            Assert.False(projection.Equals(other));
+            Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
+
+            other = new ObliviousTransferUsageProjection(projection);
+            other.AverageNumberOfOptions = projection.AverageNumberOfOptions + 1;
+            Assert.False(projection.Equals(other));
+            Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
+
+            other = new ObliviousTransferUsageProjection(projection);
+            other.SecurityLevel = projection.SecurityLevel + 1;
+            Assert.False(projection.Equals(other));
+            Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
+
+            other = new ObliviousTransferUsageProjection(projection);
+            other.MaxNumberOfInvocations = projection.MaxNumberOfInvocations + 1;
+            Assert.False(projection.Equals(other));
+            Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
+
+            other = new ObliviousTransferUsageProjection(projection);
+            other.MaxNumberOfOptions = projection.MaxNumberOfOptions + 1;
+            Assert.False(projection.Equals(other));
+            Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
+
+            other = new ObliviousTransferUsageProjection(projection);
+            other.MaxNumberOfBatches = projection.MaxNumberOfBatches + 1;
+            Assert.False(projection.Equals(other));
+            Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
         }
 
     }

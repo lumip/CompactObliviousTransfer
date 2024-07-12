@@ -33,12 +33,6 @@ namespace CompactOT.Buffers.Internal
             return buffer;
         }
 
-        public int Length
-        {
-            get
-            {
-                return _buffer.Length;
-            }
-        }
+        public int Length => _buffer.Length;
     }
 }

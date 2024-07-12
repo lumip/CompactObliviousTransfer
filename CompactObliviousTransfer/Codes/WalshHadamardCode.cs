@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -17,10 +17,13 @@ namespace CompactOT.Codes
 
         public int Distance => CodeLength >> 1;
 
-        public int MaximumMessage => CodeLength - 1; 
+        public int MaximumMessage => CodeLength - 1;
 
         public WalshHadamardCode(int codeLength)
         {
+            if (codeLength < 2)
+                throw new ArgumentException($"Code length must be at least two, was {codeLength}.", nameof(codeLength));
+                
             if (!MathUtil.IsPowerOfTwo(codeLength))
                 throw new ArgumentException($"Code length must be a power of two, was {codeLength}.", nameof(codeLength));
 

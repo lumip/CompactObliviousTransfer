@@ -1,11 +1,9 @@
-// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
 using Xunit;
 using Moq;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
 using System.Linq;
 using System.Text;
 
@@ -87,87 +85,127 @@ namespace CompactOT
         }
 
         [Fact]
-        public void TestSenderBaseOTs()
+        public async void TestSendAsyncRejectsBadNumberOfOptions()
         {
-            var securityParameter = NumberLength.FromBitLength(16);
-            int codeLength = 2 * securityParameter.InBits;
+            int numberOfOptions = TestUtils.TestOptions.Length;
 
-            var received = new ObliviousTransferResult(codeLength, securityParameter.InBits);
-            for (int j = 0; j < codeLength; ++j)
-            {
-                byte[] receivedAsBytes = new byte[securityParameter.InBytes];
-                for (int i = 0; i < securityParameter.InBytes; ++i)
-                {
-                    receivedAsBytes[i] = (byte)(j*10 + i);
-                }
-                received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityParameter.InBits));
-            }
+            var securityParameter = NumberLength.FromBitLength(8);
 
-            var baseOTMock = new Mock<IObliviousTransferChannel>();
-            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<int[]>(), It.Is<int>(o => o == 2), It.IsAny<int>()))
-                .Returns(Task.FromResult(received));
-            baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
+            var cryptoContext = CryptoContext.CreateDefault();
 
-            var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010");
-            var rngMock = new Mock<RandomNumberGenerator>();
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b);
-            });
+            var codeMock = new Mock<IBinaryCode>();
+            codeMock.Setup(c => c.CodeLength).Returns(numberOfOptions - 1);
+            codeMock.Setup(c => c.Distance).Returns(securityParameter.InBits);
+            var code = codeMock.Object;
 
+            var baseOtChannelMock = new Mock<IObliviousTransferChannel>();
+            baseOtChannelMock.Setup(bot => bot.SecurityLevel).Returns(securityParameter.InBits);
+            var baseOtChannel = baseOtChannelMock.Object;
 
-            var cryptoContext = new CryptoContext(
-                rngMock.Object, new SHA256Provider()
+            var otChannel = new ExtendedObliviousTransferChannel(baseOtChannel, securityParameter.InBits, cryptoContext, code);
+
+            int numberOfMessageBits = TestUtils.TestOptions[0].Length * 8;
+
+            // receiver data
+            var receiverIndices = new int[] { 0, 5, 3 };
+
+            await Assert.ThrowsAsync<ArgumentException>(
+                async () => await otChannel.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits)
             );
-            var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
+        }
+        
+        [Fact]
+        public async void TestReceiverComputeAndSendURejectsBadNumberOfOptions()
+        {
+            int numberOfOptions = TestUtils.TestOptions.Length;
 
-            var otProtocol = new ExtendedObliviousTransferChannel(
-                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
+            var securityParameter = NumberLength.FromBitLength(8);
+
+            var cryptoContext = CryptoContext.CreateDefault();
+
+            var codeMock = new Mock<IBinaryCode>();
+            codeMock.Setup(c => c.CodeLength).Returns(numberOfOptions - 1);
+            codeMock.Setup(c => c.Distance).Returns(securityParameter.InBits);
+            var code = codeMock.Object;
+
+            var baseOtChannelMock = new Mock<IObliviousTransferChannel>();
+            baseOtChannelMock.Setup(bot => bot.SecurityLevel).Returns(securityParameter.InBits);
+            var baseOtChannel = baseOtChannelMock.Object;
+
+            var otChannel = new ExtendedObliviousTransferChannel(baseOtChannel, securityParameter.InBits, cryptoContext, code);
+
+            const int numberOfInvocations = 3;
+            int numberOfMessageBits = TestUtils.TestOptions[0].Length * 8;
+
+            // sender data
+            var options = new ObliviousTransferOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
+
+            options.SetInvocation(0, TestUtils.TestOptions.Select(s => Encoding.ASCII.GetBytes(s)).ToArray());
+            options.SetInvocation(1, TestUtils.TestOptions.Select(s => Encoding.ASCII.GetBytes(s.ToLower())).ToArray());
+            options.SetInvocation(2, TestUtils.TestOptions.Select(s => Encoding.ASCII.GetBytes(s.ToUpper())).ToArray());
+
+            await Assert.ThrowsAsync<ArgumentException>(
+                async () => await otChannel.SendAsync(options)
             );
-
-            otProtocol.ExecuteSenderBaseTransferAsync().Wait();
-
-            rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
-            baseOTMock.Verify(ot => ot.ReceiveAsync(
-                It.Is<int[]>(b => randomChoices.ToSelectionIndices().SequenceEqual(b)),
-                It.Is<int>(o => o == 2),
-                It.Is<int>(i => i == securityParameter.InBits)), Times.Once());
         }
 
         [Fact]
-        public void TestReceiverBaseOTs()
+        public void TestEstimateCostNoMaxNumberOfInvocations()
         {
             var securityParameter = NumberLength.FromBitLength(4);
-            int codeLength = 2 * securityParameter.InBits;
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
-            baseOTMock.Setup(ot => ot.SendAsync(It.IsAny<ObliviousTransferOptions>())).Returns(Task.CompletedTask);
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
-            var randomChoices = BitArray.FromBinaryString("00000000 01011010 11111111 11001100 10100101 00101101 10010110 01010101");
-            var rngMock = new Mock<RandomNumberGenerator>();
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b);
-            });
-
-            var expectedOptions = ObliviousTransferOptions.FromBitArray(
-                randomChoices, codeLength, 2, securityParameter.InBits
-            );
-
-
-            var cryptoContext = new CryptoContext(
-                rngMock.Object, new SHA256Provider()
-            );
+            var cryptoContext = CryptoContext.CreateDefault();
             var code = WalshHadamardCode.CreateWithDistance(securityParameter.InBits);
 
             var otProtocol = new ExtendedObliviousTransferChannel(
                 baseOTMock.Object, securityParameter.InBits, cryptoContext, code
             );
 
-            otProtocol.ExecuteReceiverBaseTransferAsync().Wait();
-
-            rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
-            baseOTMock.Verify(ot => ot.SendAsync(
-                It.Is<ObliviousTransferOptions>(o => o.Equals(expectedOptions))), Times.Once());
+            var usageProjection = new ObliviousTransferUsageProjection();
+            Assert.True(double.IsPositiveInfinity(otProtocol.EstimateCost(usageProjection)));
         }
+
+        [Fact]
+        public void TestEstimateCost()
+        {
+            var securityParameter = NumberLength.FromBitLength(4);
+
+            var baseOTMock = new Mock<IObliviousTransferChannel>();
+            baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
+            double baseCost = 3.5;
+            baseOTMock.Setup(ot => ot.EstimateCost(It.IsAny<ObliviousTransferUsageProjection>())).Returns(baseCost);
+
+            var cryptoContext = CryptoContext.CreateDefault();
+
+            int codeLength = 15;
+            var codeMock = new Mock<IBinaryCode>();
+            codeMock.Setup(c => c.CodeLength).Returns(codeLength);
+            codeMock.Setup(c => c.Distance).Returns(securityParameter.InBits);
+            var code = codeMock.Object;
+
+            var otProtocol = new ExtendedObliviousTransferChannel(
+                baseOTMock.Object, securityParameter.InBits, cryptoContext, code
+            );
+
+            var usageProjection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfInvocations = 7,
+                AverageNumberOfOptions = 3,
+                AverageMessageBits = 11
+            };
+
+            double initialExchangeCost = usageProjection.MaxNumberOfBatches * usageProjection.AverageInvocationsPerBatch * codeLength;
+            double onlineCost = usageProjection.MaxNumberOfInvocations * usageProjection.AverageNumberOfOptions * usageProjection.AverageMessageBits;
+
+            double expectedCost = baseCost + initialExchangeCost + onlineCost;
+
+            double actualCost = otProtocol.EstimateCost(usageProjection);
+
+            Assert.Equal(expectedCost, actualCost);
+        }
+
     }
 }

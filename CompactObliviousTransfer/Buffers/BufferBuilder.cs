@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
+﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>, 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: MIT
 // Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
 
@@ -42,6 +42,12 @@ namespace CompactOT.Buffers
         public BufferBuilder With(BitSequence bits)
         {
             _composer.Write(bits);
+            return this;
+        }
+
+        public BufferBuilder With(BitMatrix matrix)
+        {
+            _composer.Write(matrix);
             return this;
         }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -9,7 +9,7 @@ using Xunit;
 
 namespace CompactOT.DataStructures
 {
-    public class ObliviousTransferOptionsTests : IDisposable
+    public class ObliviousTransferOptionsTests
     {
 
         const int NumberOfInvocations = 3;
@@ -37,11 +37,6 @@ namespace CompactOT.DataStructures
             };
         }
 
-        public void Dispose()
-        {
-
-        }
-
         [Fact]
         public void TestConstruction()
         {
@@ -49,6 +44,42 @@ namespace CompactOT.DataStructures
             Assert.Equal(NumberOfInvocations, options.NumberOfInvocations);
             Assert.Equal(NumberOfOptions, options.NumberOfOptions);
             Assert.Equal(NumberOfMessageBits, options.NumberOfMessageBits);
+        }
+
+        [Fact]
+        public void TestFromBitArray()
+        {
+            int invocationLength = NumberOfOptions * NumberOfMessageBits;
+
+            var firstInvocationBits = Options.GetInvocation(0);
+            var expectedFirstInvocationBits = BitArray.FromBytes(new byte[] { 0x0f, 0xe1, 0x0d }, invocationLength);
+            Assert.Equal(expectedFirstInvocationBits, firstInvocationBits);
+
+            var secondInvocationBits = Options.GetInvocation(1);
+            var expectedSecondInvocationBits = BitArray.FromBytes(new byte[] { 0x42, 0xbc, 0x05 }, invocationLength);
+            Assert.Equal(expectedSecondInvocationBits, secondInvocationBits);
+
+            var thirdInvocationBits = Options.GetInvocation(2);
+            var expectedThirdInvocationBits = BitArray.FromBytes(new byte[] { 0xa6, 0xf7, 0x09 }, invocationLength);
+            Assert.Equal(expectedThirdInvocationBits, thirdInvocationBits);
+        }
+
+        [Fact]
+        public void TestFromBitArrayBadLength()
+        {
+            Assert.Throws<ArgumentException>(
+                () => ObliviousTransferOptions.FromBitArray(BitArray.Empty, 2, 3, 1)
+            );
+        }
+
+        [Fact]
+        public void TestCreateLike()
+        {
+            var template = new ObliviousTransferOptions(NumberOfInvocations, NumberOfOptions, NumberOfMessageBits);
+            var options = ObliviousTransferOptions.CreateLike(template);
+            Assert.Equal(template.NumberOfInvocations, options.NumberOfInvocations);
+            Assert.Equal(template.NumberOfOptions, options.NumberOfOptions);
+            Assert.Equal(template.NumberOfMessageBits, options.NumberOfMessageBits);
         }
 
         [Fact]
@@ -81,25 +112,67 @@ namespace CompactOT.DataStructures
         }
 
         [Fact]
-        public void TestFromBitArray()
+        public void TestFromCorrelatedTransfer()
         {
-            int invocationLength = NumberOfOptions * NumberOfMessageBits;
+            int numberOfInvocations = 4;
+            int numberOfOptions = 3;
+            int numberOfMessageBits = 5;
 
-            var firstInvocationBits = Options.GetInvocation(0);
-            var expectedFirstInvocationBits = BitArray.FromBytes(new byte[] { 0x0f, 0xe1, 0x0d }, invocationLength);
-            Assert.Equal(expectedFirstInvocationBits, firstInvocationBits);
+            BitMatrix firstOptions = new BitMatrix(numberOfInvocations, numberOfMessageBits,
+                BitArray.FromBinaryString("10101 01010 11100 00011")
+            );
 
-            var secondInvocationBits = Options.GetInvocation(1);
-            var expectedSecondInvocationBits = BitArray.FromBytes(new byte[] { 0x42, 0xbc, 0x05 }, invocationLength);
-            Assert.Equal(expectedSecondInvocationBits, secondInvocationBits);
+            ObliviousTransferOptions correlations = ObliviousTransferOptions.FromBitArray(
+                BitArray.FromBinaryString("00000 11111 11100 00011" +
+                                          "11111 00000 00011 11100"),
+                numberOfInvocations, numberOfOptions - 1, numberOfMessageBits
+            );
 
-            var thirdInvocationBits = Options.GetInvocation(2);
-            var expectedThirdInvocationBits = BitArray.FromBytes(new byte[] { 0xa6, 0xf7, 0x09 }, invocationLength);
-            Assert.Equal(expectedThirdInvocationBits, thirdInvocationBits);
+            var options = ObliviousTransferOptions.FromCorrelatedTransfer(firstOptions, correlations);
+
+            Assert.Equal(numberOfInvocations, options.NumberOfInvocations);
+            Assert.Equal(numberOfOptions, options.NumberOfOptions);
+            Assert.Equal(numberOfMessageBits, options.NumberOfMessageBits);
+
+            for (int i = 0; i < numberOfInvocations; i++)
+            {
+                var expectedFirstMessageBits = firstOptions.GetRow(i);
+                var messageBits = options.GetMessage(i, 0);
+                Assert.Equal(expectedFirstMessageBits, messageBits);
+
+                for (int j = 1; j < numberOfOptions; j++)
+                {
+                    var expectedMessageBits = expectedFirstMessageBits ^ correlations.GetMessage(i, j - 1);
+                    messageBits = options.GetMessage(i, j);
+                    Assert.Equal(expectedMessageBits, messageBits);
+                }
+            }
         }
 
         [Fact]
-        public void TestSetAndGetInvocation()
+        public void TestFromCorrelatedTransferDifferentNumberOfInvocations()
+        {
+            var firstOptions = new BitMatrix(3, 2);
+            var correlations = new ObliviousTransferOptions(2, 4, 2);
+
+            Assert.Throws<ArgumentException>(
+                () => ObliviousTransferOptions.FromCorrelatedTransfer(firstOptions, correlations)
+            );
+        }
+
+        [Fact]
+        public void TestFromCorrelatedTransferDifferentNumberOfMessageBits()
+        {
+            var firstOptions = new BitMatrix(3, 17);
+            var correlations = new ObliviousTransferOptions(3, 4, 15);
+
+            Assert.Throws<ArgumentException>(
+                () => ObliviousTransferOptions.FromCorrelatedTransfer(firstOptions, correlations)
+            );
+        }
+
+        [Fact]
+        public void TestSetAndGetInvocationWithBitSequence()
         {
             int invocationLength = NumberOfOptions * NumberOfMessageBits;
 
@@ -111,6 +184,170 @@ namespace CompactOT.DataStructures
             Options.SetInvocation(1, newInvocationBits);
             invocationBits = Options.GetInvocation(1);
             Assert.Equal(invocationBits, newInvocationBits);
+        }
+
+        [Fact]
+        public void TestSetInvocationWithBitSequenceBadLength()
+        {
+            int invocationLength = NumberOfOptions * NumberOfMessageBits;
+
+            var newInvocationBits = ConstantBitArrayView.MakeZeros(invocationLength + 2);
+
+            Assert.Throws<ArgumentException>(
+                () => Options.SetInvocation(1, newInvocationBits)
+            );
+        }
+
+        [Fact]
+        public void TestSetInvocationWithBitSequenceOutOfRange()
+        {
+            int invocationLength = NumberOfOptions * NumberOfMessageBits;
+
+            var newInvocationBits = BitArray.FromBytes(new byte[] { 0x10, 0x32, 0x54 }, invocationLength);
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => Options.SetInvocation(NumberOfInvocations, newInvocationBits)
+            );
+        }
+
+        [Fact]
+        public void TestSetAndGetInvocationWithBitMatrix()
+        {
+            int invocationLength = NumberOfOptions * NumberOfMessageBits;
+
+            var invocationBits = Options.GetInvocation(1);
+            var expectedInvocationBits = BitArray.FromBytes(new byte[] { 0x42, 0xbc, 0x05 }, invocationLength);
+            Assert.Equal(expectedInvocationBits, invocationBits);
+
+            var newInvocationBits = BitArray.FromBytes(new byte[] { 0x10, 0x32, 0x54 }, invocationLength);
+            var newInvocationMatrix = new BitMatrix(NumberOfOptions, NumberOfMessageBits, newInvocationBits);
+
+            Options.SetInvocation(1, newInvocationMatrix);
+            invocationBits = Options.GetInvocation(1);
+            Assert.Equal(invocationBits, newInvocationBits);
+        }
+
+        [Theory]
+        [InlineData(NumberOfOptions - 1, NumberOfMessageBits)]
+        [InlineData(NumberOfOptions, NumberOfMessageBits + 1)]
+        public void TestSetInvocationWithBitMatrixBadSize(int rows, int cols)
+        {
+            var newInvocationMatrix = new BitMatrix(rows, cols);
+            Assert.Throws<ArgumentException>(
+                () => Options.SetInvocation(1, newInvocationMatrix)
+            );
+        }
+
+        [Fact]
+        public void TestGetAndSetInvocationWithBitSequenceArray()
+        {
+            int invocationLength = NumberOfOptions * NumberOfMessageBits;
+
+            var newInvocationBits = BitArray.FromBytes(new byte[] { 0x10, 0x32, 0x54 }, invocationLength);
+            var newInvocationArray = new BitSequence[NumberOfOptions];
+            for (int j = 0; j < NumberOfOptions; j++)
+            {
+                newInvocationArray[j] = new BitArraySlice(newInvocationBits, j * NumberOfMessageBits, (j+1) * NumberOfMessageBits);
+            }
+
+            Options.SetInvocation(1, newInvocationArray);
+            var invocationBits = Options.GetInvocation(1);
+            Assert.Equal(invocationBits, newInvocationBits);
+        }
+
+        [Fact]
+        public void TestSetInvocationWithBitSequenceArrayBadLength()
+        {
+            int invocationLength = NumberOfOptions * NumberOfMessageBits;
+
+            var newInvocationBits = BitArray.FromBytes(new byte[] { 0x10, 0x32, 0x54 }, invocationLength);
+            var newInvocationArray = new BitSequence[NumberOfOptions - 1];
+            for (int j = 0; j < NumberOfOptions - 1; j++)
+            {
+                newInvocationArray[j] = new BitArraySlice(newInvocationBits, j * NumberOfMessageBits, (j+1) * NumberOfMessageBits);
+            }
+
+            Assert.Throws<ArgumentException>(
+                () => Options.SetInvocation(1, newInvocationArray)
+            );
+        }
+
+        [Fact]
+        public void TestGetAndSetInvocationWithByteArray()
+        {
+            int numberOfMessageBits = 16;
+            var options = new ObliviousTransferOptions(NumberOfInvocations, NumberOfOptions, numberOfMessageBits);
+
+            byte[][] newMessageBytes = new byte[][] {
+                new byte[] { 0, 1 },
+                new byte[] { 2, 3 },
+                new byte[] { 4, 5 },
+                new byte[] { 6, 7 },
+            };
+
+            var expectedInvocationBits = BitArray.FromBytes(newMessageBytes.Flatten(), 64);
+
+            options.SetInvocation(0, newMessageBytes);
+            var invocationBits = options.GetInvocation(0);
+
+            Assert.Equal(expectedInvocationBits, invocationBits);
+        }
+
+        [Fact]
+        public void TestSetInvocationWithByteArrayBadLength()
+        {
+            int numberOfMessageBits = 16;
+            var options = new ObliviousTransferOptions(NumberOfInvocations, NumberOfOptions, numberOfMessageBits);
+
+            byte[][] newMessageBytes = new byte[][] {
+                new byte[] { 0, 1 },
+                new byte[] { 2, 3 },
+                new byte[] { 4, 5 },
+                new byte[] { 6, 7 },
+                new byte[] { 8, 9 },
+            };
+
+            Assert.Throws<ArgumentException>(
+                () => options.SetInvocation(0, newMessageBytes)
+            );
+        }
+
+        [Fact]
+        public void TestSetInvocationWithByteArrayForIncompatibleMessageLength()
+        {
+            byte[][] newMessageBytes = new byte[][] {
+                new byte[] { 0, 1 },
+                new byte[] { 2, 3 },
+                new byte[] { 4, 5 },
+                new byte[] { 6, 7 },
+            };
+
+            Assert.Throws<NotSupportedException>(
+                () => Options.SetInvocation(0, newMessageBytes)
+            );
+        }
+
+
+        [Fact]
+        public void TestGetOptions()
+        {
+            var optionsBits = Options.GetOptions(1);
+            var expectedOptionsBits = BitArray.FromBinaryString("00010 01000 10111");
+            var expectedOptionsMatrix = new BitMatrix(NumberOfInvocations, NumberOfMessageBits, expectedOptionsBits);
+            for (int i = 0; i < NumberOfInvocations; i++)
+            {
+                expectedOptionsMatrix.SetRow(i, BitArray.FromBytes(ExpectedOptions[i][1], NumberOfMessageBits));
+            }
+            Assert.Equal(expectedOptionsMatrix, optionsBits);
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(NumberOfOptions + 1)]
+        public void TestGetOptionsOutOfRange(int optionsIndex)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => Options.GetOptions(optionsIndex)
+            );
         }
 
         [Theory]
@@ -139,6 +376,59 @@ namespace CompactOT.DataStructures
                     Assert.Equal(expectedMessageBits, Options.GetMessage(i, j));
                 }
             }
+        }
+
+        [Theory]
+        [InlineData(-1, 0)]
+        [InlineData(NumberOfInvocations + 1, 0)]
+        [InlineData(0, -1)]
+        [InlineData(0, NumberOfOptions + 1)]
+        public void TestGetMessageOutOfRange(int invocationIndex, int optionIndex)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => Options.GetMessage(invocationIndex, optionIndex)
+            );
+        }
+
+        [Fact]
+        public void TestSetMessageBadLength()
+        {
+            var newMessageBits = BitSequence.Empty;
+            Assert.Throws<ArgumentException>(
+                () => Options.SetMessage(0, 0, newMessageBits)
+            );
+        }
+
+        [Theory]
+        [InlineData(NumberOfInvocations - 1, NumberOfOptions, NumberOfMessageBits)]
+        [InlineData(NumberOfInvocations, NumberOfOptions - 1, NumberOfMessageBits)]
+        [InlineData(NumberOfInvocations, NumberOfOptions, NumberOfMessageBits - 1)]
+        public void TestEqualsWithShapeMismatch(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
+        {
+            var other = new ObliviousTransferOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
+            Assert.False(Options.Equals(other));
+        }
+
+        [Fact]
+        public void TestEqualsWithOtherObjects()
+        {
+            Assert.False(Options.Equals(new object()));
+            Assert.False(Options.Equals(null));
+        }
+
+        [Fact]
+        public void TestEqualsWhenShapeCorrect()
+        {
+            var other = ObliviousTransferOptions.CreateLike(Options);
+            Assert.False(Options.Equals(other));
+            Assert.NotEqual(Options.GetHashCode(), other.GetHashCode());
+
+            for (int i = 0; i < NumberOfInvocations; i++)
+            {
+                other.SetInvocation(i, Options.GetInvocation(i));
+            }
+            Assert.True(Options.Equals(other));
+            Assert.Equal(Options.GetHashCode(), other.GetHashCode());
         }
     }
 }

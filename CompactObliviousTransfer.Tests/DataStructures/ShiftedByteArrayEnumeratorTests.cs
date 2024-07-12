@@ -1,14 +1,23 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using Xunit;
-using System.Collections.Generic;
 using System.Linq;
+using System;
+using System.Collections;
 
 namespace CompactOT.DataStructures
 {
     public class ShiftedByteArrayEnumerableTests
     {
+
+        [Fact]
+        public void TestInvalidOffset()
+        {
+            var bytes = new byte[] { 0b01100010, 0b01010111, 0b01101110, 0b11010100 };
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ShiftedByteArrayEnumerable(bytes, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ShiftedByteArrayEnumerable(bytes, 8));
+        }
         
         [Fact]
         public void TestLongInput()
@@ -55,14 +64,51 @@ namespace CompactOT.DataStructures
         [Fact]
         public void TestEnumeratorCurrent()
         {
-            var bits = new byte[] { 0b01010101, 0b11001100 };
+            var bytes = new byte[] { 0b01010101, 0b11001100 };
             int offset = 3;
 
             byte expected = 0b10001010;
-            var enumerator = new ShiftedByteArrayEnumerable.Enumerator(((IEnumerable<byte>)bits).GetEnumerator(), offset);
+            var enumerator = new ShiftedByteArrayEnumerable.Enumerator(bytes.AsEnumerable().GetEnumerator(), offset);
             Assert.True(enumerator.MoveNext());
 
             Assert.Equal(expected, enumerator.Current);
+            Assert.Equal(expected, enumerator.Current);
+            Assert.Equal(expected, ((IEnumerator)enumerator).Current);
+        }
+
+        [Fact]
+        public void TestEnumeratorInvalidOffset()
+        {
+            var bytes = new byte[] { 0b01010101, 0b11001100 };
+            var baseEnumerator = bytes.AsEnumerable().GetEnumerator();
+            
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ShiftedByteArrayEnumerable.Enumerator(baseEnumerator, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ShiftedByteArrayEnumerable.Enumerator(baseEnumerator, 8));
+        }
+
+        [Fact]
+        public void TestEnumeratorCurrentBeforeMoveNext()
+        {
+            var bytes = new byte[] { 0b01010101, 0b11001100 };
+            int offset = 3;
+
+            var enumerator = new ShiftedByteArrayEnumerable.Enumerator(bytes.AsEnumerable().GetEnumerator(), offset);
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current);
+        }
+
+        [Fact]
+        public void TestEnumeratorReset()
+        {
+            var bytes = new byte[] { 0b01010101, 0b11001100 };
+            int offset = 3;
+
+            var enumerator = new ShiftedByteArrayEnumerable.Enumerator(bytes.AsEnumerable().GetEnumerator(), offset);
+            
+            enumerator.MoveNext();
+            enumerator.Reset();
+
+            byte expected = 0b10001010;
+            enumerator.MoveNext();
             Assert.Equal(expected, enumerator.Current);
         }
 

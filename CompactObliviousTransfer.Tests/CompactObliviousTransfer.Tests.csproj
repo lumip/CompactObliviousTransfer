@@ -1,12 +1,15 @@
 <!--
-SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <WarningsAsErrors>Nullable</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

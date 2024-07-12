@@ -1,0 +1,1 @@
+rm -rf CompactObliviousTransfer.Tests/TestResults/ && dotnet test --collect:"XPlat Code Coverage" ; reportgenerator -reports:CompactObliviousTransfer.Tests/TestResults/*/coverage.cobertura.xml -targetdir:coveragereport -reporttypes:Html

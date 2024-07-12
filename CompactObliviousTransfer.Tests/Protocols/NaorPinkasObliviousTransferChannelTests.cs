@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Xunit;
+using Moq;
 
 using System.Numerics;
 using CompactCryptoGroupAlgebra.EllipticCurves;
@@ -91,5 +92,63 @@ namespace CompactOT
                 Assert.Equal(expected, results.GetInvocationResult(i));
             }
         }
+
+        [Fact]
+        public void TestEstimateCostNoMaxNumberOfInvocations()
+        {
+            int numberOfOptions = 3;
+            int numberOfMessageBits = 11;
+
+            var channelMock = new Mock<IMessageChannel>();
+            var cryptoGroup = CurveGroupAlgebra.CreateCryptoGroup(securityLevel: 64);
+            var cryptoContext = CryptoContext.CreateDefault();
+
+            var otChannel = new NaorPinkasObliviousTransferChannel<BigInteger, CurvePoint>(
+                channelMock.Object, cryptoGroup, cryptoContext
+            );
+
+            var usageProjection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfOptions = numberOfOptions,
+                AverageMessageBits = numberOfMessageBits,
+            };
+
+            double result = otChannel.EstimateCost(usageProjection);
+            Assert.True(double.IsInfinity(result));
+        }
+
+        [Fact]
+        public void TestEstimateCost()
+        {
+            int numberOfInvocations = 7;
+            int numberOfBatches = 2;
+            int numberOfOptions = 3;
+            int numberOfMessageBits = 11;
+
+            var channelMock = new Mock<IMessageChannel>();
+            var cryptoGroup = CurveGroupAlgebra.CreateCryptoGroup(securityLevel: 64);
+            var cryptoContext = CryptoContext.CreateDefault();
+
+            var otChannel = new NaorPinkasObliviousTransferChannel<BigInteger, CurvePoint>(
+                channelMock.Object, cryptoGroup, cryptoContext
+            );
+
+            var usageProjection = new ObliviousTransferUsageProjection
+            {
+                AverageInvocationsPerBatch = numberOfInvocations,
+                MaxNumberOfBatches = numberOfBatches, 
+                MaxNumberOfOptions = numberOfOptions,
+                AverageMessageBits = numberOfMessageBits,
+            };
+
+            double result = otChannel.EstimateCost(usageProjection);
+
+            double expected = 2 * numberOfBatches * numberOfOptions * cryptoGroup.ElementLength.InBits +
+                numberOfBatches * numberOfInvocations * numberOfOptions * numberOfMessageBits;
+
+            Assert.Equal(expected, result);
+        }
+
     }
+    
 }

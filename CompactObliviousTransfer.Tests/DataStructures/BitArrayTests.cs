@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -6,11 +6,66 @@ using System.Numerics;
 
 using Xunit;
 using Moq;
+using System.Linq;
 
 namespace CompactOT.DataStructures
 {
     public class BitArrayTests
     {
+
+        [Fact]
+        public void TestConstructEmpty()
+        {
+            int length = 10;
+            var bits = new BitArray(length);
+            Assert.Equal(length, bits.Length);
+        }
+
+        [Fact]
+        public void TestConstructEmptyNegativeLength()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BitArray(-1));
+        }
+
+        [Fact]
+        public void TestConstructFromArrayOfBit()
+        {
+            var arrayOfBit = new Bit[] { Bit.Zero, Bit.One, Bit.One, Bit.Zero };
+            var bits = new BitArray(arrayOfBit);
+
+            Assert.Equal(arrayOfBit.Length, bits.Length);
+            for (int i = 0; i < arrayOfBit.Length; i++)
+            {
+                Assert.Equal(arrayOfBit[i], bits[i]);
+            }
+        }
+
+        [Fact]
+        public void TestGetAndSetBit()
+        {
+            int length = 1;
+            var bits = new BitArray(length);
+
+            bits[0] = Bit.Zero;
+            Assert.Equal(Bit.Zero, bits[0]);
+
+            bits[0] = Bit.One;
+            Assert.Equal(Bit.One, bits[0]);
+        }
+
+        [Fact]
+        public void TestSetAndGetBitInvalidIndex()
+        {
+            int length = 1;
+            var bits = new BitArray(length);
+
+            Assert.Throws<IndexOutOfRangeException>(() => bits[1]);
+            Assert.Throws<IndexOutOfRangeException>(() => bits[-1]);
+
+            Assert.Throws<IndexOutOfRangeException>(() => { bits[1] = Bit.Zero; });
+            Assert.Throws<IndexOutOfRangeException>(() => { bits[-1] = Bit.One; });
+        }
+
         [Fact]
         public void TestFromBinaryString()
         {
@@ -41,10 +96,29 @@ namespace CompactOT.DataStructures
         }
 
         [Fact]
+        public void TestFromBinaryStringInvalidString()
+        {
+            Assert.Throws<ArgumentException>(() => BitArray.FromBinaryString("0110this is a string0001"));
+        }
+
+        [Fact]
         public void TestFromBytes()
         {
             var bytes = new byte[] { 0x00, 0x2E, 0x9A };
             var bits = BitArray.FromBytes(bytes, 13, 1 );
+            Assert.Equal(13, bits.Length);
+
+            byte[] expectedBytes = new byte[] { 0x2E, 0x1A };
+            byte[] bitsAsBytes = bits.ToBytes();
+
+            Assert.Equal(expectedBytes, bitsAsBytes);
+        }
+
+        [Fact]
+        public void TestFromBytesEnumerable()
+        {
+            var bytes = new byte[] { 0x00, 0x2E, 0x9A };
+            var bits = BitArray.FromBytes(bytes.AsEnumerable().Skip(1), 13 );
             Assert.Equal(13, bits.Length);
 
             byte[] expectedBytes = new byte[] { 0x2E, 0x1A };
@@ -63,6 +137,25 @@ namespace CompactOT.DataStructures
             Assert.Equal(expectedBits, bits);
         }
 
+        [Theory]
+        [InlineData(129, 8, "10000001")]
+        [InlineData(129, 9, "100000010")]
+        [InlineData(129, 7, "1000000")]
+        public void TestFromIntFixedLength(int i, int numberOfBits, string expectedString)
+        {
+            var result = BitArray.FromInt(i, numberOfBits);
+
+            var expected = BitArray.FromBinaryString(expectedString);
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void TestFromIntNegativeLength()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => BitArray.FromInt(19, -1));
+        }
+
         [Fact]
         public void TestToInt32()
         {
@@ -74,7 +167,7 @@ namespace CompactOT.DataStructures
         }
 
         [Fact]
-        public void FromBigInteger()
+        public void TestFromBigInteger()
         {
             var bytes = new byte[] { 0x27, 0x26, 0xA3, 0xAF, 0x70, 0x99 };
 
@@ -90,7 +183,7 @@ namespace CompactOT.DataStructures
         }
 
         [Fact]
-        public void FromBigIntegerZero()
+        public void TestFromBigIntegerZero()
         {
             var expected = BitArray.FromBinaryString("0");
             var result = BitArray.FromBigInteger(BigInteger.Zero);
@@ -102,7 +195,7 @@ namespace CompactOT.DataStructures
         [InlineData(129, 8, "10000001")]
         [InlineData(129, 9, "100000010")]
         [InlineData(129, 7, "1000000")]
-        public void FromBigIntegerFixedLength(int i, int numberOfBits, string expectedString)
+        public void TestFromBigIntegerFixedLength(int i, int numberOfBits, string expectedString)
         {
             var input = new BigInteger(i);
             var result = BitArray.FromBigInteger(input, numberOfBits);
@@ -110,6 +203,25 @@ namespace CompactOT.DataStructures
             var expected = BitArray.FromBinaryString(expectedString);
 
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void TestFromBigIntegerNegativeLength()
+        {
+            var input = new BigInteger(19);
+            Assert.Throws<ArgumentOutOfRangeException>(() => BitArray.FromBigInteger(input, -1));
+        }
+
+        [Fact]
+        public void TestAsByteEnumerable()
+        {
+            var bits = BitArray.FromBinaryString("01110100 01001");
+
+            var byteEnumerable = bits.AsByteEnumerable();
+            var byteArray = byteEnumerable.ToArray();
+
+            var expectedBytes = new byte[] { 0x2e, 0x12 };
+            Assert.Equal(expectedBytes, byteArray);
         }
 
         [Fact]
@@ -237,6 +349,36 @@ namespace CompactOT.DataStructures
             {
                 Assert.True(expectedBits[i] == b, $"Expected {expectedBits[i]} but got {b} at position {i}.");
             }
+        }
+
+        [Fact]
+        public void TestClone()
+        {
+            var bitArray = BitArray.FromBinaryString("1110 0010");
+            var clone = bitArray.Clone();
+
+            Assert.Equal(bitArray, clone);
+            Assert.NotSame(bitArray, clone);
+        }
+
+        [Fact]
+        public void TestCollectionProperties()
+        {
+            var bitArray = BitArray.FromBinaryString("1110 0010");
+            Assert.False(bitArray.IsSynchronized);
+            Assert.Same(bitArray, bitArray.SyncRoot);
+            Assert.False(bitArray.IsReadOnly);
+        }
+
+        [Theory]
+        [InlineData(0, 0)]
+        [InlineData(1, 1)]
+        [InlineData(8, 1)]
+        [InlineData(9, 2)]
+        public void TestRequiredBytes(int numberOfBits, int expectedNumberOfBytes)
+        {
+            int numberOfBytes = BitArray.RequiredBytes(numberOfBits);
+            Assert.Equal(expectedNumberOfBytes, numberOfBytes);
         }
     }
 }

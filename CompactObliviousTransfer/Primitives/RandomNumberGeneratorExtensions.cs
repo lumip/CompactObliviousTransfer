@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -14,24 +14,20 @@ namespace CompactOT
     {
 
         /// <summary>
-        /// Returns a random integer less than toExclusive.
+        /// Returns a random positive integer less than toExclusive.
         /// </summary>
+        /// <param name="toExclusive">The exclusive upper bound for the random number to generate.</param>
         public static int GetInt32(this RandomNumberGenerator randomNumberGenerator, int toExclusive)
         {
-            int bitsPerSample = NumberLength.GetLength(toExclusive - 1).InBits;
-            int mask = (1 << bitsPerSample) - 1;
-
-            byte[] randomBytes = new byte[4];
-            int sample;
-            do
-            {
-                randomNumberGenerator.GetBytes(randomBytes);
-                sample = BitConverter.ToInt32(randomBytes, 0) & mask;
-            } while (sample >= toExclusive);
-
-            return sample;
+            int[] result = randomNumberGenerator.GetInt32Array(toExclusive, 1);
+            return result[0];
         }
 
+        /// <summary>
+        /// Returns an array of random positive integers, all less than toExclusive.
+        /// </summary>
+        /// <param name="toExclusive">The exclusive upper bound for the random numbers to generate.</param>
+        /// <param name="amount">The amount of random numbers to generate, i.e., the size of the returned array.</param>
         public static int[] GetInt32Array(this RandomNumberGenerator randomNumberGenerator, int toExclusive, int amount)
         {
             int bitsPerSample = NumberLength.GetLength(toExclusive - 1).InBits;
@@ -75,6 +71,10 @@ namespace CompactOT
             return samples;
         }
 
+        /// <summary>
+        /// Returns a BitArray of random bits.
+        /// </summary>
+        /// <param name="amount">The amount of random bits to generate, i.e., the length of the returned BitArray.</param>
         public static BitArray GetBits(this RandomNumberGenerator randomNumberGenerator, int amount)
         {
             int numberOfBytes = DataStructures.BitArray.RequiredBytes(amount);

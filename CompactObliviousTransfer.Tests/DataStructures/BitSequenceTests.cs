@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -13,6 +13,18 @@ namespace CompactOT.DataStructures
 {
     public class BitSequenceTests
     {
+
+        [Fact]
+        public void TestCount()
+        {
+            int expected = 8;
+            var bitsMock = new Mock<BitSequence>() { CallBase = true };
+            bitsMock.Setup(b => b.Length).Returns(expected);
+
+            var count = bitsMock.Object.Count;
+            Assert.Equal(expected, count);
+            bitsMock.Verify(b => b.Length, Times.Once);
+        }
         
         [Fact]
         public void TestToInt32()
@@ -104,7 +116,7 @@ namespace CompactOT.DataStructures
         public void TestCopyToBytesTooSmallBuffer()
         {
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
-            bitsMock.Setup(b => b.AsByteEnumerable()).Returns(new byte[] { 0x1f, 0x01 });
+            bitsMock.Setup(b => b.Length).Returns(16);
             var bits = bitsMock.Object;
             
 
@@ -166,6 +178,34 @@ namespace CompactOT.DataStructures
         public void TestCopyToBitsTooSmallBuffer()
         {
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
+            bitsMock.Setup(b => b.Length).Returns(9);
+            var bits = bitsMock.Object;
+            
+            Bit[] buffer = new Bit[11];
+
+            Assert.Throws<ArgumentException>(() => bits.CopyTo(buffer, 3));
+        }
+
+        [Fact]
+        public void TestCopyToBytesAsUntypedArray()
+        {
+            var bitsMock = new Mock<BitSequence>() { CallBase = true };
+            bitsMock.Setup(b => b.AsByteEnumerable()).Returns(new byte[] { 0x1f, 0x01 });
+            var bits = bitsMock.Object;
+            
+            var expectedBytes = new byte[] { 0x55, 0x1f, 0x01 };
+
+            byte[] bytes = new byte[3];
+            bytes[0] = 0x55;
+            bits.CopyTo((Array)bytes, 1);
+            
+            Assert.Equal(expectedBytes, bytes);
+        }
+
+        [Fact]
+        public void TestCopyToBitsAsUntypedArray()
+        {
+            var bitsMock = new Mock<BitSequence>() { CallBase = true };
             bitsMock.Setup(b => b.GetEnumerator()).Returns((new Bit[] { 
                 Bit.One, Bit.One, Bit.One, Bit.One,
                 Bit.One, Bit.Zero, Bit.Zero, Bit.Zero,
@@ -173,9 +213,18 @@ namespace CompactOT.DataStructures
             }).AsEnumerable().GetEnumerator());
             var bits = bitsMock.Object;
             
-            Bit[] buffer = new Bit[11];
+            var expectedBits = new Bit[] {
+                Bit.One, Bit.Zero, Bit.One, Bit.One,
+                Bit.One, Bit.One, Bit.One, Bit.Zero,
+                Bit.Zero, Bit.Zero, Bit.One
+            };
 
-            Assert.Throws<ArgumentException>(() => bits.CopyTo(buffer, 3));
+            Bit[] buffer = new Bit[11];
+            buffer[0] = Bit.One;
+            buffer[1] = Bit.Zero;
+            bits.CopyTo((Array)buffer, 2);
+
+            Assert.Equal(expectedBits, buffer);
         }
 
         [Fact]
@@ -275,6 +324,25 @@ namespace CompactOT.DataStructures
 
             string expected = "0111010001001";
             string result = bits.ToBinaryString();
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void TestToString()
+        {
+            var bitsMock = new Mock<BitSequence>() { CallBase = true };
+            bitsMock.Setup(b => b.GetEnumerator()).Returns((new Bit[] {  // 01110100 01001
+                Bit.Zero, Bit.One, Bit.One, Bit.One,
+                Bit.Zero, Bit.One, Bit.Zero, Bit.Zero,
+                Bit.Zero, Bit.One, Bit.Zero, Bit.Zero,
+                Bit.One
+            }).AsEnumerable().GetEnumerator());
+            bitsMock.Setup(b => b.Length).Returns(13);
+            var bits = bitsMock.Object;
+
+            string expected = "0111010001001";
+            string result = bits.ToString();
 
             Assert.Equal(expected, result);
         }
@@ -473,6 +541,9 @@ namespace CompactOT.DataStructures
 
             var operatorResult = leftBits | Bit.One;
             Assert.Equal(expectedBits, operatorResult.ToArray());
+
+            var reversedOperatorResult = Bit.One | leftBits;
+            Assert.Equal(expectedBits, reversedOperatorResult.ToArray());
         }
 
         [Fact]
@@ -497,6 +568,9 @@ namespace CompactOT.DataStructures
 
             var operatorResult = leftBits ^ Bit.One;
             Assert.Equal(expectedBits, operatorResult.ToArray());
+
+            var reversedOperatorResult = Bit.One ^ leftBits;
+            Assert.Equal(expectedBits, reversedOperatorResult.ToArray());
         }
 
         [Fact]
@@ -521,8 +595,67 @@ namespace CompactOT.DataStructures
 
             var operatorResult = leftBits & Bit.One;
             Assert.Equal(expectedBits, operatorResult.ToArray());
+
+            var reversedOperatorResult = Bit.One & leftBits;
+            Assert.Equal(expectedBits, reversedOperatorResult.ToArray());
         }
 
- 
+        [Fact]
+        public void TestIsZeroWhenZero()
+        {
+            var bitsMock = new Mock<BitSequence>() { CallBase = true };
+            bitsMock.Setup(b => b.AsByteEnumerable()).Returns(
+                new byte[] {0x00, 0x00, 0x00 }
+            );
+            var result = bitsMock.Object.IsZero;
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void TestIsZeroWhenNotZero()
+        {
+            var bitsMock = new Mock<BitSequence>() { CallBase = true };
+            bitsMock.Setup(b => b.AsByteEnumerable()).Returns(
+                new byte[] {0x00, 0x10, 0x00 }
+            );
+            var result = bitsMock.Object.IsZero;
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void TestEqualsAndHashCode()
+        {
+            var bitsMock = new Mock<BitSequence>() { CallBase = true };
+            bitsMock.Setup(b => b.AsByteEnumerable()).Returns(
+                new byte[] {0x00, 0x10, 0x00 }
+            );
+            var bits = bitsMock.Object;
+
+            var otherEqualMock = new Mock<BitSequence>() { CallBase = true };
+            otherEqualMock.Setup(b => b.AsByteEnumerable()).Returns(
+                new byte[] {0x00, 0x10, 0x00 }
+            );
+            var otherEqual = otherEqualMock.Object;
+
+            var otherUnequalMock = new Mock<BitSequence>() { CallBase = true };
+            otherUnequalMock.Setup(b => b.AsByteEnumerable()).Returns(
+                new byte[] {0x00, 0x00, 0x00 }
+            );
+            var otherUnequal = otherUnequalMock.Object;
+
+            Assert.True(bits.Equals(otherEqual));
+            Assert.Equal(bits.GetHashCode(), otherEqual.GetHashCode());
+            Assert.False(bits.Equals(otherUnequal));
+            Assert.NotEqual(bits.GetHashCode(), otherUnequal.GetHashCode());
+            Assert.False(bits.Equals(new object()));
+            Assert.False(bits.Equals(null));
+        }
+
+        [Fact]
+        public void TestEmpty()
+        {
+            Assert.IsType<EmptyBitSequence>(BitSequence.Empty);
+        }
+
     }
 }

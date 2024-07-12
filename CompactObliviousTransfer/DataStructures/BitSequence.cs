@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -44,28 +44,36 @@ namespace CompactOT.DataStructures
         /// The buffer is filled from low to high indices (starting at the specified byte offset)
         /// and each byte is filled from least to most significant bit.
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="offset"></param>
-        public void CopyTo(byte[] buffer, int offset = 0)
+        /// <param name="buffer">The byte array to write into.</param>
+        /// <param name="bufferOffset">The number of bytes to skip at the front of the buffer.</param>
+        public void CopyTo(byte[] buffer, int bufferOffset = 0)
         {
             var numBytes = BitArray.RequiredBytes(Length);
-            if (buffer.Length < numBytes + offset)
+            if (buffer.Length < numBytes + bufferOffset)
             {
                 throw new ArgumentException("The target buffer is too small. " + 
-                    $"It has length {buffer.Length} but need to write {numBytes} with {offset} bytes offset.",
+                    $"It has length {buffer.Length} but need to write {numBytes} with {bufferOffset} bytes offset.",
                     nameof(buffer)
                 );
             }
 
-            CopyToInternal(buffer, offset);
+            CopyToInternal(buffer, bufferOffset);
             var nonAlignedBits = Length % 8;
             if (nonAlignedBits > 0)
             {
                 var mask = (byte)~(0xff << nonAlignedBits);
-                buffer[offset + (numBytes - 1)] &= mask;
+                buffer[bufferOffset + (numBytes - 1)] &= mask;
             }
         }
 
+        /// <summary>
+        /// Copies the bit sequence into a given buffer.
+        /// 
+        /// The buffer is filled from low to high indices (starting at the specified byte offset)
+        /// and each byte is filled from least to most significant bit.
+        /// </summary>
+        /// <param name="buffer">The Bit array to write into.</param>
+        /// <param name="bufferOffset">The number of Bits to skip at the front of the buffer.</param>
         public virtual void CopyTo(Bit[] buffer, int offset = 0)
         {
             if (buffer.Length < Length + offset)
@@ -197,7 +205,7 @@ namespace CompactOT.DataStructures
         public static BitSequence operator ^(BitSequence left, Bit right) => left.Xor(right);
         public static BitSequence operator ^(Bit left, BitSequence right) => right.Xor(left);
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             BitSequence? other = obj as BitSequence;
             if (other == null) return false;

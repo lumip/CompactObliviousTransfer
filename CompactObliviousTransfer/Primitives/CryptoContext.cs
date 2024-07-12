@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>, 2022 Lukas Prediger <lumip@lumip.de>
+﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>, 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: MIT
 // Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
 
@@ -21,10 +21,7 @@ namespace CompactOT
             HashAlgorithmProvider = hashAlgorithmProvider;
         }
 
-        public static CryptoContext CreateDefault()
-        {            
-            return CreateWithSecurityLevel(128);
-        }
+        public static CryptoContext CreateDefault() => CreateWithSecurityLevel(128);
 
         public static CryptoContext CreateWithSecurityLevel(int securityLevel)
         {
@@ -51,10 +48,7 @@ namespace CompactOT
             );
         }
 
-        public void Dispose()
-        {
-            RandomNumberGenerator.Dispose();
-        }
+        public void Dispose() => RandomNumberGenerator.Dispose();
 
     }
 }

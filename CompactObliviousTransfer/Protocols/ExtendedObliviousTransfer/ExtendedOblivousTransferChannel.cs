@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+﻿// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -120,7 +120,7 @@ namespace CompactOT
             double maxNumberOfInvocations = usageProjection.MaxNumberOfInvocations;
             double averageNumberOfOptions = usageProjection.AverageNumberOfOptions;
             double averageMessageBits = usageProjection.AverageMessageBits;
-            double optionsExchangeCost = maxNumberOfInvocations * averageNumberOfOptions * usageProjection.AverageMessageBits;
+            double optionsExchangeCost = maxNumberOfInvocations * averageNumberOfOptions * averageMessageBits;
 
             return baseOtAndSecurityExchangeCost + optionsExchangeCost;
         }

@@ -38,12 +38,19 @@ namespace CompactOT.DataStructures
 
         public override bool IsReadOnly => true;
 
-        private IEnumerable<byte> AsByteEnumerableInternalUnfiltered()
+        /// <summary>
+        /// Returns a byte enumerable of the content of this slice, i.e.,
+        /// starting at the desired start bit as indicated by the offset.
+        /// However, the last byte in the returned enumerable includes extra
+        /// bits at the end if the the Length of the slice is not a multiple
+        /// of 8, i.e., superfluous end bits are not masked out.
+        /// </summary>
+        private IEnumerable<byte> AsByteEnumerableInternalWithExtraTrailing()
         {
             int byteOffset = _start / 8;
             int bitOffset = _start % 8;
             int lastByteOffset = (_stopBefore - 1) / 8;
-            int numberOfBytes = (lastByteOffset + 1 - byteOffset);
+            int numberOfBytes = lastByteOffset + 1 - byteOffset;
             
             int numberOfOutputBytes = NumberLength.FromBitLength(Length).InBytes;
             var unfilteredByteEnumerable = new ShiftedByteArrayEnumerable(
@@ -56,14 +63,14 @@ namespace CompactOT.DataStructures
 
         public override IEnumerable<byte> AsByteEnumerable()
         {
-            var unfilteredByteEnumerable = AsByteEnumerableInternalUnfiltered();
+            var unfilteredByteEnumerable = AsByteEnumerableInternalWithExtraTrailing();
 
             return new EnumeratedBitArrayView(unfilteredByteEnumerable, Length).AsByteEnumerable();
         }
 
         public override IEnumerator<Bit> GetEnumerator()
         {
-            return new ByteToBitEnumerable(AsByteEnumerableInternalUnfiltered(), _stopBefore - _start).GetEnumerator();
+            return new ByteToBitEnumerable(AsByteEnumerableInternalWithExtraTrailing(), _stopBefore - _start).GetEnumerator();
         }
     }
 

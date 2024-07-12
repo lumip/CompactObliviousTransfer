@@ -38,7 +38,7 @@ namespace CompactOT
                     {
                         _inEvent.WaitOne();
 
-                        byte[] value;
+                        byte[]? value;
                         if (_inQueue.TryDequeue(out value))
                             return value;
                     }

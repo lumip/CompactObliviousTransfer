@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -78,6 +78,7 @@ namespace CompactOT
                 .WithSecurityLevel(securityLevel)
                 .WithMaximumNumberOfOptions(2)
                 .WithMaximumNumberOfInvocations(50)
+                .WithMaximumNumberOfBatches(4)
                 .MakeObliviousTransferChannel(channelStub.Object);
 
             Assert.True(otChannel.SecurityLevel >= securityLevel);
@@ -95,6 +96,119 @@ namespace CompactOT
             var otChannel = builder
                 .WithSecurityLevel(securityLevel)
                 .WithMaximumNumberOfOptions(3)
+                .MakeObliviousTransferChannel(channelStub.Object);
+
+            Assert.True(otChannel.SecurityLevel >= securityLevel);
+            Assert.True(otChannel is ExtendedObliviousTransferChannel);
+        }
+
+        [Fact]
+        public void TestMakeObliviousTransferChannelCustomCryptoContext()
+        {
+            var builder = new ObliviousTransferChannelBuilder();
+
+            var channelStub = new Mock<IMessageChannel>();
+
+            var cryptoContext = CryptoContext.CreateWithSecurityLevel(256);
+
+            int securityLevel = 128;
+            var otChannel = builder
+                .WithSecurityLevel(securityLevel)
+                .WithMaximumNumberOfOptions(3)
+                .MakeObliviousTransferChannel(channelStub.Object, cryptoContext);
+
+            Assert.True(otChannel.SecurityLevel >= securityLevel);
+            Assert.True(otChannel is ExtendedObliviousTransferChannel);
+        }
+
+        [Fact]
+        public void TestMakeObliviousTransferChannelCustomCryptoContextInsufficient()
+        {
+            var builder = new ObliviousTransferChannelBuilder();
+
+            var channelStub = new Mock<IMessageChannel>();
+
+            var cryptoContext = CryptoContext.CreateWithSecurityLevel(128);
+
+            int securityLevel = 256;
+            var otChannel = builder
+                .WithSecurityLevel(securityLevel)
+                .WithMaximumNumberOfOptions(3);
+
+            Assert.Throws<ArgumentException>(
+                () => otChannel.MakeObliviousTransferChannel(channelStub.Object, cryptoContext)
+            );
+        }
+
+        [Fact]
+        public void TestMakeObliviousTransferChannelWithCustomBaseOT()
+        {
+            var builder = new ObliviousTransferChannelBuilder();
+
+            var channelStub = new Mock<IMessageChannel>();
+            int securityLevel = 128;
+
+            var baseProtocolMock = new Mock<IObliviousTransferChannel>();
+            baseProtocolMock
+                .Setup(p => p.EstimateCost(It.IsAny<ObliviousTransferUsageProjection>()))
+                .Returns(100);
+            baseProtocolMock
+                .Setup(p => p.SecurityLevel)
+                .Returns(securityLevel);
+            var baseProtocol = baseProtocolMock.Object;
+
+            var baseProtocolFactoryMock = new Mock<IBaseProtocolFactory>();
+            baseProtocolFactoryMock
+                .Setup(f => f.MakeChannel(
+                    It.IsAny<IMessageChannel>(), It.IsAny<CryptoContext>(), It.IsAny<int>()
+                ))
+                .Returns(baseProtocol);
+
+            var baseProtocolFactory = baseProtocolFactoryMock.Object;
+
+            var otChannel = builder
+                .WithSecurityLevel(securityLevel)
+                .WithMaximumNumberOfInvocations(1)
+                .WithCustomBaseProtocol(baseProtocolFactory)
+                .MakeObliviousTransferChannel(channelStub.Object);
+
+            Assert.True(otChannel.SecurityLevel >= securityLevel);
+            Assert.False(otChannel is ExtendedObliviousTransferChannel);
+        }
+
+        [Fact]
+        public void TestMakeOblivousTransferChannelWithAvgNumOptions()
+        {
+            var builder = new ObliviousTransferChannelBuilder();
+
+            var channelStub = new Mock<IMessageChannel>();
+
+            int securityLevel = 64;
+            var otChannel = builder
+                .WithSecurityLevel(securityLevel)
+                .WithAverageNumberOfOptions(5)
+                .WithMaximumNumberOfInvocations(10)
+                .WithAverageMessageBits(1000)
+                .MakeObliviousTransferChannel(channelStub.Object);
+
+            Assert.True(otChannel.SecurityLevel >= securityLevel);
+            Assert.True(otChannel is ExtendedObliviousTransferChannel);
+        }
+
+        [Fact]
+        public void TestMakeObliviousTransferChannelWithAvgNumInvocations()
+        {
+            var builder = new ObliviousTransferChannelBuilder();
+
+            var channelStub = new Mock<IMessageChannel>();
+
+            int securityLevel = 64;
+            var otChannel = builder
+                .WithSecurityLevel(securityLevel)
+                .WithMaximumNumberOfOptions(3)
+                .WithAverageInvocationsPerBatch(10)
+                .WithAverageMessageBits(1000)
+                .WithMaximumNumberOfBatches(23)
                 .MakeObliviousTransferChannel(channelStub.Object);
 
             Assert.True(otChannel.SecurityLevel >= securityLevel);

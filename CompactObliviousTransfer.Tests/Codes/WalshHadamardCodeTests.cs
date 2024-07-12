@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using Xunit;
@@ -16,8 +16,8 @@ namespace CompactOT.Codes
         {
             Assert.Equal(0, WalshHadamardCode.GetParity(0b101));
             Assert.Equal(1, WalshHadamardCode.GetParity(0b1110011));
-            Assert.Equal(0, WalshHadamardCode.GetParity(((int)0x59959C17)));
-            Assert.Equal(1, WalshHadamardCode.GetParity(((int)0x19959C17)));
+            Assert.Equal(0, WalshHadamardCode.GetParity(0x59959C17));
+            Assert.Equal(1, WalshHadamardCode.GetParity(0x19959C17));
         }
 
         [Theory]
@@ -45,6 +45,8 @@ namespace CompactOT.Codes
         public void TestConstructorRejectsInvalidCodeLength()
         {
             Assert.Throws<ArgumentException>(() => new WalshHadamardCode(3));
+            Assert.Throws<ArgumentException>(() => new WalshHadamardCode(0));
+            Assert.Throws<ArgumentException>(() => new WalshHadamardCode(1));
         }
 
         [Fact]
@@ -58,6 +60,15 @@ namespace CompactOT.Codes
             Assert.Equal(expectedDistance, code.Distance);
             Assert.Equal(expectedCodeLength, code.CodeLength);
             Assert.Equal(expectedMaximumMessage, code.MaximumMessage);
+        }
+
+        [Fact]
+        public void TestCreateWithDistanceTooLargeDistance()
+        {
+            int distance = 1 << 30;
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => WalshHadamardCode.CreateWithDistance(distance)
+            );
         }
 
         [Fact]

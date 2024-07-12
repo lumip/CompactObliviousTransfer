@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
+﻿// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>, 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: MIT
 // Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
 
@@ -31,8 +31,8 @@ namespace CompactOT
             {
                 stream.Write(seed, 0, seed.Length);
 
-                int counter = 0;
-                while (counter < Int32.MaxValue)
+                uint counter = 0;
+                do
                 {
                     stream.Position = seed.Length;
                     stream.Write(BitConverter.GetBytes(counter), 0, 4);
@@ -45,6 +45,7 @@ namespace CompactOT
 
                     counter++;
                 }
+                while (counter != 0); // stops when counter reaches zero again (overflow)
             }
 
             throw new InvalidOperationException("Random oracle cannot provide more data since the counter has reached its maximum value.");
@@ -52,7 +53,6 @@ namespace CompactOT
 
         public override RandomByteSequence Invoke(byte[] query)
         {
-            // note(lumip): as an alternative, extend Linq to IEnumerator ?
             return new RandomByteSequence(InvokeForEnumerator(query));
         }
     }

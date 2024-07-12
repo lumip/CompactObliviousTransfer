@@ -27,7 +27,7 @@ namespace CompactOT.DataStructures
             _value = (byte)(value & 1);
         }
 
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             if (other is Bit)
             {

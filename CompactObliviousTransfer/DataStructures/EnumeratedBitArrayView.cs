@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -25,12 +25,7 @@ namespace CompactOT.DataStructures
         { }
 
         public EnumeratedBitArrayView(BitSequence bits)
-            : this(bits.AsByteEnumerable(), ((ICollection<Bit>)bits).Count) { }
-
-        public static EnumeratedBitArrayView FromBytes(byte[] buffer, int byteOffset, int numberOfBits)
-        {
-            return new EnumeratedBitArrayView(buffer.Skip(byteOffset), numberOfBits);
-        }
+            : this(bits.AsByteEnumerable(), bits.Length) { }
 
         public override int Length => _numberOfBits;
 

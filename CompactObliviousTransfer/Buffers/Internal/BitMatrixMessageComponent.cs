@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>
+// SPDX-FileCopyrightText: 2018 Jonas Nagy-Kuhlen <jonas.nagy-kuhlen@rwth-aachen.de>, 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: MIT
 // Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
 
@@ -6,40 +6,18 @@ using CompactOT.DataStructures;
 
 namespace CompactOT.Buffers.Internal
 {
-    public class BitMatrixMessageComponent : IMessageComponent
+    public class BitMatrixMessageComponent : BitSequenceMessageComponent
     {
-        private BitMatrix _bits;
 
-        public BitMatrixMessageComponent(BitMatrix bits)
-        {
-            _bits = bits;
-        }
+        public BitMatrixMessageComponent(BitMatrix bits) : base(bits.AsFlat()) { }
 
-        public int Length => _bits.Rows * BitArray.RequiredBytes(_bits.Cols);
-
-        public void WriteToBuffer(byte[] messageBuffer, ref int offset)
-        {
-            int bytesPerRow = BitArray.RequiredBytes(_bits.Cols);
-            for (int i = 0; i < _bits.Rows; ++i)
-            {
-                _bits.GetRow(i).CopyTo(messageBuffer, offset);
-                offset += bytesPerRow;
-            }
-        }
 
         public static BitMatrix ReadFromBuffer(byte[] messageBuffer, ref int offset, int rows, int columns)
         {
             int numberOfElements = rows * columns;
-            int bytesPerRow = BitArray.RequiredBytes(columns);
+            var bits = BitSequenceMessageComponent.ReadFromBuffer(messageBuffer, ref offset, numberOfElements);
 
-            var bits = new BitMatrix(rows, columns);
-            for (int i = 0; i < rows; ++i)
-            {
-                var row = BitArray.FromBytes(messageBuffer, columns, offset);
-                bits.SetRow(i, row);
-                offset += bytesPerRow;
-            }
-            return bits;
+            return new BitMatrix(rows, columns, bits);
         }
     }
 }

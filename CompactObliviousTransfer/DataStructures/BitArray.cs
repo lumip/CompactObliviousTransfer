@@ -29,7 +29,8 @@ namespace CompactOT.DataStructures
 
         public BitArray(int numberOfElements)
         {
-            if (Length < 0) throw new ArgumentException("numberOfElements cannot be a negative number.");
+            if (numberOfElements < 0)
+                throw new ArgumentOutOfRangeException("numberOfElements cannot be a negative number.");
             Length = numberOfElements;
             Buffer = new byte[RequiredBytes(Length)];
         }
@@ -135,11 +136,6 @@ namespace CompactOT.DataStructures
             return result;
         }
 
-        public override string ToString()
-        {
-            return ToBinaryString();
-        }
-
         public BitArray Clone()
         {
             BitArray clone = new BitArray(Length);
@@ -194,10 +190,14 @@ namespace CompactOT.DataStructures
         {
             get
             {
+                if (index < 0 || index >= Length)
+                    throw new IndexOutOfRangeException();
                 return new Bit((byte)(Buffer[index / 8] >> (index % 8)));
             }
             set
             {
+                if (index < 0 || index >= Length)
+                    throw new IndexOutOfRangeException();
                 int bitOffset = index % 8;
                 byte v = (byte)((byte)value << bitOffset);
                 byte mask = (byte)(~(1 << bitOffset));

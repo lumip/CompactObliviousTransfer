@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Collections.Generic;
@@ -60,7 +60,7 @@ namespace CompactOT.DataStructures
 
         public static byte[] Not(byte[] bytes)
         {
-            return Not(bytes).ToArray();
+            return Not(bytes.AsEnumerable()).ToArray();
         }
 
         public static void InPlaceNot(byte[] bytes)

@@ -26,7 +26,7 @@ namespace CompactOT
                 int which = Task.WaitAny(taskList.ToArray());
                 var task = taskList.ElementAt(which);
                 if (task.Status == TaskStatus.Faulted)
-                    throw task.Exception;
+                    throw task.Exception!;
                 taskList.Remove(taskList.ElementAt(which));
             }
         }

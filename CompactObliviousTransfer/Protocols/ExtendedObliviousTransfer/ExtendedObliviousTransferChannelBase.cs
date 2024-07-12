@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -20,7 +20,9 @@ namespace CompactOT
     /// Commmon base implementation of the OT extension protocol and its random and correlated variants.
     /// 
     /// It provides an implemention of the base OT invocations as well as the common first steps of the online
-    /// phase of the protocol (up until the matrix U is sent from receiver to sender).
+    /// phase of the protocol (up until the matrix U is sent from receiver to sender). However, it does
+    /// not provide full ObliviousTransferChannel functionality and therefore does not implement the
+    /// <see cref="IObliviousTransferChannel"/> interface.
     /// </summary>
     public class ExtendedObliviousTransferChannelBase
     {
@@ -43,7 +45,7 @@ namespace CompactOT
             public RandomByteSequence[] SeededRandomOracles;
             public BitArray RandomChoices;
 
-            public SenderState(int stateSize, int numberOfOptions)
+            public SenderState(int stateSize)
             {
                 SeededRandomOracles = new RandomByteSequence[stateSize];
                 RandomChoices = new BitArray(stateSize);
@@ -96,13 +98,21 @@ namespace CompactOT
                 );
             }
 
+            _code = code;
+            if (_code.Distance < securityParameter)
+            {
+                throw new ArgumentException(
+                    $"The provided binary code must have a distance of at least the requested security "+
+                    $"level {securityParameter} but only has distance {code.Distance}.", nameof(code)
+                );
+            }
+
             RandomNumberGenerator = new ThreadsafeRandomNumberGenerator(cryptoContext.RandomNumberGenerator);
             RandomOracle = new HashRandomOracle(cryptoContext.HashAlgorithmProvider);
             _securityParameter = NumberLength.FromBitLength(securityParameter);
             _senderState = null;
             _receiverState = null;
             TotalNumberOfInvocations = 0;
-            _code = code;
         }
 
         /// <summary>
@@ -115,7 +125,7 @@ namespace CompactOT
         public async Task ExecuteSenderBaseTransferAsync()
         {
             int numBaseOTOptions = 2;
-            _senderState = new SenderState(CodeLength, numBaseOTOptions);
+            _senderState = new SenderState(CodeLength);
             _senderState.RandomChoices = RandomNumberGenerator.GetBits(CodeLength);
 
 #if DEBUG
@@ -192,10 +202,10 @@ namespace CompactOT
         /// <returns>The bit matrix T_0 with numberOfInvocations rows and CodeLength columns.</returns>
         protected async Task<BitMatrix> SenderReceiveUAndComputeQ(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
         {
-            if (numberOfOptions > CodeLength)
+            if (numberOfOptions > _code.MaximumMessage)
             {
                 throw new ArgumentException($"Extended Oblivious Transfer with security level {_securityParameter.InBits} requires " +
-                    $"the number of options to be less than {CodeLength}; was {numberOfOptions}", nameof(numberOfOptions));
+                    $"the number of options to be less than {_code.MaximumMessage}; was {numberOfOptions}", nameof(numberOfOptions));
             }
             if (_senderState == null) await ExecuteSenderBaseTransferAsync();
 
@@ -237,17 +247,15 @@ namespace CompactOT
         /// <returns>The bit matrix T_0 with CodeLength rows and numberOfInvocations columns.</returns>
         protected async Task<BitMatrix> ReceiverComputeAndSendU(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
         {
-            if (numberOfOptions > CodeLength)
+            if (numberOfOptions >= _code.MaximumMessage)
             {
                 throw new ArgumentException($"Extended Oblivious Transfer with security level {_securityParameter.InBits} requires " +
-                    $"the number of options to be less than {CodeLength}; was {numberOfOptions}", nameof(numberOfOptions));
+                    $"the number of options to be less than {_code.MaximumMessage}; was {numberOfOptions}", nameof(numberOfOptions));
             }
             if (_receiverState == null) await ExecuteReceiverBaseTransferAsync();
             
             int numberOfInvocations = selectionIndices.Length;
             TotalNumberOfInvocations += numberOfInvocations;
-
-            NumberLength optionLength = NumberLength.GetLength(numberOfOptions);
 
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -355,22 +363,22 @@ namespace CompactOT
 
             Debug.Assert(usageProjection.HasMaxNumberOfBatches);
 
-            int codeLength = 2 * usageProjection.SecurityLevel;
+            int codeLength = _code.CodeLength;
 
             // base OT cost
-            ObliviousTransferUsageProjection baseOtUsageProjection = new ObliviousTransferUsageProjection();
-            baseOtUsageProjection.MaxNumberOfOptions = 2;
-            baseOtUsageProjection.MaxNumberOfInvocations = codeLength;
-            baseOtUsageProjection.MaxNumberOfBatches = 1;
-            baseOtUsageProjection.AverageMessageBits = usageProjection.SecurityLevel;
-            baseOtUsageProjection.SecurityLevel = usageProjection.SecurityLevel;
+            ObliviousTransferUsageProjection baseOtUsageProjection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfOptions = 2,
+                MaxNumberOfInvocations = codeLength,
+                MaxNumberOfBatches = 1,
+                AverageMessageBits = usageProjection.SecurityLevel,
+                SecurityLevel = usageProjection.SecurityLevel
+            };
             double baseOtCost = _baseOT.EstimateCost(baseOtUsageProjection);
 
             // bandwidth cost of security exchange
             double averageInvocationsPerBatch = usageProjection.AverageInvocationsPerBatch;
             double maxNumberOfBatches = usageProjection.MaxNumberOfBatches;
-
-            double averageNumberOfOptions = usageProjection.AverageNumberOfOptions;
 
             // bandwidth cost of security exchange
             double securityExchangeBitLength = codeLength;

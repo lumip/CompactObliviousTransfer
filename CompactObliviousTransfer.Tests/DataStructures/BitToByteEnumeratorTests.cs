@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using Xunit;
+using System;
 using System.Collections.Generic;
 
 namespace CompactOT.DataStructures
@@ -77,6 +78,19 @@ namespace CompactOT.DataStructures
                 Assert.Equal(expectedByteEnumerator.Current, enumerator.Current);
             }
             Assert.False(enumerator.MoveNext());
+        }
+
+        [Fact]
+        public void TestCurrentBeforeMoveNext()
+        {
+            Bit[] bits = new Bit[] {
+                Bit.Zero,  Bit.One, Bit.Zero, Bit.Zero,  Bit.One, Bit.Zero, Bit.Zero, Bit.Zero,
+                 Bit.One
+            };
+            var bitEnumerator = ((IEnumerable<Bit>)bits).GetEnumerator();
+            var enumerator = new BitToByteEnumerator(bitEnumerator);
+
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current);
         }
 
     }

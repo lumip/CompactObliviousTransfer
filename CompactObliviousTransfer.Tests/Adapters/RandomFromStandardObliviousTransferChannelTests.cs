@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using Moq;
@@ -75,6 +75,25 @@ namespace CompactOT.Adapters
             Assert.Equal(expectedSecond, receiverResults.GetInvocationResult(1));
             
         }
+
+        [Fact]
+        public void TestEstimateCost()
+        {
+            var baseOtChannelMock = new Mock<IObliviousTransferChannel>();
+            var baseOtChannel = baseOtChannelMock.Object;
+
+            double expectedCost = 75.0;
+            baseOtChannelMock.Setup(ot => ot.EstimateCost(It.IsAny<ObliviousTransferUsageProjection>())).Returns(expectedCost);
+
+            var rOtChannel = new RandomFromStandardObliviousTransferChannel(baseOtChannel, RandomNumberGenerator.Create());
+
+            var usageProjection = new ObliviousTransferUsageProjection();
+            var cost = rOtChannel.EstimateCost(usageProjection);
+
+            Assert.Equal(expectedCost, cost);
+            baseOtChannelMock.Verify(ot => ot.EstimateCost(It.IsAny<ObliviousTransferUsageProjection>()), Times.Once());
+        }
+        
 
     }
 }

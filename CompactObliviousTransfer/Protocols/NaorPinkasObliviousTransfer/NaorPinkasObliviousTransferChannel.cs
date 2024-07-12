@@ -305,7 +305,6 @@ namespace CompactOT
 
             Debug.Assert(usageProjection.HasMaxNumberOfBatches);
 
-            double averageInvocationsPerBatch = usageProjection.AverageInvocationsPerBatch;
             double maxNumberOfInvocations = usageProjection.MaxNumberOfInvocations;
             double maxNumberOfBatches = usageProjection.MaxNumberOfBatches;
 

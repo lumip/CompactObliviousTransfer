@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Linq;
+using CompactOT.DataStructures;
 
 namespace CompactOT
 {
@@ -15,7 +16,7 @@ namespace CompactOT
 
         private IEnumerator<byte> _randomnessEnumerator;
 
-        private class RandomByteEnumerator : IEnumerator<byte>
+        private class RandomByteEnumerator : BaseEnumerator<byte>
         {
 
             byte[] _buffer;
@@ -30,15 +31,9 @@ namespace CompactOT
                 _index = bufferSize;
             }
 
-            public byte Current => _buffer[_index];
+            public override byte Current => _buffer[_index];
 
-            object IEnumerator.Current => ((IEnumerator<byte>)this).Current;
-
-            public void Dispose()
-            {
-            }
-
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 _index += 1;
                 if (_index >= _buffer.Length)
@@ -49,10 +44,11 @@ namespace CompactOT
                 return true;
             }
 
-            public void Reset()
+            public override void Reset()
             {
                 throw new NotSupportedException();
             }
+
         }
 
         public RandomByteSequence(IEnumerator<byte> randomnessEnumerator)
@@ -61,9 +57,7 @@ namespace CompactOT
         }
 
         public RandomByteSequence(RandomNumberGenerator randomNumberGenerator)
-        {
-            _randomnessEnumerator = new RandomByteEnumerator(randomNumberGenerator, bufferSize: 32);
-        }
+            : this(new RandomByteEnumerator(randomNumberGenerator, bufferSize: 32)) { }
 
         public RandomByteSequence(IEnumerable<byte> randomnessEnumerable)
             : this(randomnessEnumerable.GetEnumerator()) { }

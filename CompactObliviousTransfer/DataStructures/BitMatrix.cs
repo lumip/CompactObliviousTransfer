@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+﻿// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
@@ -42,13 +42,13 @@ namespace CompactOT.DataStructures
             return new BitMatrix(
                 numberOfRows,
                 numberOfColumns,
-                new ConstantBitArrayView(Bit.Zero, numberOfRows * numberOfColumns)
+                ConstantBitArrayView.MakeZeros(numberOfRows * numberOfColumns)
             );
         }
 
         private int GetValuesIndex(int row, int col)
         {
-            return (row * Cols + col);
+            return row * Cols + col;
         }
 
         public Bit this[int row, int col]
@@ -83,10 +83,8 @@ namespace CompactOT.DataStructures
         {
             if (row < 0 || row >= Rows)
                 throw new ArgumentOutOfRangeException(nameof(row));
-            if (values == null)
-                throw new ArgumentNullException(nameof(values));
             if (values.Length != Cols)
-                throw new ArgumentException("Provided argument must match the number of columns.", nameof(values));
+                throw new ArgumentException("The number of elements provided for the row must match the number of columns.", nameof(values));
             foreach ((int j, Bit v) in values.Enumerate())
             {
                 _values[GetValuesIndex(row, j)] = v;
@@ -113,10 +111,8 @@ namespace CompactOT.DataStructures
         {
             if (col < 0 || col >= Cols)
                 throw new ArgumentOutOfRangeException(nameof(col));
-            if (values == null)
-                throw new ArgumentNullException(nameof(values));
             if (values.Length != Rows)
-                throw new ArgumentException("Provided argument must match the number of columns.", nameof(values));
+                throw new ArgumentException("The number of elements provided for the column must match the number of rows.", nameof(values));
             foreach ((int i, Bit v) in values.Enumerate())
             {
                 _values[GetValuesIndex(i, col)] = v;
@@ -160,7 +156,7 @@ namespace CompactOT.DataStructures
             return _values;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             BitMatrix? other = obj as BitMatrix;
             if (other == null)
@@ -171,7 +167,7 @@ namespace CompactOT.DataStructures
 
         public override int GetHashCode()
         {
-            return 15527 * Rows + 37307 * Cols + 8599 * Rows.GetHashCode();
+            return 15527 * Rows + 37307 * Cols + 8599 * _values.GetHashCode();
         }
 
     }
