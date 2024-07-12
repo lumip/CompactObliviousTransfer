@@ -17,7 +17,7 @@ namespace CompactOT.Codes
 
         public int Distance => CodeLength >> 1;
 
-        public int MaximumMessage => CodeLength - 1;
+        public int MaximumMessage => 2 * CodeLength - 1;
 
         public WalshHadamardCode(int codeLength)
         {
@@ -40,7 +40,7 @@ namespace CompactOT.Codes
 
         public static WalshHadamardCode CreateWithMaximumMessage(int maximumMessage)
         {
-            int codeLength = MathUtil.NextPowerOfTwo(maximumMessage);
+            int codeLength = MathUtil.NextPowerOfTwo(maximumMessage) >> 1;
             return new WalshHadamardCode(codeLength);
         }
 
@@ -57,7 +57,7 @@ namespace CompactOT.Codes
 
         private IEnumerable<Bit> EncodeToEnumerable(int x)
         {
-            for (int i = 0; i < CodeLength; ++i)
+            for (int i = 1; (i >> 1) < CodeLength; i += 2)  // math equivalent: i < 2*CodeLength; but no risk of overflow for large CodeLength
             {
                 yield return new Bit(GetParity(x & i));
             }

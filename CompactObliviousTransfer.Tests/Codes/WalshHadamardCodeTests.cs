@@ -21,9 +21,12 @@ namespace CompactOT.Codes
         }
 
         [Theory]
-        [InlineData(15, "0110100110010110")]
-        [InlineData(12, "0000111111110000")]
-        [InlineData(7,  "0110100101101001")]
+        [InlineData(31, "1001011001101001")]
+        [InlineData(18, "0101010110101010")]
+        [InlineData(15, "1001011010010110")]
+        [InlineData(12, "0011110000111100")]
+        [InlineData(7,  "1001100110011001")]
+        [InlineData(1,  "1111111111111111")]
         [InlineData(0,  "0000000000000000")]
         public void TestEncode(int value, string expectedString)
         {
@@ -54,9 +57,11 @@ namespace CompactOT.Codes
         {
             int distance = 7;
             var code = WalshHadamardCode.CreateWithDistance(distance);
+            Assert.True(code.Distance >= distance);
+
             int expectedDistance = 8;
             int expectedCodeLength = 16;
-            int expectedMaximumMessage = 15;
+            int expectedMaximumMessage = 31;
             Assert.Equal(expectedDistance, code.Distance);
             Assert.Equal(expectedCodeLength, code.CodeLength);
             Assert.Equal(expectedMaximumMessage, code.MaximumMessage);
@@ -76,9 +81,11 @@ namespace CompactOT.Codes
         {
             int maximumMessage = 6;
             var code = WalshHadamardCode.CreateWithMaximumMessage(maximumMessage);
+            Assert.True(code.MaximumMessage >= maximumMessage);
+
             int expectedMaximumMessage = 7;
-            int expectedCodeLength = 8;
-            int expectedDistance = 4;
+            int expectedCodeLength = 4;
+            int expectedDistance = 2;
             Assert.Equal(expectedDistance, code.Distance);
             Assert.Equal(expectedCodeLength, code.CodeLength);
             Assert.Equal(expectedMaximumMessage, code.MaximumMessage);
