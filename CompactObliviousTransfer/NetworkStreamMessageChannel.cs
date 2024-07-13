@@ -3,20 +3,20 @@
 
 using System;
 using System.Threading.Tasks;
-using System.Net.Sockets;
-using System.Threading;
+using System.IO;
 
 namespace CompactOT
 {
     /// <summary>
-    /// A message channel based on a <see cref="System.Net.Sockets.NetworkStream" />.
+    /// A message channel based on a <see cref="System.IO.Stream" /> as returned
+    /// by e.g. <see cref="System.Net.Sockets.TcpClient.GetStream"/>.
     /// </summary>
     public class NetworkStreamMessageChannel : IMessageChannel
     {
 
-        NetworkStream _stream;
+        Stream _stream;
 
-        public NetworkStreamMessageChannel(NetworkStream stream)
+        public NetworkStreamMessageChannel(Stream stream)
         {
             if (!stream.CanRead || !stream.CanWrite)
                 throw new ArgumentException("Stream must be read- and writable.", nameof(stream));
@@ -37,6 +37,8 @@ namespace CompactOT
             }
         }
 
+        /// <inheritdoc/>
+        /// <exception cref="ProtocolException">Thrown when a message was received via the message stream that could not be interpreted.</exception>
         public async Task<byte[]> ReadMessageAsync()
         {
             byte[] messageLengthBuffer = new byte[4];
@@ -55,6 +57,7 @@ namespace CompactOT
             return messageBuffer;
         }
 
+        /// <inheritdoc/>
         public async Task WriteMessageAsync(byte[] message)
         {
             byte[] messageLengthBuffer = BitConverter.GetBytes(message.Length);

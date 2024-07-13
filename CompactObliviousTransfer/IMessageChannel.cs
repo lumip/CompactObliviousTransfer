@@ -12,6 +12,9 @@ namespace CompactOT
 {
     /// <summary>
     /// A full-duplex channel to exchange messages in the form of raw byte arrays between two endpoints.
+    /// 
+    /// Used in all oblivious transport channel implementations to exchange protocol messages.
+    /// See <see cref="NetworkStreamMessageChannel"/> for an implementation compatible with <see cref="System.Net.Sockets.NetworkStream"/>.
     /// </summary>
     public interface IMessageChannel
     {

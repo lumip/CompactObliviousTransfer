@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -12,6 +16,151 @@ using Xunit;
 namespace CompactOT.DataStructures
 {
     public class NetworkStreamMessageChannelTests
+    {
+
+        [Fact]
+        public void TestConstructorUnwritableStream()
+        {
+            var streamMock = new Mock<Stream>();
+            streamMock.Setup(s => s.CanWrite).Returns(false);
+            streamMock.Setup(s => s.CanRead).Returns(true);
+
+            Assert.Throws<ArgumentException>(
+                () => new NetworkStreamMessageChannel(streamMock.Object)
+            );
+        }
+
+        [Fact]
+        public void TestConstructorUnreadableStream()
+        {
+            var streamMock = new Mock<Stream>();
+            streamMock.Setup(s => s.CanWrite).Returns(true);
+            streamMock.Setup(s => s.CanRead).Returns(false);
+
+            Assert.Throws<ArgumentException>(
+                () => new NetworkStreamMessageChannel(streamMock.Object)
+            );
+        }
+
+        [Fact]
+        public async void TestReadAsync()
+        {
+            byte[] buffer = new byte[] { 3, 0, 0, 0, 0xaa, 0xbb, 0xcc };
+            byte[] expectedMessage = new byte[] { 0xaa, 0xbb, 0xcc };
+            var stream = new MemoryStream(buffer);
+
+            var channel = new NetworkStreamMessageChannel(stream);
+            byte[] message = await channel.ReadMessageAsync();
+
+            Assert.Equal(expectedMessage, message);
+        }
+
+        [Fact]
+        public async void TestReadAsyncEmptyMessage()
+        {
+            byte[] buffer = new byte[] { 0, 0, 0, 0 };
+            byte[] expectedMessage = new byte[] {  };
+            var stream = new MemoryStream(buffer);
+
+            var channel = new NetworkStreamMessageChannel(stream);
+            byte[] message = await channel.ReadMessageAsync();
+
+            Assert.Equal(expectedMessage, message);
+        }
+
+        [Fact]
+        public async void TestReadAsyncInvalidLength()
+        {
+            byte[] buffer = new byte[] { 3, 0, 0, 0xa0, 0xaa, 0xbb, 0xcc };
+            var stream = new MemoryStream(buffer);
+
+            var channel = new NetworkStreamMessageChannel(stream);
+
+            await Assert.ThrowsAsync<ProtocolException>(
+                channel.ReadMessageAsync
+            );
+        }
+
+        [Fact]
+        public async void TestReadAsyncHeaderInterrupted()
+        {
+            var messageParts = new Queue<byte[]>(new byte[][] {
+                new byte[] { 3, 0, 0 },
+                new byte[] { },
+                new byte[] { 0 },
+                new byte[] { 0xaa, 0xbb, 0xcc },
+            });
+            byte[] expectedMessage = new byte[] { 0xaa, 0xbb, 0xcc };
+
+            var streamMock = new Mock<Stream>() { CallBase = true };
+            streamMock.Setup(s => s.CanWrite).Returns(true);
+            streamMock.Setup(s => s.CanRead).Returns(true);
+            streamMock.Setup(s => s.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Returns((byte[] b, int offset, int length) => {
+                    byte[] nextPart = messageParts.Dequeue();
+                    int actualLength = Math.Min(nextPart.Length, b.Length - offset);
+                    Array.Copy(nextPart, 0, b, offset, actualLength);
+                    return actualLength;
+                });
+
+            var channel = new NetworkStreamMessageChannel(streamMock.Object);
+
+            var message = await channel.ReadMessageAsync();
+
+            Assert.Equal(expectedMessage, message);
+        }
+
+
+        [Fact]
+        public async void TestReadAsyncBodyInterrupted()
+        {
+            var messageParts = new Queue<byte[]>(new byte[][] {
+                new byte[] { 3, 0, 0, 0 },
+                new byte[] { },
+                new byte[] { 0xaa, 0xbb },
+                new byte[] { },
+                new byte[] { 0xcc },
+            });
+            byte[] expectedMessage = new byte[] { 0xaa, 0xbb, 0xcc };
+
+            var streamMock = new Mock<Stream>() { CallBase = true };
+            streamMock.Setup(s => s.CanWrite).Returns(true);
+            streamMock.Setup(s => s.CanRead).Returns(true);
+            streamMock.Setup(s => s.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Returns((byte[] b, int offset, int length) => {
+                    byte[] nextPart = messageParts.Dequeue();
+                    int actualLength = Math.Min(nextPart.Length, b.Length - offset);
+                    Array.Copy(nextPart, 0, b, offset, actualLength);
+                    return actualLength;
+                });
+
+            var channel = new NetworkStreamMessageChannel(streamMock.Object);
+
+            var message = await channel.ReadMessageAsync();
+
+            Assert.Equal(expectedMessage, message);
+        }
+
+        [Fact]
+        public async void TestWriteAsync()
+        {
+            var stream = new MemoryStream();
+
+            var channel = new NetworkStreamMessageChannel(stream);
+            byte[] message = new byte[] { 0xaa, 0xbb, 0xcc };
+            await channel.WriteMessageAsync(message);
+
+            stream.Position = 0;
+            byte[] streamContents = new byte[7];
+            byte[] expectedContents = new byte[] { 3, 0, 0, 0, 0xaa, 0xbb, 0xcc };
+
+            stream.Read(streamContents, 0, streamContents.Length);
+
+            Assert.Equal(expectedContents, streamContents);
+        }
+    }
+
+    public class NetworkStreamMessageChannelNetworkTests
     {
 
         private static async Task RunListener(TcpListener listener, (byte[], byte[])[] queriesAndResponses)
@@ -74,70 +223,6 @@ namespace CompactOT.DataStructures
                 tcpListener.Stop();
             }
 
-        }
-
-        [Fact]
-        public async Task TestUnreadableStream()
-        {
-            var tcpListener = new TcpListener(IPAddress.Loopback, 0);
-            try
-            {
-                tcpListener.Start();
-                var endpoint = tcpListener.LocalEndpoint as IPEndPoint;
-                Assert.NotNull(endpoint);
-
-                Task listenerTask = RunListener(tcpListener, new (byte[], byte[])[] {});
-                
-                using (var tcpClient = new TcpClient())
-                {
-                    await tcpClient.ConnectAsync(endpoint!);
-                    using (var tcpStream = tcpClient.GetStream())
-                    {
-                        using (var stream = new NetworkStream(tcpStream.Socket, System.IO.FileAccess.Write))
-                        {
-                            Assert.Throws<ArgumentException>(() => new NetworkStreamMessageChannel(stream));
-                        }
-                    }
-                }
-
-                await listenerTask;
-            }
-            finally
-            {
-                tcpListener.Stop();
-            }
-        }
-
-        [Fact]
-        public async Task TestUnwritableStream()
-        {
-            var tcpListener = new TcpListener(IPAddress.Loopback, 0);
-            try
-            {
-                tcpListener.Start();
-                var endpoint = tcpListener.LocalEndpoint as IPEndPoint;
-                Assert.NotNull(endpoint);
-
-                Task listenerTask = RunListener(tcpListener, new (byte[], byte[])[] {});
-                
-                using (var tcpClient = new TcpClient())
-                {
-                    await tcpClient.ConnectAsync(endpoint!);
-                    using (var tcpStream = tcpClient.GetStream())
-                    {
-                        using (var stream = new NetworkStream(tcpStream.Socket, System.IO.FileAccess.Read))
-                        {
-                            Assert.Throws<ArgumentException>(() => new NetworkStreamMessageChannel(stream));
-                        }
-                    }
-                }
-
-                await listenerTask;
-            }
-            finally
-            {
-                tcpListener.Stop();
-            }
         }
 
         [Fact]
