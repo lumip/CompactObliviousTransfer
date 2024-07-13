@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System;
-using System.Security.Cryptography;
-using CompactCryptoGroupAlgebra;
 using System.Numerics;
+using System.Security.Cryptography;
+
+using CompactCryptoGroupAlgebra;
 
 using CompactOT.DataStructures;
 
@@ -34,20 +34,20 @@ namespace CompactOT
             int mask = (1 << bitsPerSample) - 1;
             int totalBits = bitsPerSample * amount;
             int totalBytes = NumberLength.FromBitLength(totalBits).InBytes;
-            int numberCandidates = (totalBytes*8) / bitsPerSample;
-            byte[] randomBytes = new byte[totalBytes+1];
-            
+            int numberCandidates = (totalBytes * 8) / bitsPerSample;
+            byte[] randomBytes = new byte[totalBytes + 1];
+
             int[] samples = new int[amount];
             int index = 0;
             while (index < amount)
             {
-                
+
                 randomNumberGenerator.GetBytes(randomBytes);
                 randomBytes[totalBytes] = 0; // note (lumip): so that stupid BigInteger is unsinged
-                // we need that for the check in the while and cannot just
-                // BigInteger.Abs as that will compute the 2s complement, resulting
-                // in most-significant bit to be always zero instead of random
-                
+                                             // we need that for the check in the while and cannot just
+                                             // BigInteger.Abs as that will compute the 2s complement, resulting
+                                             // in most-significant bit to be always zero instead of random
+
                 var x = new BigInteger(randomBytes);
 
                 for (int slot = 0; slot < numberCandidates && index < amount; ++slot)

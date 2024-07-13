@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using Xunit;
-using System.Linq;
 using System;
 using System.Collections;
+using System.Linq;
+
+using Xunit;
 
 namespace CompactOT.DataStructures
 {
@@ -18,7 +19,7 @@ namespace CompactOT.DataStructures
             Assert.Throws<ArgumentOutOfRangeException>(() => new ShiftedByteArrayEnumerable(bytes, -1));
             Assert.Throws<ArgumentOutOfRangeException>(() => new ShiftedByteArrayEnumerable(bytes, 8));
         }
-        
+
         [Fact]
         public void TestLongInput()
         {
@@ -50,10 +51,10 @@ namespace CompactOT.DataStructures
         [Fact]
         public void TestEmpty()
         {
-            var bits = new byte[0];
+            var bits = Array.Empty<byte>();
             int offset = 2;
 
-            var expectedBuffer = new byte[0];
+            var expectedBuffer = Array.Empty<byte>();
 
             var shiftedEnumerable = new ShiftedByteArrayEnumerable(bits, offset);
             var resultBuffer = shiftedEnumerable.ToArray();
@@ -81,7 +82,7 @@ namespace CompactOT.DataStructures
         {
             var bytes = new byte[] { 0b01010101, 0b11001100 };
             var baseEnumerator = bytes.AsEnumerable().GetEnumerator();
-            
+
             Assert.Throws<ArgumentOutOfRangeException>(() => new ShiftedByteArrayEnumerable.Enumerator(baseEnumerator, -1));
             Assert.Throws<ArgumentOutOfRangeException>(() => new ShiftedByteArrayEnumerable.Enumerator(baseEnumerator, 8));
         }
@@ -103,7 +104,7 @@ namespace CompactOT.DataStructures
             int offset = 3;
 
             var enumerator = new ShiftedByteArrayEnumerable.Enumerator(bytes.AsEnumerable().GetEnumerator(), offset);
-            
+
             enumerator.MoveNext();
             enumerator.Reset();
 

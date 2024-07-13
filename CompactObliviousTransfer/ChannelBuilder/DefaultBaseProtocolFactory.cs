@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Diagnostics;
 using System.Numerics;
 
 using CompactCryptoGroupAlgebra;
 using CompactCryptoGroupAlgebra.EllipticCurves;
-using CompactCryptoGroupAlgebra.Multiplicative;
 
 namespace CompactOT
 {

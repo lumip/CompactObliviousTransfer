@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Moq;
 
+using Moq;
 using Xunit;
 
 namespace CompactOT.DataStructures
@@ -59,7 +57,7 @@ namespace CompactOT.DataStructures
         public async void TestReadAsyncEmptyMessage()
         {
             byte[] buffer = new byte[] { 0, 0, 0, 0 };
-            byte[] expectedMessage = new byte[] {  };
+            byte[] expectedMessage = new byte[] { };
             var stream = new MemoryStream(buffer);
 
             var channel = new NetworkStreamMessageChannel(stream);
@@ -96,12 +94,14 @@ namespace CompactOT.DataStructures
             streamMock.Setup(s => s.CanWrite).Returns(true);
             streamMock.Setup(s => s.CanRead).Returns(true);
             streamMock.Setup(s => s.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
-                .Returns((byte[] b, int offset, int length) => {
-                    byte[] nextPart = messageParts.Dequeue();
-                    int actualLength = Math.Min(nextPart.Length, b.Length - offset);
-                    Array.Copy(nextPart, 0, b, offset, actualLength);
-                    return actualLength;
-                });
+                .Returns((byte[] b, int offset, int length) =>
+                    {
+                        byte[] nextPart = messageParts.Dequeue();
+                        int actualLength = Math.Min(nextPart.Length, b.Length - offset);
+                        Array.Copy(nextPart, 0, b, offset, actualLength);
+                        return actualLength;
+                    }
+                );
 
             var channel = new NetworkStreamMessageChannel(streamMock.Object);
 
@@ -127,12 +127,14 @@ namespace CompactOT.DataStructures
             streamMock.Setup(s => s.CanWrite).Returns(true);
             streamMock.Setup(s => s.CanRead).Returns(true);
             streamMock.Setup(s => s.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
-                .Returns((byte[] b, int offset, int length) => {
-                    byte[] nextPart = messageParts.Dequeue();
-                    int actualLength = Math.Min(nextPart.Length, b.Length - offset);
-                    Array.Copy(nextPart, 0, b, offset, actualLength);
-                    return actualLength;
-                });
+                .Returns((byte[] b, int offset, int length) =>
+                    {
+                        byte[] nextPart = messageParts.Dequeue();
+                        int actualLength = Math.Min(nextPart.Length, b.Length - offset);
+                        Array.Copy(nextPart, 0, b, offset, actualLength);
+                        return actualLength;
+                    }
+                );
 
             var channel = new NetworkStreamMessageChannel(streamMock.Object);
 
@@ -313,7 +315,7 @@ namespace CompactOT.DataStructures
             using (var tcpClient = await listener.AcceptTcpClientAsync())
             {
                 using (var tcpStream = tcpClient.GetStream())
-                {                    
+                {
                     byte[] lengthBuffer = BitConverter.GetBytes(message.Length);
                     await tcpStream.WriteAsync(lengthBuffer);
 
@@ -364,7 +366,7 @@ namespace CompactOT.DataStructures
             using (var tcpClient = await listener.AcceptTcpClientAsync())
             {
                 using (var tcpStream = tcpClient.GetStream())
-                {                    
+                {
                     byte[] lengthBuffer = BitConverter.GetBytes(message.Length);
                     await tcpStream.WriteAsync(lengthBuffer, 0, initialSendLength);
                     await Task.Delay(100);

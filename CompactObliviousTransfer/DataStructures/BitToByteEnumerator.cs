@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace CompactOT.DataStructures
@@ -49,7 +48,7 @@ namespace CompactOT.DataStructures
         {
             if (!_bitEnumerator.MoveNext())
                 return false;
-            
+
             _isReset = false;
             _byte = 0;
 
@@ -58,8 +57,8 @@ namespace CompactOT.DataStructures
             {
                 _byte = (byte)((int)_byte | (((byte)_bitEnumerator.Current) << i));
                 i++;
-            } while(i < 8 && _bitEnumerator.MoveNext());
-            
+            } while (i < 8 && _bitEnumerator.MoveNext());
+
             return true;
         }
 

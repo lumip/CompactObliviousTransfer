@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using Xunit;
-using Moq;
 using System.Linq;
 using System.Text;
 
 using CompactOT.Codes;
+using Moq;
+using Xunit;
 
 namespace CompactOT
 {
@@ -28,7 +28,7 @@ namespace CompactOT
 
             var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityLevel, cryptoContext, code);
             var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityLevel, cryptoContext, code);
-            
+
             var senderTask = otSender.ExecuteSenderBaseTransferAsync();
             var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
 
@@ -111,7 +111,7 @@ namespace CompactOT
                 async () => await otChannel.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits)
             );
         }
-        
+
         [Fact]
         public async void TestReceiverComputeAndSendURejectsBadNumberOfOptions()
         {

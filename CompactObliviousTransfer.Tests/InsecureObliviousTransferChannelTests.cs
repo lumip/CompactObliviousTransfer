@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Diagnostics;
+
 using Xunit;
 
 namespace CompactOT

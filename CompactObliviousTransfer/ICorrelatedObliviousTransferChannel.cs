@@ -23,5 +23,5 @@ namespace CompactOT
     {
         Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions correlations);
     }
-    
+
 }

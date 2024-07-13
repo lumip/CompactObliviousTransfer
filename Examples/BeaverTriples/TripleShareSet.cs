@@ -3,9 +3,7 @@
 
 using System;
 
-using CompactOT;
 using CompactOT.DataStructures;
-
 
 namespace CompactOT.Examples.BeaverTriples
 {

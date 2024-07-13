@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System.Threading.Tasks;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace CompactOT.Adapters
 {
@@ -39,7 +39,7 @@ namespace CompactOT.Adapters
                 for (int j = 0; j < numberOfOptions - 1; ++j)
                 {
                     var correlation = _randomNumberGenerator.GetBits(numberOfMessageBits);
-                    correlations.SetMessage(i, j, correlation);      
+                    correlations.SetMessage(i, j, correlation);
                 }
             }
             ObliviousTransferResult firstOptions = await _cotChannel.SendAsync(correlations);

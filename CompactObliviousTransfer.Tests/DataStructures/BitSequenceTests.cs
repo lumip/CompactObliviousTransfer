@@ -3,11 +3,10 @@
 
 using System;
 using System.Linq;
-using System.Collections.Generic;
 using System.Numerics;
 
-using Xunit;
 using Moq;
+using Xunit;
 
 namespace CompactOT.DataStructures
 {
@@ -25,7 +24,7 @@ namespace CompactOT.DataStructures
             Assert.Equal(expected, count);
             bitsMock.Verify(b => b.Length, Times.Once);
         }
-        
+
         [Fact]
         public void TestToInt32()
         {
@@ -102,13 +101,13 @@ namespace CompactOT.DataStructures
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
             bitsMock.Setup(b => b.AsByteEnumerable()).Returns(new byte[] { 0x1f, 0x01 });
             var bits = bitsMock.Object;
-            
+
             var expectedBytes = new byte[] { 0x55, 0x1f, 0x01 };
 
             byte[] bytes = new byte[3];
             bytes[0] = 0x55;
             bits.CopyTo(bytes, 1);
-            
+
             Assert.Equal(expectedBytes, bytes);
         }
 
@@ -118,7 +117,7 @@ namespace CompactOT.DataStructures
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
             bitsMock.Setup(b => b.Length).Returns(16);
             var bits = bitsMock.Object;
-            
+
 
             byte[] bytes = new byte[3];
             Assert.Throws<ArgumentException>(() => bits.CopyTo(bytes, 2));
@@ -128,13 +127,13 @@ namespace CompactOT.DataStructures
         public void TestCopyToBitsNoOffset()
         {
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
-            bitsMock.Setup(b => b.GetEnumerator()).Returns((new Bit[] { 
+            bitsMock.Setup(b => b.GetEnumerator()).Returns((new Bit[] {
                 Bit.One, Bit.One, Bit.One, Bit.One,
                 Bit.One, Bit.Zero, Bit.Zero, Bit.Zero,
                 Bit.One,
             }).AsEnumerable().GetEnumerator());
             var bits = bitsMock.Object;
-            
+
             var expectedBits = new Bit[] {
                 Bit.One, Bit.One, Bit.One, Bit.One,
                 Bit.One, Bit.Zero, Bit.Zero, Bit.Zero,
@@ -142,8 +141,8 @@ namespace CompactOT.DataStructures
             };
 
             Bit[] buffer = new Bit[11];
-            buffer[buffer.Length - 2] = Bit.Zero;
-            buffer[buffer.Length - 1] = Bit.One;
+            buffer[^2] = Bit.Zero;
+            buffer[^1] = Bit.One;
             bits.CopyTo(buffer, 0);
 
             Assert.Equal(expectedBits, buffer);
@@ -153,13 +152,13 @@ namespace CompactOT.DataStructures
         public void TestCopyToBitsOffset()
         {
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
-            bitsMock.Setup(b => b.GetEnumerator()).Returns((new Bit[] { 
+            bitsMock.Setup(b => b.GetEnumerator()).Returns((new Bit[] {
                 Bit.One, Bit.One, Bit.One, Bit.One,
                 Bit.One, Bit.Zero, Bit.Zero, Bit.Zero,
                 Bit.One,
             }).AsEnumerable().GetEnumerator());
             var bits = bitsMock.Object;
-            
+
             var expectedBits = new Bit[] {
                 Bit.One, Bit.Zero, Bit.One, Bit.One,
                 Bit.One, Bit.One, Bit.One, Bit.Zero,
@@ -180,7 +179,7 @@ namespace CompactOT.DataStructures
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
             bitsMock.Setup(b => b.Length).Returns(9);
             var bits = bitsMock.Object;
-            
+
             Bit[] buffer = new Bit[11];
 
             Assert.Throws<ArgumentException>(() => bits.CopyTo(buffer, 3));
@@ -192,13 +191,13 @@ namespace CompactOT.DataStructures
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
             bitsMock.Setup(b => b.AsByteEnumerable()).Returns(new byte[] { 0x1f, 0x01 });
             var bits = bitsMock.Object;
-            
+
             var expectedBytes = new byte[] { 0x55, 0x1f, 0x01 };
 
             byte[] bytes = new byte[3];
             bytes[0] = 0x55;
             bits.CopyTo((Array)bytes, 1);
-            
+
             Assert.Equal(expectedBytes, bytes);
         }
 
@@ -206,13 +205,13 @@ namespace CompactOT.DataStructures
         public void TestCopyToBitsAsUntypedArray()
         {
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
-            bitsMock.Setup(b => b.GetEnumerator()).Returns((new Bit[] { 
+            bitsMock.Setup(b => b.GetEnumerator()).Returns((new Bit[] {
                 Bit.One, Bit.One, Bit.One, Bit.One,
                 Bit.One, Bit.Zero, Bit.Zero, Bit.Zero,
                 Bit.One,
             }).AsEnumerable().GetEnumerator());
             var bits = bitsMock.Object;
-            
+
             var expectedBits = new Bit[] {
                 Bit.One, Bit.Zero, Bit.One, Bit.One,
                 Bit.One, Bit.One, Bit.One, Bit.Zero,
@@ -308,7 +307,7 @@ namespace CompactOT.DataStructures
                 Assert.True(expectedBits[i] == b, $"Expected {expectedBits[i]} but got {b} at position {i}.");
             }
         }
- 
+
         [Fact]
         public void TestToBinaryString()
         {
@@ -401,7 +400,7 @@ namespace CompactOT.DataStructures
 
             Assert.Equal(expectedBits, concatenated.ToArray());
         }
-    
+
         [Fact]
         public void TestOr()
         {
@@ -450,13 +449,13 @@ namespace CompactOT.DataStructures
             rightBitsMock.Setup(b => b.Length).Returns(13);
             var rightBits = rightBitsMock.Object;
 
-            var expectedBits  = new Bit[] { // 0111100 01100
+            var expectedBits = new Bit[] { // 0111100 01100
                 Bit.Zero, Bit.Zero, Bit.One, Bit.One,
                 Bit.One, Bit.One, Bit.Zero, Bit.Zero,
                 Bit.Zero, Bit.One, Bit.One, Bit.Zero,
                 Bit.Zero
             };
-            
+
             var result = leftBits.Xor(rightBits);
             Assert.Equal(expectedBits, result.ToArray());
 
@@ -505,7 +504,7 @@ namespace CompactOT.DataStructures
             leftBitsMock.Setup(b => b.Length).Returns(13);
             var leftBits = leftBitsMock.Object;
 
-            var expectedBits  = new Bit[] { // 10001011 10110
+            var expectedBits = new Bit[] { // 10001011 10110
                 Bit.One, Bit.Zero, Bit.Zero, Bit.Zero,
                 Bit.One, Bit.Zero, Bit.One, Bit.One,
                 Bit.One, Bit.Zero, Bit.One, Bit.One,
@@ -529,7 +528,7 @@ namespace CompactOT.DataStructures
             leftBitsMock.Setup(b => b.Length).Returns(13);
             var leftBits = leftBitsMock.Object;
 
-            var expectedBits = new Bit[] { 
+            var expectedBits = new Bit[] {
                 Bit.One, Bit.One, Bit.One, Bit.One,
                 Bit.One, Bit.One, Bit.One, Bit.One,
                 Bit.One, Bit.One, Bit.One, Bit.One,
@@ -556,7 +555,7 @@ namespace CompactOT.DataStructures
             leftBitsMock.Setup(b => b.Length).Returns(13);
             var leftBits = leftBitsMock.Object;
 
-            var expectedBits = new Bit[] { 
+            var expectedBits = new Bit[] {
                 Bit.One, Bit.Zero, Bit.Zero, Bit.Zero,
                 Bit.One, Bit.Zero, Bit.One, Bit.One,
                 Bit.One, Bit.Zero, Bit.One, Bit.One,
@@ -583,7 +582,7 @@ namespace CompactOT.DataStructures
             leftBitsMock.Setup(b => b.Length).Returns(13);
             var leftBits = leftBitsMock.Object;
 
-            var expectedBits = new Bit[] { 
+            var expectedBits = new Bit[] {
                 Bit.Zero, Bit.One, Bit.One, Bit.One,
                 Bit.Zero, Bit.One, Bit.Zero, Bit.Zero,
                 Bit.Zero, Bit.One, Bit.Zero, Bit.Zero,
@@ -605,7 +604,7 @@ namespace CompactOT.DataStructures
         {
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
             bitsMock.Setup(b => b.AsByteEnumerable()).Returns(
-                new byte[] {0x00, 0x00, 0x00 }
+                new byte[] { 0x00, 0x00, 0x00 }
             );
             var result = bitsMock.Object.IsZero;
             Assert.True(result);
@@ -616,7 +615,7 @@ namespace CompactOT.DataStructures
         {
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
             bitsMock.Setup(b => b.AsByteEnumerable()).Returns(
-                new byte[] {0x00, 0x10, 0x00 }
+                new byte[] { 0x00, 0x10, 0x00 }
             );
             var result = bitsMock.Object.IsZero;
             Assert.False(result);
@@ -627,19 +626,19 @@ namespace CompactOT.DataStructures
         {
             var bitsMock = new Mock<BitSequence>() { CallBase = true };
             bitsMock.Setup(b => b.AsByteEnumerable()).Returns(
-                new byte[] {0x00, 0x10, 0x00 }
+                new byte[] { 0x00, 0x10, 0x00 }
             );
             var bits = bitsMock.Object;
 
             var otherEqualMock = new Mock<BitSequence>() { CallBase = true };
             otherEqualMock.Setup(b => b.AsByteEnumerable()).Returns(
-                new byte[] {0x00, 0x10, 0x00 }
+                new byte[] { 0x00, 0x10, 0x00 }
             );
             var otherEqual = otherEqualMock.Object;
 
             var otherUnequalMock = new Mock<BitSequence>() { CallBase = true };
             otherUnequalMock.Setup(b => b.AsByteEnumerable()).Returns(
-                new byte[] {0x00, 0x00, 0x00 }
+                new byte[] { 0x00, 0x00, 0x00 }
             );
             var otherUnequal = otherUnequalMock.Object;
 

@@ -18,13 +18,16 @@ namespace CompactOT
             throw new NotImplementedException();
         }
 
-        public TestRandomNumberGenerator()
+        public TestRandomNumberGenerator() : base()
         {
             Disposed = false;
         }
 
         protected override void Dispose(bool disposing)
         {
+            if (Disposed)
+                return;
+
             Disposed = true;
         }
     }

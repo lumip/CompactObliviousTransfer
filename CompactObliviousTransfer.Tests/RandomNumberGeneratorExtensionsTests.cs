@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using Xunit;
+
 using Moq;
+using Xunit;
 
 namespace CompactOT
 {
@@ -25,10 +26,14 @@ namespace CompactOT
             });
             var expected = 4;
 
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                var buffer = rngBuffers.Dequeue();
-                Array.Copy(buffer, b, Math.Min(b.Length, buffer.Length));
-            });
+            rngMock
+                .Setup(r => r.GetBytes(It.IsAny<byte[]>()))
+                .Callback((byte[] b) =>
+                    {
+                        var buffer = rngBuffers.Dequeue();
+                        Array.Copy(buffer, b, Math.Min(b.Length, buffer.Length));
+                    }
+                );
 
             var result = rngMock.Object.GetInt32(toExclusive);
             Assert.Equal(expected, result);
@@ -47,10 +52,14 @@ namespace CompactOT
             });
             var expected = new int[] { 3, 4, 3, 2 };
 
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                var buffer = rngBuffers.Dequeue();
-                Array.Copy(buffer, b, Math.Min(b.Length, buffer.Length));
-            });
+            rngMock
+                .Setup(r => r.GetBytes(It.IsAny<byte[]>()))
+                .Callback((byte[] b) =>
+                    {
+                        var buffer = rngBuffers.Dequeue();
+                        Array.Copy(buffer, b, Math.Min(b.Length, buffer.Length));
+                    }
+                );
 
             var result = rngMock.Object.GetInt32Array(toExclusive, amount);
             Assert.Equal(expected, result);
@@ -66,9 +75,13 @@ namespace CompactOT
             var rngBuffer = new byte[] { 0x57, 0x03 };
             // 0x0357 -> 7, 2, 5, 1, 0
             var expected = new int[] { 2, 1, 0 };
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                Array.Copy(rngBuffer, b, Math.Min(b.Length, rngBuffer.Length));
-            });
+            rngMock
+                .Setup(r => r.GetBytes(It.IsAny<byte[]>()))
+                .Callback((byte[] b) =>
+                    {
+                        Array.Copy(rngBuffer, b, Math.Min(b.Length, rngBuffer.Length));
+                    }
+                );
 
             var result = rngMock.Object.GetInt32Array(toExclusive, amount);
             Assert.Equal(expected, result);
@@ -82,9 +95,13 @@ namespace CompactOT
             var rngMock = new Mock<RandomNumberGenerator>();
             var rngBuffer = new byte[] { 0x57, 0x03, 0x19 };
 
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                Array.Copy(rngBuffer, b, Math.Min(b.Length, rngBuffer.Length));
-            });
+            rngMock
+                .Setup(r => r.GetBytes(It.IsAny<byte[]>()))
+                .Callback((byte[] b) =>
+                    {
+                        Array.Copy(rngBuffer, b, Math.Min(b.Length, rngBuffer.Length));
+                    }
+                );
 
             var expected = DataStructures.BitArray.FromBytes(rngBuffer, amount);
 

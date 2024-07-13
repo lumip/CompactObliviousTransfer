@@ -1,8 +1,9 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using Xunit;
 using System;
+
+using Xunit;
 
 namespace CompactOT.DataStructures
 {
@@ -85,7 +86,7 @@ namespace CompactOT.DataStructures
                 BitArray.FromBinaryString("10"),
                 BitArray.FromBinaryString("11")
             };
-            
+
 
             for (int i = 0; i < numberOfRows; ++i)
             {
@@ -104,7 +105,7 @@ namespace CompactOT.DataStructures
 
             Assert.Equal(numberOfRows, matrix.Rows);
             Assert.Equal(numberOfColumns, matrix.Cols);
-            
+
             for (int i = 0; i < numberOfRows; ++i)
             {
                 for (int j = 0; j < numberOfColumns; ++j)
@@ -151,7 +152,7 @@ namespace CompactOT.DataStructures
                 BitArray.FromBinaryString("10"),
                 BitArray.FromBinaryString("11")
             };
-            
+
             for (int i = 0; i < numberOfRows; ++i)
             {
                 Assert.Equal(expectedRows[i], matrix.GetRow(i));
@@ -203,7 +204,7 @@ namespace CompactOT.DataStructures
                 BitArray.FromBinaryString("0011"),
                 BitArray.FromBinaryString("0101")
             };
-            
+
             for (int i = 0; i < numberOfColumns; ++i)
             {
                 Assert.Equal(expectedColumns[i], matrix.GetColumn(i));
@@ -225,7 +226,7 @@ namespace CompactOT.DataStructures
                 BitArray.FromBinaryString("0011"),
                 BitArray.FromBinaryString("1101")
             };
-            
+
             for (int i = 0; i < numberOfColumns; ++i)
             {
                 Assert.Equal(expectedColumns[i], matrix.GetColumn(i));
@@ -293,13 +294,13 @@ namespace CompactOT.DataStructures
             var values = BitArray.FromBinaryString("000001010111");
             var matrix = new BitMatrix(numberOfRows, numberOfColumns, values);
 
-            Assert.Equal(Bit.Zero, matrix[0,0]);
-            Assert.Equal(Bit.Zero, matrix[0,1]);
-            Assert.Equal(Bit.Zero, matrix[1,1]);
-            Assert.Equal(Bit.One, matrix[1,2]);
-            Assert.Equal(Bit.Zero, matrix[2,0]);
-            Assert.Equal(Bit.One, matrix[3,0]);
-            Assert.Equal(Bit.One, matrix[3,2]);
+            Assert.Equal(Bit.Zero, matrix[0, 0]);
+            Assert.Equal(Bit.Zero, matrix[0, 1]);
+            Assert.Equal(Bit.Zero, matrix[1, 1]);
+            Assert.Equal(Bit.One, matrix[1, 2]);
+            Assert.Equal(Bit.Zero, matrix[2, 0]);
+            Assert.Equal(Bit.One, matrix[3, 0]);
+            Assert.Equal(Bit.One, matrix[3, 2]);
         }
 
         [Theory]
@@ -587,7 +588,7 @@ namespace CompactOT.DataStructures
             Assert.False(matrix.Equals(other));
             Assert.NotEqual(matrix.GetHashCode(), other.GetHashCode());
         }
-        
+
         [Fact]
         public void TestEqualsDifferentRows()
         {
@@ -627,5 +628,5 @@ namespace CompactOT.DataStructures
             Assert.False(matrix.Equals(null));
         }
 
-   }
+    }
 }

@@ -3,9 +3,9 @@
 
 using System.Linq;
 using System.Threading.Tasks;
-using Moq;
 
 using CompactOT.DataStructures;
+using Moq;
 
 namespace CompactOT
 {
@@ -32,7 +32,7 @@ namespace CompactOT
         }
 
 
-        public static readonly BitArray[] TestCorrelations = { 
+        public static readonly BitArray[] TestCorrelations = {
             BitArray.FromBinaryString("000111"),
             BitArray.FromBinaryString("111000"),
             BitArray.FromBinaryString("100001"),
@@ -50,6 +50,6 @@ namespace CompactOT
             otMock.Setup(ot => ot.SecurityLevel).Returns(10000000);
             return otMock.Object;
         }
-        
+
     }
 }

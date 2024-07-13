@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using Xunit;
-using Moq;
-
+using System.Linq;
 using System.Numerics;
+using System.Text;
+
 using CompactCryptoGroupAlgebra.EllipticCurves;
+using Moq;
+using Xunit;
 
 namespace CompactOT
 {
@@ -136,7 +136,7 @@ namespace CompactOT
             var usageProjection = new ObliviousTransferUsageProjection
             {
                 AverageInvocationsPerBatch = numberOfInvocations,
-                MaxNumberOfBatches = numberOfBatches, 
+                MaxNumberOfBatches = numberOfBatches,
                 MaxNumberOfOptions = numberOfOptions,
                 AverageMessageBits = numberOfMessageBits,
             };
@@ -150,5 +150,5 @@ namespace CompactOT
         }
 
     }
-    
+
 }

@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using Xunit;
+
 using Moq;
+using Xunit;
 
 namespace CompactOT
 {
@@ -25,7 +26,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 256;
             var otChannel = builder
@@ -43,7 +44,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 256;
             var otChannel = builder
@@ -61,7 +62,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 256;
             var otChannel = builder
@@ -80,7 +81,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 256;
             var otChannel = builder
@@ -99,7 +100,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 128;
             var otChannel = builder
@@ -229,7 +230,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 256;
             var otChannel = builder
@@ -247,7 +248,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 256;
             var otChannel = builder
@@ -265,7 +266,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 128;
             var otChannel = builder
@@ -282,7 +283,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 256;
             var otChannel = builder
@@ -300,7 +301,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 256;
             var otChannel = builder
@@ -318,7 +319,7 @@ namespace CompactOT
         {
             var builder = new ObliviousTransferChannelBuilder();
 
-            var channelStub = new Mock<IMessageChannel>();  
+            var channelStub = new Mock<IMessageChannel>();
 
             int securityLevel = 128;
             var otChannel = builder

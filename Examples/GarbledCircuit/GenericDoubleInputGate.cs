@@ -38,7 +38,7 @@ namespace CompactOT.Examples.GarbledCircuit
         public byte[] SerializeToBytes(RandomNumberGenerator randomNumberGenerator)
         {
             var bits = SerializeToBits(randomNumberGenerator);
-            
+
             int numWireValues = 10;
             int wireValueLength = bits.Length / numWireValues;
             var wireValueLengthBits = BitArray.FromBytes(BitConverter.GetBytes(wireValueLength), 32);

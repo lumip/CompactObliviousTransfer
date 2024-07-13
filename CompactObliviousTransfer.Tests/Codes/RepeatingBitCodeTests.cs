@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using Xunit;
 using System;
 
 using CompactOT.DataStructures;
+using Xunit;
 
 namespace CompactOT.Codes
 {
@@ -19,7 +19,7 @@ namespace CompactOT.Codes
 
             var expected = BitArray.FromBinaryString("11111111");
             Assert.Equal(expected, result);
-        } 
+        }
 
 
         [Fact]
@@ -30,7 +30,7 @@ namespace CompactOT.Codes
 
             var expected = BitArray.FromBinaryString("00000000");
             Assert.Equal(expected, result);
-        } 
+        }
 
         [Fact]
         public void TestEncodeRejectsTooLargeValue()

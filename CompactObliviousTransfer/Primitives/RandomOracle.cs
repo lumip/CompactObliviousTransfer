@@ -5,8 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using CompactOT.DataStructures;
 
 namespace CompactOT
@@ -20,7 +19,7 @@ namespace CompactOT
         {
             return Invoke(query.ToArray());
         }
-        
+
         public byte[] Mask(byte[] message, byte[] query)
         {
             return Mask(((IEnumerable<byte>)message), query).ToArray();

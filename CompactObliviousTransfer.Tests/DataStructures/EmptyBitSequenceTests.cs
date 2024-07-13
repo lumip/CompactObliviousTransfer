@@ -1,14 +1,7 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Numerics;
-
 using Xunit;
-using Moq;
-using System.Runtime.CompilerServices;
 
 namespace CompactOT.DataStructures
 {
@@ -16,7 +9,7 @@ namespace CompactOT.DataStructures
     {
 
         [Fact]
-        public void TestProperties() 
+        public void TestProperties()
         {
             var emptySequence = new EmptyBitSequence();
 

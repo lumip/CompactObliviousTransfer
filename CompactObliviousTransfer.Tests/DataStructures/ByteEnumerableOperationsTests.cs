@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using Xunit;
 using System.Collections.Generic;
 using System.Linq;
+
+using Xunit;
 
 namespace CompactOT.DataStructures
 {
@@ -20,7 +21,7 @@ namespace CompactOT.DataStructures
             IEnumerable<byte> resultEnumerable = ByteEnumerableOperations.And(
                 leftArray.AsEnumerable(), rightArray.AsEnumerable()
             );
-            
+
             Assert.IsNotType<byte[]>(resultEnumerable);
             Assert.Equal(expectedArray, resultEnumerable);
 
@@ -42,7 +43,7 @@ namespace CompactOT.DataStructures
             ByteEnumerableOperations.InPlaceAnd(
                 leftArray, rightArray.AsEnumerable()
             );
-            
+
             Assert.Equal(expectedArray, leftArray);
         }
 
@@ -57,7 +58,7 @@ namespace CompactOT.DataStructures
             IEnumerable<byte> resultEnumerable = ByteEnumerableOperations.Or(
                 leftArray.AsEnumerable(), rightArray.AsEnumerable()
             );
-            
+
             Assert.IsNotType<byte[]>(resultEnumerable);
             Assert.Equal(expectedArray, resultEnumerable);
 
@@ -93,7 +94,7 @@ namespace CompactOT.DataStructures
             IEnumerable<byte> resultEnumerable = ByteEnumerableOperations.Xor(
                 leftArray.AsEnumerable(), rightArray.AsEnumerable()
             );
-            
+
             Assert.IsNotType<byte[]>(resultEnumerable);
             Assert.Equal(expectedArray, resultEnumerable);
 
@@ -129,7 +130,7 @@ namespace CompactOT.DataStructures
             IEnumerable<byte> resultEnumerable = ByteEnumerableOperations.Not(
                 array.AsEnumerable()
             );
-            
+
             Assert.IsNotType<byte[]>(resultEnumerable);
             Assert.Equal(expectedArray, resultEnumerable);
 

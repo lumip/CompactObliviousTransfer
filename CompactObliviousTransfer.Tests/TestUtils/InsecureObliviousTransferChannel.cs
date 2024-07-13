@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 using CompactOT.Buffers;
 
@@ -48,7 +48,8 @@ namespace CompactOT
 
         public async Task SendAsync(ObliviousTransferOptions options)
         {
-            if (Channel == null) throw new InvalidOperationException("SendAsync cannot be executed while Channel is null.");
+            if (Channel == null)
+                throw new InvalidOperationException("SendAsync cannot be executed while Channel is null.");
             var indexMessage = new MessageDecomposer(await Channel.ReadMessageAsync());
             var transferMessage = new MessageComposer(options.NumberOfInvocations);
             for (int j = 0; j < options.NumberOfInvocations; ++j)

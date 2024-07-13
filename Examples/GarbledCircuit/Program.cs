@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 using CompactOT.DataStructures;
 
@@ -33,7 +32,7 @@ namespace CompactOT.Examples.GarbledCircuit
 
             Console.WriteLine($"{firstPartyInput} + {secondPartyInput} = {secondPartyTask.Result}");
         }
-        
+
         static async Task RunFirstParty(ObliviousTransferChannelBuilder otChannelBuilder, BitArray input)
         {
             RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
@@ -53,7 +52,7 @@ namespace CompactOT.Examples.GarbledCircuit
                     {
                         wireDelta = randomNumberGenerator.GetBits(wireValueLength);
                     } while (wireDelta.IsZero);
-                    
+
                     var correlations = new ObliviousTransferOptions(2, 1, wireValueLength);
                     correlations.SetMessage(0, 0, wireDelta);
                     correlations.SetMessage(1, 0, wireDelta);
@@ -177,7 +176,7 @@ namespace CompactOT.Examples.GarbledCircuit
                     var wireValueMsbXorMsbAndCarryLsb = gateMsbXorMsbAndCarryLsb.Apply(
                         wireValueMsbXorMsb, wireValueCarryLsb
                     );
-                    
+
                     var wireValueMsbAndMsb = gateMsbAndMsb.Apply(wireValueFirstPartyInputMsb, wireValueSecondPartyInputMsb);
 
                     var wireValueOutputCarry = new FreeXorGate().Apply(

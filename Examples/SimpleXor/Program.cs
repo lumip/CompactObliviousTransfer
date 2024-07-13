@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Threading.Tasks;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
-using CompactOT;
 using CompactOT.DataStructures;
 
 namespace CompactOT.Examples.SimpleXor
@@ -30,7 +29,7 @@ namespace CompactOT.Examples.SimpleXor
             Task<BitSequence> receiverTask = ExecuteReceiver(channelBuilder, receiverInput);
             Task.WaitAll(senderTask, receiverTask);
             BitSequence receiverResult = receiverTask.Result;
-            Console.WriteLine($"Sender input {senderInput} and receiver input" + 
+            Console.WriteLine($"Sender input {senderInput} and receiver input" +
                 $" {receiverInput}. Receiver received: {receiverResult}.");
         }
 
@@ -46,7 +45,7 @@ namespace CompactOT.Examples.SimpleXor
                     var otChannel = otChannelBuilder.MakeObliviousTransferChannel(channel);
 
                     var options = new ObliviousTransferOptions(numberOfInvocations: 1, numberOfOptions: 4, numberOfMessageBits: 2);
-                    
+
                     // var receiverInputCandidates = new BitArray[] {
                     //     BitArray.FromBinaryString("00"), BitArray.FromBinaryString("01"),
                     //     BitArray.FromBinaryString("10"), BitArray.FromBinaryString("11"),

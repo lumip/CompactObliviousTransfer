@@ -3,9 +3,7 @@
 
 using System;
 using System.Security.Cryptography;
-using System.Collections.Generic;
 
-using CompactOT;
 using CompactOT.DataStructures;
 
 namespace CompactOT.Examples.GarbledCircuit

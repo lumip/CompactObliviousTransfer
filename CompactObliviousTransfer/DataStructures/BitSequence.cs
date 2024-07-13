@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -37,7 +37,7 @@ namespace CompactOT.DataStructures
         {
             AsByteEnumerable().WriteInto(buffer, offset);
         }
-        
+
         /// <summary>
         /// Copies the bit sequence into a given buffer.
         /// 
@@ -51,7 +51,7 @@ namespace CompactOT.DataStructures
             var numBytes = BitArray.RequiredBytes(Length);
             if (buffer.Length < numBytes + bufferOffset)
             {
-                throw new ArgumentException("The target buffer is too small. " + 
+                throw new ArgumentException("The target buffer is too small. " +
                     $"It has length {buffer.Length} but need to write {numBytes} with {bufferOffset} bytes offset.",
                     nameof(buffer)
                 );
@@ -78,12 +78,12 @@ namespace CompactOT.DataStructures
         {
             if (buffer.Length < Length + offset)
             {
-                throw new ArgumentException("The target buffer is too small. " + 
+                throw new ArgumentException("The target buffer is too small. " +
                     $"It has length {buffer.Length} but need to write {Length} with {offset} bits offset.",
                     nameof(buffer)
                 );
             }
-            
+
             ((IEnumerable<Bit>)this).WriteInto(buffer, offset);
         }
 
@@ -208,7 +208,8 @@ namespace CompactOT.DataStructures
         public override bool Equals(object? obj)
         {
             BitSequence? other = obj as BitSequence;
-            if (other == null) return false;
+            if (other == null)
+                return false;
 
             return AsByteEnumerable().SequenceEqual(other.AsByteEnumerable());
         }

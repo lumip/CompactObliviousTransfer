@@ -2,12 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace CompactOT.DataStructures
 {
     public struct Bit
@@ -80,7 +74,7 @@ namespace CompactOT.DataStructures
         {
             return new Bit((byte)(~right._value));
         }
-        
+
         public static bool operator true(Bit right)
         {
             return right._value != 0;
@@ -100,7 +94,7 @@ namespace CompactOT.DataStructures
         {
             return right._value != 0;
         }
-        
+
         public static explicit operator Bit(byte right)
         {
             return new Bit(right);

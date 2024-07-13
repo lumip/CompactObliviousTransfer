@@ -179,7 +179,7 @@ namespace CompactOT
                 {
                     return _maxNumberOfBatches.Value;
                 }
-                
+
                 if (_maxNumberOfInvocations.HasValue)
                 {
                     if (_avgInvocationsPerBatch.HasValue)
@@ -299,14 +299,15 @@ namespace CompactOT
             _maxNumberOfInvocations = toClone._maxNumberOfInvocations;
             _maxNumberOfBatches = toClone._maxNumberOfBatches;
             _avgInvocationsPerBatch = toClone._avgInvocationsPerBatch;
-            AverageMessageBits = toClone.AverageMessageBits; 
+            AverageMessageBits = toClone.AverageMessageBits;
         }
 
         /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             var other = obj as ObliviousTransferUsageProjection;
-            if (other == null) return false;
+            if (other == null)
+                return false;
 
             return _maxNumberOfOptions == other._maxNumberOfOptions &&
                 _avgNumberOfOptions == other._avgNumberOfOptions &&

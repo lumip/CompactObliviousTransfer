@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
+
 using Xunit;
 
 namespace CompactOT
@@ -29,8 +30,10 @@ namespace CompactOT
         [Fact]
         public void TestAverageMessageBits()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.AverageMessageBits = 3532;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                AverageMessageBits = 3532
+            };
 
             Assert.Throws<ArgumentOutOfRangeException>(() => projection.AverageMessageBits = 0);
             Assert.Throws<ArgumentOutOfRangeException>(() => projection.AverageMessageBits = -1);
@@ -47,8 +50,10 @@ namespace CompactOT
         [Fact]
         public void TestAverageInvocationsPerBatch()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.AverageInvocationsPerBatch = 7;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                AverageInvocationsPerBatch = 7
+            };
 
             Assert.Throws<ArgumentOutOfRangeException>(() => projection.AverageInvocationsPerBatch = 0);
 
@@ -65,9 +70,11 @@ namespace CompactOT
         [Fact]
         public void TestAverageInvocationsPerBatchDerivedFromOthers()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.MaxNumberOfInvocations = 10;
-            projection.MaxNumberOfBatches = 4;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfInvocations = 10,
+                MaxNumberOfBatches = 4
+            };
 
             Assert.Equal(10, projection.MaxNumberOfInvocations);
             Assert.Equal(4, projection.MaxNumberOfBatches);
@@ -79,8 +86,10 @@ namespace CompactOT
         [Fact]
         public void TestMaxNumberOfBatches()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.MaxNumberOfBatches = 8;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfBatches = 8
+            };
 
             Assert.Throws<ArgumentOutOfRangeException>(() => projection.MaxNumberOfBatches = 0);
 
@@ -97,9 +106,11 @@ namespace CompactOT
         [Fact]
         public void TestMaxNumberOfBatchesDerivedFromOthers()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.MaxNumberOfInvocations = 11;
-            projection.AverageInvocationsPerBatch = 3;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfInvocations = 11,
+                AverageInvocationsPerBatch = 3
+            };
 
             Assert.Equal(11, projection.MaxNumberOfInvocations);
             Assert.Equal(3, projection.AverageInvocationsPerBatch);
@@ -111,8 +122,10 @@ namespace CompactOT
         [Fact]
         public void TestMaxNumberOfInvocations()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.MaxNumberOfInvocations = 13;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfInvocations = 13
+            };
 
             Assert.Throws<ArgumentOutOfRangeException>(() => projection.MaxNumberOfInvocations = 0);
 
@@ -130,9 +143,11 @@ namespace CompactOT
         [Fact]
         public void TestMaxNumberOfInvocationsDerivedFromOthers()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.MaxNumberOfBatches = 7;
-            projection.AverageInvocationsPerBatch = 3;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfBatches = 7,
+                AverageInvocationsPerBatch = 3
+            };
 
             Assert.Equal(7, projection.MaxNumberOfBatches);
             Assert.Equal(3, projection.AverageInvocationsPerBatch);
@@ -144,8 +159,10 @@ namespace CompactOT
         [Fact]
         public void TestMaxNumberOfOptions()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.MaxNumberOfOptions = 5;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfOptions = 5
+            };
 
             Assert.Throws<ArgumentOutOfRangeException>(() => projection.MaxNumberOfOptions = 1);
 
@@ -162,8 +179,10 @@ namespace CompactOT
         [Fact]
         public void TestAverageNumberOfOptions()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.AverageNumberOfOptions = 7;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                AverageNumberOfOptions = 7
+            };
 
             Assert.Throws<ArgumentOutOfRangeException>(() => projection.AverageNumberOfOptions = 1);
 
@@ -179,9 +198,11 @@ namespace CompactOT
         [Fact]
         public void TestAverageAndMaxNumberOfOptions()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.MaxNumberOfOptions = 7;
-            
+            var projection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfOptions = 7
+            };
+
             Assert.Throws<ArgumentException>(() => projection.AverageNumberOfOptions = 8);
 
             projection.AverageNumberOfOptions = 5;
@@ -194,12 +215,14 @@ namespace CompactOT
         [Fact]
         public void TestCopyConstructor()
         {
-            var template = new ObliviousTransferUsageProjection();
-            template.MaxNumberOfInvocations = 17;
-            template.MaxNumberOfOptions = 5;
-            template.AverageNumberOfOptions = 3;
-            template.MaxNumberOfBatches = 10;
-            template.AverageMessageBits = 23;
+            var template = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfInvocations = 17,
+                MaxNumberOfOptions = 5,
+                AverageNumberOfOptions = 3,
+                MaxNumberOfBatches = 10,
+                AverageMessageBits = 23
+            };
 
             var projection = new ObliviousTransferUsageProjection(template);
 
@@ -226,39 +249,51 @@ namespace CompactOT
         [Fact]
         public void TestEquals()
         {
-            var projection = new ObliviousTransferUsageProjection();
-            projection.MaxNumberOfInvocations = 17;
-            projection.MaxNumberOfOptions = 5;
-            projection.AverageNumberOfOptions = 3;
-            projection.MaxNumberOfBatches = 10;
-            projection.AverageMessageBits = 23;
+            var projection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfInvocations = 17,
+                MaxNumberOfOptions = 5,
+                AverageNumberOfOptions = 3,
+                MaxNumberOfBatches = 10,
+                AverageMessageBits = 23
+            };
 
             var other = new ObliviousTransferUsageProjection(projection);
             Assert.True(projection.Equals(other));
             Assert.Equal(projection.GetHashCode(), other.GetHashCode());
 
-            other = new ObliviousTransferUsageProjection(projection);
-            other.AverageMessageBits = projection.AverageMessageBits + 1;
+            other = new ObliviousTransferUsageProjection(projection)
+            {
+                AverageMessageBits = projection.AverageMessageBits + 1
+            };
             Assert.False(projection.Equals(other));
             Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
 
-            other = new ObliviousTransferUsageProjection(projection);
-            other.AverageNumberOfOptions = projection.AverageNumberOfOptions + 1;
+            other = new ObliviousTransferUsageProjection(projection)
+            {
+                AverageNumberOfOptions = projection.AverageNumberOfOptions + 1
+            };
             Assert.False(projection.Equals(other));
             Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
 
-            other = new ObliviousTransferUsageProjection(projection);
-            other.MaxNumberOfInvocations = projection.MaxNumberOfInvocations + 1;
+            other = new ObliviousTransferUsageProjection(projection)
+            {
+                MaxNumberOfInvocations = projection.MaxNumberOfInvocations + 1
+            };
             Assert.False(projection.Equals(other));
             Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
 
-            other = new ObliviousTransferUsageProjection(projection);
-            other.MaxNumberOfOptions = projection.MaxNumberOfOptions + 1;
+            other = new ObliviousTransferUsageProjection(projection)
+            {
+                MaxNumberOfOptions = projection.MaxNumberOfOptions + 1
+            };
             Assert.False(projection.Equals(other));
             Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
 
-            other = new ObliviousTransferUsageProjection(projection);
-            other.MaxNumberOfBatches = projection.MaxNumberOfBatches + 1;
+            other = new ObliviousTransferUsageProjection(projection)
+            {
+                MaxNumberOfBatches = projection.MaxNumberOfBatches + 1
+            };
             Assert.False(projection.Equals(other));
             Assert.NotEqual(projection.GetHashCode(), other.GetHashCode());
         }

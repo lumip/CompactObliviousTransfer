@@ -1,9 +1,8 @@
 ﻿// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System;
-using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 using CompactOT.Codes;
 
@@ -90,7 +89,7 @@ namespace CompactOT
                 for (int i = 0; i < options.NumberOfInvocations; ++i)
                 {
                     var option = options.GetMessage(i, j);
-                    
+
                     var query = queryMask ^ qs.GetRow(i);
                     var maskedOption = MaskOption(option, query, totalNumberOfInvocationsOffset + i);
                     Debug.Assert(maskedOption.Length == numberOfMessageBits);

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Threading.Tasks;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace CompactOT
 {
@@ -42,7 +42,7 @@ namespace CompactOT
         public async Task<byte[]> ReadMessageAsync()
         {
             byte[] messageLengthBuffer = new byte[4];
-            
+
             await ReadAllAsync(messageLengthBuffer);
             int messageLength = BitConverter.ToInt32(messageLengthBuffer, 0);
 

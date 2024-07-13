@@ -3,8 +3,8 @@
 
 using System;
 using System.Security.Cryptography;
-using Moq;
 
+using Moq;
 using Xunit;
 
 namespace CompactOT.DataStructures
@@ -86,7 +86,10 @@ namespace CompactOT.DataStructures
         public void TestCreateRandom()
         {
             byte[] randomBytes = new byte[Bytes.Length];
-            for (int i = 0; i < randomBytes.Length; ++i) randomBytes[i] = (byte)(Bytes[i] ^ 0xff);
+            for (int i = 0; i < randomBytes.Length; ++i)
+            {
+                randomBytes[i] = (byte)(Bytes[i] ^ 0xff);
+            }
 
             var rngMock = new Mock<RandomNumberGenerator>();
             rngMock.Setup(rng => rng.GetBytes(It.IsAny<byte[]>()))
@@ -99,7 +102,7 @@ namespace CompactOT.DataStructures
             int invocationLength = NumberOfOptions * NumberOfMessageBits;
 
             var firstInvocationBits = options.GetInvocation(0);
-            var expectedFirstInvocationBits = BitArray.FromBytes(new byte[] { 0x0f ^ 0xff , 0xe1 ^ 0xff, 0x0d ^ 0x0f }, invocationLength);
+            var expectedFirstInvocationBits = BitArray.FromBytes(new byte[] { 0x0f ^ 0xff, 0xe1 ^ 0xff, 0x0d ^ 0x0f }, invocationLength);
             Assert.Equal(expectedFirstInvocationBits, firstInvocationBits);
 
             var secondInvocationBits = options.GetInvocation(1);
@@ -246,7 +249,7 @@ namespace CompactOT.DataStructures
             var newInvocationArray = new BitSequence[NumberOfOptions];
             for (int j = 0; j < NumberOfOptions; j++)
             {
-                newInvocationArray[j] = new BitArraySlice(newInvocationBits, j * NumberOfMessageBits, (j+1) * NumberOfMessageBits);
+                newInvocationArray[j] = new BitArraySlice(newInvocationBits, j * NumberOfMessageBits, (j + 1) * NumberOfMessageBits);
             }
 
             Options.SetInvocation(1, newInvocationArray);
@@ -263,7 +266,7 @@ namespace CompactOT.DataStructures
             var newInvocationArray = new BitSequence[NumberOfOptions - 1];
             for (int j = 0; j < NumberOfOptions - 1; j++)
             {
-                newInvocationArray[j] = new BitArraySlice(newInvocationBits, j * NumberOfMessageBits, (j+1) * NumberOfMessageBits);
+                newInvocationArray[j] = new BitArraySlice(newInvocationBits, j * NumberOfMessageBits, (j + 1) * NumberOfMessageBits);
             }
 
             Assert.Throws<ArgumentException>(

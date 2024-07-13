@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using Xunit;
-using Moq;
 
 namespace CompactOT.DataStructures
 {

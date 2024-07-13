@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using Xunit;
-using Moq;
 using System.Numerics;
-using CompactCryptoGroupAlgebra.EllipticCurves;
 using System.Security.Cryptography;
+
+using CompactCryptoGroupAlgebra.EllipticCurves;
+using Moq;
+using Xunit;
 
 namespace CompactOT
 {
@@ -37,7 +38,7 @@ namespace CompactOT
 
             var messageChannelMock = new Mock<IMessageChannel>();
             var messageChannel = messageChannelMock.Object;
-            
+
             var hashAlgorithmProviderMock = new Mock<HashAlgorithmProvider>();
             hashAlgorithmProviderMock.Setup(hap => hap.SecurityLevel).Returns(512);
             var cryptoContext = new CryptoContext(RandomNumberGenerator.Create(), hashAlgorithmProviderMock.Object);
@@ -59,7 +60,7 @@ namespace CompactOT
             var cryptoContext = new CryptoContext(RandomNumberGenerator.Create(), hashAlgorithmProviderMock.Object);
 
             var factory = new DefaultBaseProtocolFactory();
-            
+
             Assert.Throws<ArgumentException>(() => factory.MakeChannel(messageChannel, cryptoContext, securityLevel));
         }
 

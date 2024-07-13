@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using Xunit;
-using Moq;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 using CompactCryptoGroupAlgebra;
-using CompactOT.DataStructures;
 using CompactOT.Codes;
+using CompactOT.DataStructures;
+using Moq;
+using Xunit;
 
 namespace CompactOT
 {
@@ -79,7 +79,7 @@ namespace CompactOT
             baseOtMock.Setup(ot => ot.SecurityLevel).Returns(securityLevel);
             baseOtMock.Setup(ot => ot.Channel).Returns(channelMock.Object);
 
-            int codeLength = 2*securityLevel;
+            int codeLength = 2 * securityLevel;
             var codeMock = new Mock<IBinaryCode>();
             codeMock.Setup(c => c.CodeLength).Returns(codeLength);
             codeMock.Setup(c => c.Distance).Returns(32);
@@ -105,7 +105,7 @@ namespace CompactOT
 
             var otSender = new ExtendedObliviousTransferChannelBase(senderBaseChannel, securityLevel, cryptoContext, code);
             var otReceiver = new ExtendedObliviousTransferChannelBase(receiverBaseChannel, securityLevel, cryptoContext, code);
-            
+
             var senderTask = otSender.ExecuteSenderBaseTransferAsync();
             var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
 
@@ -125,7 +125,7 @@ namespace CompactOT
                 byte[] receivedAsBytes = new byte[securityLevel.InBytes];
                 for (int i = 0; i < securityLevel.InBytes; ++i)
                 {
-                    receivedAsBytes[i] = (byte)(j*10 + i);
+                    receivedAsBytes[i] = (byte)(j * 10 + i);
                 }
                 received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityLevel.InBits));
             }
@@ -137,9 +137,13 @@ namespace CompactOT
 
             var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010");
             var rngMock = new Mock<RandomNumberGenerator>();
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b);
-            });
+            rngMock
+                .Setup(r => r.GetBytes(It.IsAny<byte[]>()))
+                .Callback((byte[] b) =>
+                    {
+                        randomChoices.CopyTo(b);
+                    }
+                );
 
 
             var cryptoContext = new CryptoContext(
@@ -172,7 +176,7 @@ namespace CompactOT
                 byte[] receivedAsBytes = new byte[securityLevel.InBytes];
                 for (int i = 0; i < securityLevel.InBytes; ++i)
                 {
-                    receivedAsBytes[i] = (byte)(j*10 + i);
+                    receivedAsBytes[i] = (byte)(j * 10 + i);
                 }
                 received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, securityLevel.InBits));
             }
@@ -184,9 +188,13 @@ namespace CompactOT
 
             var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010");
             var rngMock = new Mock<RandomNumberGenerator>();
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b);
-            });
+            rngMock
+                .Setup(r => r.GetBytes(It.IsAny<byte[]>()))
+                .Callback((byte[] b) =>
+                    {
+                        randomChoices.CopyTo(b);
+                    }
+                );
 
             var cryptoContext = CryptoContext.CreateDefault();
 
@@ -213,7 +221,7 @@ namespace CompactOT
                 byte[] receivedAsBytes = new byte[messageLength.InBytes];
                 for (int i = 0; i < messageLength.InBytes; ++i)
                 {
-                    receivedAsBytes[i] = (byte)(j*10 + i);
+                    receivedAsBytes[i] = (byte)(j * 10 + i);
                 }
                 received.SetRow(j, new EnumeratedBitArrayView(receivedAsBytes, messageLength.InBits));
             }
@@ -225,9 +233,13 @@ namespace CompactOT
 
             var randomChoices = BitArray.FromBinaryString("01011010 11001100 10101010 01011010");
             var rngMock = new Mock<RandomNumberGenerator>();
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b);
-            });
+            rngMock
+                .Setup(r => r.GetBytes(It.IsAny<byte[]>()))
+                .Callback((byte[] b) =>
+                    {
+                        randomChoices.CopyTo(b);
+                    }
+                );
 
             var cryptoContext = CryptoContext.CreateDefault();
 
@@ -253,9 +265,13 @@ namespace CompactOT
 
             var randomChoices = BitArray.FromBinaryString("00000000 01011010 11111111 11001100 10100101 00101101 10010110 01010101");
             var rngMock = new Mock<RandomNumberGenerator>();
-            rngMock.Setup(r => r.GetBytes(It.IsAny<byte[]>())).Callback((byte[] b) => {
-                randomChoices.CopyTo(b);
-            });
+            rngMock
+                .Setup(r => r.GetBytes(It.IsAny<byte[]>()))
+                .Callback((byte[] b) =>
+                    {
+                        randomChoices.CopyTo(b);
+                    }
+                );
 
             var cryptoContext = new CryptoContext(
                 rngMock.Object, new SHA256Provider()

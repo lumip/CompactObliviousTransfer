@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+using System.Diagnostics;
+using System.Security.Cryptography;
+
 using Moq;
 using Xunit;
-using System.Security.Cryptography;
-using System.Diagnostics;
 
 namespace CompactOT.Adapters
 {
@@ -24,7 +25,6 @@ namespace CompactOT.Adapters
         [Fact]
         public void TestSecurityLevel()
         {
-            
             var messageChannels = new TestMessageChannels();
             var baseOt = GetBaseTransferChannel(messageChannels.FirstPartyChannel);
             var cot = new RandomFromCorrelatedObliviousTransferChannel(
@@ -82,7 +82,6 @@ namespace CompactOT.Adapters
             Debug.Assert(receiverIndices[1] != 0);
             var expectedSecond = senderResults.GetMessage(1, receiverIndices[1]);
             Assert.Equal(expectedSecond, receiverResults.GetInvocationResult(1));
-            
         }
 
         [Fact]

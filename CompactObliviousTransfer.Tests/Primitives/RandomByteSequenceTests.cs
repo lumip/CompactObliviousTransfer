@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+
 using Moq;
 using Xunit;
 
@@ -17,22 +17,24 @@ namespace CompactOT.Primitives
         [Fact]
         public void TestEnumerator()
         {
-            var rngBuffer = new byte[] { 
+            var rngBuffer = new byte[] {
                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
                17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
             };
-            
+
             var randomNumberGeneratorMock = new Mock<RandomNumberGenerator>();
-            randomNumberGeneratorMock.Setup(rng => rng.GetBytes(It.IsAny<byte[]>())).Callback(
-                (byte[] b) => {
-                    Array.Copy(rngBuffer, b, Math.Min(b.Length, rngBuffer.Length));
-                }
-            );
+            randomNumberGeneratorMock
+                .Setup(rng => rng.GetBytes(It.IsAny<byte[]>()))
+                .Callback((byte[] b) =>
+                    {
+                        Array.Copy(rngBuffer, b, Math.Min(b.Length, rngBuffer.Length));
+                    }
+                );
 
             var sequence = new RandomByteSequence(randomNumberGeneratorMock.Object);
             var enumerator = sequence.Enumerator;
 
-            for (int i = 0; i < 2 ; i++)
+            for (int i = 0; i < 2; i++)
             {
                 foreach (byte expected in rngBuffer)
                 {
@@ -46,7 +48,7 @@ namespace CompactOT.Primitives
             }
 
             byte? nonGenericValue = ((IEnumerator)enumerator).Current as byte?;
-            Assert.Equal(rngBuffer[rngBuffer.Length - 1], nonGenericValue);
+            Assert.Equal(rngBuffer[^1], nonGenericValue);
 
             randomNumberGeneratorMock.Verify(rng => rng.GetBytes(It.IsAny<byte[]>()), Times.Exactly(2));
         }

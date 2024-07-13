@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using Xunit;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+
+using Xunit;
 
 namespace CompactOT.DataStructures
 {
@@ -84,9 +85,11 @@ namespace CompactOT.DataStructures
             byte[] bytes = new byte[] { 0x12, 0x43 };
             var enumerator = new ByteToBitEnumerator(((IEnumerable<byte>)bytes).GetEnumerator(), 20);
 
-            Assert.Throws<BaseEnumeratorExhaustedException>(() => {
-                while (enumerator.MoveNext()) { }
-            });
+            Assert.Throws<BaseEnumeratorExhaustedException>(() =>
+                {
+                    while (enumerator.MoveNext()) { }
+                }
+            );
         }
 
         [Fact]

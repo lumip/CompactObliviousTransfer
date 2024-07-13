@@ -1,12 +1,11 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System;
-using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
-using CompactOT.DataStructures;
 using CompactOT.Codes;
+using CompactOT.DataStructures;
 
 namespace CompactOT
 {
@@ -88,7 +87,7 @@ namespace CompactOT
 
             int totalNumberOfInvocationsOffset = TotalNumberOfInvocations - correlations.NumberOfInvocations;
             Debug.Assert(totalNumberOfInvocationsOffset >= 0);
-            
+
             for (int j = 0; j < numberOfOptions; ++j)
             {
                 var selectionCode = _code.Encode(j);

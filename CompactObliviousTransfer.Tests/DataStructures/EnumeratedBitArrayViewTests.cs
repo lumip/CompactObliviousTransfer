@@ -1,10 +1,8 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using Moq;
+
 using Xunit;
 
 namespace CompactOT.DataStructures

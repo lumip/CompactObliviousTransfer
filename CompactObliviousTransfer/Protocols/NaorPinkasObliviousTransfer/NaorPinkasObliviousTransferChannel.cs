@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 using CompactCryptoGroupAlgebra;
+
 using CompactOT.Buffers;
 using CompactOT.DataStructures;
 
@@ -30,7 +31,7 @@ namespace CompactOT
     /// and Pinkas' protocol description. Realising that the sender must transmit g^r in addition to C_1, ..., C_(N-1), we set
     /// C_0 = g^r and thus incur no transmission cost for the additional C_0.
     /// </remarks>
-    public class NaorPinkasObliviousTransferChannel<TSecret, TCrypto> : IObliviousTransferChannel where TSecret: notnull where TCrypto: notnull
+    public class NaorPinkasObliviousTransferChannel<TSecret, TCrypto> : IObliviousTransferChannel where TSecret : notnull where TCrypto : notnull
     {
 
         private IMessageChannel _channel;
@@ -43,7 +44,7 @@ namespace CompactOT
         public int SecurityLevel => _group.SecurityLevel;
 
         public IMessageChannel Channel => _channel;
-        
+
         public NaorPinkasObliviousTransferChannel(
             IMessageChannel channel,
             CryptoGroup<TSecret, TCrypto> cryptoGroup,
@@ -70,7 +71,7 @@ namespace CompactOT
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
-            
+
             var listOfCs = new CryptoGroupElement<TSecret, TCrypto>[options.NumberOfOptions];
             var listOfExponents = new TSecret[options.NumberOfOptions];
 
@@ -117,7 +118,7 @@ namespace CompactOT
                     var e = listOfExponentiatedCs[i] + inverseExponentiatedD;
 
                     Debug.Assert(!e.Value.Equals(_group.Algebra.NeutralElement));
-                        
+
                     // note(lumip): the protocol as proposed by Naor and Pinkas includes a random value
                     //  to be incorporated in the random oracle query to ensure that the same query does
                     //  not occur several times. This is partly because they envision several receivers
@@ -219,7 +220,7 @@ namespace CompactOT
             stopwatch.Stop();
             DebugUtils.WriteLineReceiver("NaorPinkas", "Unmasking result took {0} ms.", stopwatch.ElapsedMilliseconds);
 #endif
-            
+
             return selectedOptions;
         }
 
@@ -300,7 +301,7 @@ namespace CompactOT
         public double EstimateCost(ObliviousTransferUsageProjection usageProjection)
         {
             // TODO: currently ignoring computation cost
-            
+
             if (!usageProjection.HasMaxNumberOfInvocations)
                 return double.PositiveInfinity;
 

@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Adopted from CompactMPC: https://github.com/jnagykuhlen/CompactMPC
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using CompactOT.Buffers.Internal;
 using CompactOT.DataStructures;
@@ -66,12 +62,7 @@ namespace CompactOT.Buffers
             return messageBuffer;
         }
 
-        public int Length
-        {
-            get
-            {
-                return _length;
-            }
-        }
+        public int Length => _length;
+
     }
 }

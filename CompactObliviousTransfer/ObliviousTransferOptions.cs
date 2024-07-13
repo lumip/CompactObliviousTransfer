@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Diagnostics;
+using System.Security.Cryptography;
 
 using CompactOT.DataStructures;
+
 namespace CompactOT
 {
 
@@ -141,7 +142,7 @@ namespace CompactOT
 
         public BitMatrix GetOptions(int optionIndex)
         {
-            
+
             if (optionIndex < 0 || optionIndex >= NumberOfOptions)
                 throw new ArgumentOutOfRangeException(nameof(optionIndex));
 
@@ -213,7 +214,8 @@ namespace CompactOT
         public override bool Equals(object? obj)
         {
             ObliviousTransferOptions? other = obj as ObliviousTransferOptions;
-            if (other == null) return false;
+            if (other == null)
+                return false;
             if (other.NumberOfInvocations != NumberOfInvocations ||
                 other.NumberOfOptions != NumberOfOptions ||
                 other.NumberOfMessageBits != NumberOfMessageBits)

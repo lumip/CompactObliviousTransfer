@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Threading.Tasks;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
-using CompactOT;
 using CompactOT.DataStructures;
 
 namespace CompactOT.Examples.BeaverTriples
@@ -42,12 +41,12 @@ namespace CompactOT.Examples.BeaverTriples
                 var secondPartyTripleShare = secondPartyTripleShares.GetTripleShare(i);
 
                 Console.WriteLine(
-                    $"{i} Triple: ({firstPartyTripleShare.Item1} ^ {secondPartyTripleShare.Item1}) & "+
+                    $"{i} Triple: ({firstPartyTripleShare.Item1} ^ {secondPartyTripleShare.Item1}) & " +
                     $"({firstPartyTripleShare.Item2} ^ {secondPartyTripleShare.Item2}) = " +
-                    $"{(firstPartyTripleShare.Item1 ^ secondPartyTripleShare.Item1)} & " + 
-                    $"{(firstPartyTripleShare.Item2 ^ secondPartyTripleShare.Item2)} = " + 
+                    $"{(firstPartyTripleShare.Item1 ^ secondPartyTripleShare.Item1)} & " +
+                    $"{(firstPartyTripleShare.Item2 ^ secondPartyTripleShare.Item2)} = " +
                     $"{(firstPartyTripleShare.Item3 ^ secondPartyTripleShare.Item3)} = " +
-                    $"{firstPartyTripleShare.Item3} ^ {secondPartyTripleShare.Item3}" 
+                    $"{firstPartyTripleShare.Item3} ^ {secondPartyTripleShare.Item3}"
                 );
 
                 var firstPartyInput = firstPartyInputs.GetRow(i);
@@ -86,7 +85,7 @@ namespace CompactOT.Examples.BeaverTriples
                 }
             }
         }
-        
+
         static async Task<(TripleShareSet, BitMatrix)> RunSecondParty(ObliviousTransferChannelBuilder otChannelBuilder, BitMatrix inputs)
         {
             int numberOfTriples = inputs.Rows;
@@ -111,7 +110,7 @@ namespace CompactOT.Examples.BeaverTriples
             }
         }
 
-#region Generating beaver triples using the random oblivious transfer protocol paradigm
+        #region Generating beaver triples using the random oblivious transfer protocol paradigm
 
         static async Task<TripleShareSet> MakeTripleFirstParty(IRandomObliviousTransferChannel rotChannel, int numberOfTriples, RandomNumberGenerator randomNumberGenerator)
         {
@@ -150,9 +149,9 @@ namespace CompactOT.Examples.BeaverTriples
             return (a, result);
         }
 
-#endregion
+        #endregion
 
-#region Secure multi-party And(/binary multiplication) using beaver triples
+        #region Secure multi-party And(/binary multiplication) using beaver triples
 
         static async Task<BitMatrix> OpenShares(BitMatrix partyShares, IMessageChannel channel)
         {
@@ -170,7 +169,7 @@ namespace CompactOT.Examples.BeaverTriples
         {
             var alphaShares = firstInputs ^ tripleShares.FirstFactorShare;
             var betaShares = secondInputs ^ tripleShares.SecondFactorShare;
-            
+
             var alphas = await OpenShares(alphaShares, channel);
             var betas = await OpenShares(betaShares, channel);
 
@@ -188,7 +187,7 @@ namespace CompactOT.Examples.BeaverTriples
             return MultiplyWithTriples(BitMatrix.Zeros(inputs.Rows, inputs.Cols), inputs, tripleShares, channel);
         }
 
-#endregion
+        #endregion
 
     }
 }

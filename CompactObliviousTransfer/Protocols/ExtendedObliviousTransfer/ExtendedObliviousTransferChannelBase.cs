@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 using CompactCryptoGroupAlgebra;
 
-using CompactOT.DataStructures;
 using CompactOT.Buffers;
 using CompactOT.Codes;
+using CompactOT.DataStructures;
 
 namespace CompactOT
 {
@@ -36,7 +36,7 @@ namespace CompactOT
         protected RandomOracle RandomOracle { get; }
 
         protected IBinaryCode _code;
-        
+
         /// <summary>
         /// Internal encapsulation of the persistent state for the sender role.
         /// </summary>
@@ -93,7 +93,7 @@ namespace CompactOT
             if (_baseOT.SecurityLevel < securityLevel)
             {
                 throw new ArgumentException(
-                    $"The provided base OT must provided at least the requested security level of "+
+                    $"The provided base OT must provided at least the requested security level of " +
                     $"{securityLevel} but only provides {baseOT.SecurityLevel}.", nameof(baseOT)
                 );
             }
@@ -102,7 +102,7 @@ namespace CompactOT
             if (_code.Distance < securityLevel)
             {
                 throw new ArgumentException(
-                    $"The provided binary code must have a distance of at least the requested security "+
+                    $"The provided binary code must have a distance of at least the requested security " +
                     $"level {securityLevel} but only has distance {code.Distance}.", nameof(code)
                 );
             }
@@ -125,8 +125,10 @@ namespace CompactOT
         public async Task ExecuteSenderBaseTransferAsync()
         {
             int numBaseOTOptions = 2;
-            _senderState = new SenderState(CodeLength);
-            _senderState.RandomChoices = RandomNumberGenerator.GetBits(CodeLength);
+            _senderState = new SenderState(CodeLength)
+            {
+                RandomChoices = RandomNumberGenerator.GetBits(CodeLength)
+            };
 
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -207,7 +209,8 @@ namespace CompactOT
                 throw new ArgumentException($"Extended Oblivious Transfer with security level {_securityLevel.InBits} requires " +
                     $"the number of options to be less than {_code.MaximumMessage}; was {numberOfOptions}", nameof(numberOfOptions));
             }
-            if (_senderState == null) await ExecuteSenderBaseTransferAsync();
+            if (_senderState == null)
+                await ExecuteSenderBaseTransferAsync();
 
             TotalNumberOfInvocations += numberOfInvocations;
 
@@ -252,8 +255,9 @@ namespace CompactOT
                 throw new ArgumentException($"Extended Oblivious Transfer with security level {_securityLevel.InBits} requires " +
                     $"the number of options to be less than {_code.MaximumMessage}; was {numberOfOptions}", nameof(numberOfOptions));
             }
-            if (_receiverState == null) await ExecuteReceiverBaseTransferAsync();
-            
+            if (_receiverState == null)
+                await ExecuteReceiverBaseTransferAsync();
+
             int numberOfInvocations = selectionIndices.Length;
             TotalNumberOfInvocations += numberOfInvocations;
 

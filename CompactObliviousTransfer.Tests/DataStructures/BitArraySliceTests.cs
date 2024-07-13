@@ -27,7 +27,7 @@ namespace CompactOT.DataStructures
             var slice = new BitArraySlice(bits, sliceOffset, sliceStop);
 
             var expectedSlicedBits = BitArray.FromBinaryString(expected);
-            
+
             foreach ((Bit expectedBit, Bit bit) in expectedSlicedBits.Zip(slice))
             {
                 Assert.Equal(expectedBit, bit);

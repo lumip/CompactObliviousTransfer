@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace CompactOT.DataStructures
@@ -40,7 +39,8 @@ namespace CompactOT.DataStructures
             }
 
             private byte _current;
-            public override byte Current {
+            public override byte Current
+            {
                 get
                 {
                     if (_isReset)
@@ -56,11 +56,14 @@ namespace CompactOT.DataStructures
 
             public override bool MoveNext()
             {
-                if (_hasEnded) return false;
+                if (_hasEnded)
+                    return false;
 
                 if (_isReset)
                 {
-                    if (!_baseEnumerator.MoveNext()) return false;
+                    if (!_baseEnumerator.MoveNext())
+                        return false;
+
                     _isReset = false;
                     _last = (byte)(_baseEnumerator.Current >> _offset);
                 }

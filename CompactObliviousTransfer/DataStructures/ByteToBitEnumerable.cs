@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace CompactOT.DataStructures

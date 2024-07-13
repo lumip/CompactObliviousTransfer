@@ -1,11 +1,8 @@
 // SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System;
 using System.Collections.Generic;
-using System.Collections;
 using System.Linq;
-using System.Numerics;
 
 namespace CompactOT.DataStructures
 {
@@ -30,5 +27,5 @@ namespace CompactOT.DataStructures
             return Enumerable.Empty<Bit>().GetEnumerator();
         }
     }
-    
+
 }

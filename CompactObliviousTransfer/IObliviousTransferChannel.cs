@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace CompactOT
 {
-        
+
     /// <summary>
     /// A 1-out-of-N Oblivious Transfer channel implementation.
     /// 

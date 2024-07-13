@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using Xunit;
 using System;
 using System.Linq;
+
+using Xunit;
 
 namespace CompactOT.DataStructures
 {
@@ -42,7 +43,7 @@ namespace CompactOT.DataStructures
             var otResult = new ObliviousTransferResult(numberOfInvocations, numberOfMessageBits);
 
             otResult.SetColumn(0, BitArray.FromBinaryString("0001"));
-            otResult.SetColumn(1, BitArray.FromBinaryString("1011"));            
+            otResult.SetColumn(1, BitArray.FromBinaryString("1011"));
 
             var expectedResults = new BitArray[] {
                 BitArray.FromBinaryString("01"),
@@ -123,5 +124,5 @@ namespace CompactOT.DataStructures
             }
         }
 
-   }
+    }
 }

@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
+using System.Linq;
 using System.Numerics;
 
-using Xunit;
 using Moq;
-using System.Linq;
+using Xunit;
 
 namespace CompactOT.DataStructures
 {
@@ -105,7 +105,7 @@ namespace CompactOT.DataStructures
         public void TestFromBytes()
         {
             var bytes = new byte[] { 0x00, 0x2E, 0x9A };
-            var bits = BitArray.FromBytes(bytes, 13, 1 );
+            var bits = BitArray.FromBytes(bytes, 13, 1);
             Assert.Equal(13, bits.Length);
 
             byte[] expectedBytes = new byte[] { 0x2E, 0x1A };
@@ -118,7 +118,7 @@ namespace CompactOT.DataStructures
         public void TestFromBytesEnumerable()
         {
             var bytes = new byte[] { 0x00, 0x2E, 0x9A };
-            var bits = BitArray.FromBytes(bytes.AsEnumerable().Skip(1), 13 );
+            var bits = BitArray.FromBytes(bytes.AsEnumerable().Skip(1), 13);
             Assert.Equal(13, bits.Length);
 
             byte[] expectedBytes = new byte[] { 0x2E, 0x1A };
@@ -227,9 +227,9 @@ namespace CompactOT.DataStructures
         [Fact]
         public void TestOr()
         {
-            var leftBits  = BitArray.FromBinaryString("01110100 01001");
+            var leftBits = BitArray.FromBinaryString("01110100 01001");
             var rightBits = BitArray.FromBinaryString("01001000 00101");
-            var expected  = BitArray.FromBinaryString("01111100 01101");
+            var expected = BitArray.FromBinaryString("01111100 01101");
 
             var originalLeftBits = leftBits.Clone();
 
@@ -290,8 +290,8 @@ namespace CompactOT.DataStructures
         [Fact]
         public void TestNot()
         {
-            var leftBits  = BitArray.FromBinaryString("01110100 01001");
-            var expected  = BitArray.FromBinaryString("10001011 10110");
+            var leftBits = BitArray.FromBinaryString("01110100 01001");
+            var expected = BitArray.FromBinaryString("10001011 10110");
 
             var originalLeftBits = leftBits.Clone();
 
@@ -340,7 +340,7 @@ namespace CompactOT.DataStructures
         [Fact]
         public void TestEnumerator()
         {
-            var bits  = BitArray.FromBinaryString("01110100 01001");
+            var bits = BitArray.FromBinaryString("01110100 01001");
             Bit[] expectedBits = new Bit[] {
                 Bit.Zero, Bit.One, Bit.One, Bit.One, Bit.Zero, Bit.One, Bit.Zero, Bit.Zero,
                 Bit.Zero, Bit.One, Bit.Zero, Bit.Zero, Bit.One

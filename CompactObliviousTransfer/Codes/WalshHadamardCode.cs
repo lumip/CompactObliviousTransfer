@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 
-using CompactOT.DataStructures;
 using CompactCryptoGroupAlgebra;
+
+using CompactOT.DataStructures;
 
 namespace CompactOT.Codes
 {
@@ -23,7 +24,7 @@ namespace CompactOT.Codes
         {
             if (codeLength < 2)
                 throw new ArgumentException($"Code length must be at least two, was {codeLength}.", nameof(codeLength));
-                
+
             if (!MathUtil.IsPowerOfTwo(codeLength))
                 throw new ArgumentException($"Code length must be a power of two, was {codeLength}.", nameof(codeLength));
 
@@ -69,12 +70,12 @@ namespace CompactOT.Codes
             {
                 int requiredCodeLength = 1 << NumberLength.GetLength(x).InBits;
                 throw new ArgumentOutOfRangeException(
-                    $"Provided value {x} is too large to be encoded with a code length of {CodeLength}"+
+                    $"Provided value {x} is too large to be encoded with a code length of {CodeLength}" +
                     $"(required code length at least {requiredCodeLength}).",
                     nameof(x)
                 );
             }
-            
+
             return new EnumeratedBitArrayView(EncodeToEnumerable(x), CodeLength);
         }
     }

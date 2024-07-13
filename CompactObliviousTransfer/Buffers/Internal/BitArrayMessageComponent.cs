@@ -15,7 +15,7 @@ namespace CompactOT.Buffers.Internal
         {
             _array = array;
         }
-        
+
         public int Length => BitArray.RequiredBytes(_array.Length);
 
         public void WriteToBuffer(byte[] messageBuffer, ref int offset)

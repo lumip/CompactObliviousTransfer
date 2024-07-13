@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using Xunit;
-using Moq;
 using System;
 using System.Security.Cryptography;
+
+using Moq;
+using Xunit;
 
 namespace CompactOT
 {
@@ -70,7 +71,9 @@ namespace CompactOT
 
             Assert.False(randomNumberGenerator.Disposed);
 
-            using (var cryptoContext = new CryptoContext(randomNumberGenerator, hashAlgorithmProvider)) { }
+            {
+                using var cryptoContext = new CryptoContext(randomNumberGenerator, hashAlgorithmProvider);
+            }
             Assert.True(randomNumberGenerator.Disposed);
         }
 

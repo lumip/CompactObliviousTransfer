@@ -1,26 +1,27 @@
 // SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System.Threading.Tasks;
-using System.Threading;
+using System;
 using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CompactOT
 {
     /// <summary>
     /// Provides message channels for testing, backed by local queues of byte arrays.
     /// </summary>
-    public class TestMessageChannels
+    public class TestMessageChannels : IDisposable
     {
 
         public class Channel : IMessageChannel
         {
 
-            ConcurrentQueue<byte[]> _inQueue;
-            ConcurrentQueue<byte[]> _outQueue;
+            private readonly ConcurrentQueue<byte[]> _inQueue;
+            private readonly ConcurrentQueue<byte[]> _outQueue;
 
-            AutoResetEvent _inEvent;
-            AutoResetEvent _outEvent;
+            private readonly AutoResetEvent _inEvent;
+            private readonly AutoResetEvent _outEvent;
 
             public Channel(ConcurrentQueue<byte[]> inQueue, AutoResetEvent inEvent, ConcurrentQueue<byte[]> outQueue, AutoResetEvent outEvent)
             {
@@ -55,13 +56,15 @@ namespace CompactOT
             }
         }
 
-        ConcurrentQueue<byte[]> _firstToSecond;
-        ConcurrentQueue<byte[]> _secondToFirst;
+        private readonly ConcurrentQueue<byte[]> _firstToSecond;
+        private readonly ConcurrentQueue<byte[]> _secondToFirst;
 
-        AutoResetEvent _firstToSecondEvent;
-        AutoResetEvent _secondToFirstEvent;
+        private readonly AutoResetEvent _firstToSecondEvent;
+        private readonly AutoResetEvent _secondToFirstEvent;
 
-        
+        private bool _disposed;
+
+
 
         public TestMessageChannels()
         {
@@ -69,9 +72,30 @@ namespace CompactOT
             _firstToSecondEvent = new AutoResetEvent(false);
             _secondToFirst = new ConcurrentQueue<byte[]>();
             _secondToFirstEvent = new AutoResetEvent(false);
+            _disposed = false;
         }
 
         public IMessageChannel FirstPartyChannel => new Channel(_secondToFirst, _secondToFirstEvent, _firstToSecond, _firstToSecondEvent);
         public IMessageChannel SecondPartyChannel => new Channel(_firstToSecond, _firstToSecondEvent, _secondToFirst, _secondToFirstEvent);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                _firstToSecondEvent.Dispose();
+                _secondToFirstEvent.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

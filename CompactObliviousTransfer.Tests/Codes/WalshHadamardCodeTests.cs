@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using Xunit;
 using System;
 
 using CompactOT.DataStructures;
+using Xunit;
 
 namespace CompactOT.Codes
 {
@@ -25,9 +25,9 @@ namespace CompactOT.Codes
         [InlineData(18, "0101010110101010")]
         [InlineData(15, "1001011010010110")]
         [InlineData(12, "0011110000111100")]
-        [InlineData(7,  "1001100110011001")]
-        [InlineData(1,  "1111111111111111")]
-        [InlineData(0,  "0000000000000000")]
+        [InlineData(07, "1001100110011001")]
+        [InlineData(01, "1111111111111111")]
+        [InlineData(00, "0000000000000000")]
         public void TestEncode(int value, string expectedString)
         {
             var code = new WalshHadamardCode(16);

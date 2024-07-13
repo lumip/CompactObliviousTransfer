@@ -21,5 +21,5 @@ namespace CompactOT
     {
         Task<ObliviousTransferOptions> SendAsync(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits);
     }
-    
+
 }

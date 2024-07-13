@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using CompactCryptoGroupAlgebra;
 
 namespace CompactOT.DataStructures
@@ -51,7 +52,7 @@ namespace CompactOT.DataStructures
             int bitOffset = _start % 8;
             int lastByteOffset = (_stopBefore - 1) / 8;
             int numberOfBytes = lastByteOffset + 1 - byteOffset;
-            
+
             int numberOfOutputBytes = NumberLength.FromBitLength(Length).InBytes;
             var unfilteredByteEnumerable = new ShiftedByteArrayEnumerable(
                 _array.AsByteEnumerable().Skip(byteOffset).Take(numberOfBytes),

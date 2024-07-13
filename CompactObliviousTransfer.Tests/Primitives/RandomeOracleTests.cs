@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
-using System.Collections;
 using System.Linq;
+
 using Moq;
 using Xunit;
 
@@ -25,7 +25,7 @@ namespace CompactOT.Primitives
             var query = new byte[] { 0, 1 };
             var resultSequence = oracle.Invoke(query.Reverse());
 
-            var expectedBits = DataStructures.BitArray.FromBytes(expectedBytes, 5*8);
+            var expectedBits = DataStructures.BitArray.FromBytes(expectedBytes, 5 * 8);
             var resultBits = resultSequence.GetBits(expectedBits.Length);
 
             Assert.Equal(expectedBits, resultBits);
@@ -39,7 +39,7 @@ namespace CompactOT.Primitives
         public void TestMaskWithBytes()
         {
             var messageBytes = new byte[] { 0b0110 };
-        
+
             var oracleBytes = new byte[] { 0b1100 };
             var oracleSequence = new RandomByteSequence(oracleBytes);
 
@@ -62,7 +62,7 @@ namespace CompactOT.Primitives
         public void TestMaskNotEnoughRandomBytes()
         {
             var messageBytes = new byte[] { 0b0110, 0b1001 };
-        
+
             var oracleBytes = new byte[] { 0b1100 };
             var oracleSequence = new RandomByteSequence(oracleBytes);
 
@@ -82,7 +82,7 @@ namespace CompactOT.Primitives
         {
             var messageBytes = new byte[] { 0b0110 };
             var messageBits = DataStructures.BitArray.FromBytes(messageBytes, 4);
-        
+
             var oracleBytes = new byte[] { 0b1100 };
             var oracleSequence = new RandomByteSequence(oracleBytes);
 
@@ -109,7 +109,7 @@ namespace CompactOT.Primitives
         {
             var messageBytes = new byte[] { 0b0110 };
             var messageBits = DataStructures.BitArray.FromBytes(messageBytes, 4);
-        
+
             var oracleBytes = new byte[] { 0b1100 };
             var oracleSequence = new RandomByteSequence(oracleBytes);
 
