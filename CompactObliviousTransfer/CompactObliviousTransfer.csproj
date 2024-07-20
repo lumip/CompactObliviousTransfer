@@ -17,7 +17,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <PackageReleaseNotes>https://github.com/lumip/CompactObliviousTransfer/blob/master/CHANGELOG.txt</PackageReleaseNotes>
     <Authors>Lukas "lumip" Prediger</Authors>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <Copyright>Copyright © 2022 Lukas Prediger</Copyright>
+    <Copyright>Copyright © 2024 Lukas Prediger</Copyright>
     <Description>A compact library for oblivous transport protocols, fully written in C#.</Description>
     <PackageTags>Cryptography; Oblivious Transfer; Secure Multi-Party Computation</PackageTags>
     <ProjectUrl>https://github.com/lumip/CompactObliviousTransfer</ProjectUrl>
@@ -40,8 +40,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
-    <!-- <PackageReference Include="CompactCryptoGroupAlgebra" Version="2.*" /> -->
-    <ProjectReference Include="../../CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra/CompactCryptoGroupAlgebra.csproj" />
+    <PackageReference Include="CompactCryptoGroupAlgebra" Version="2.*" />
   </ItemGroup>
 
 </Project>
