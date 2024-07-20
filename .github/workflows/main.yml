@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
+# SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 # SPDX-License-Identifier: GPL-3.0-or-later
 name: Tests
 
@@ -12,23 +12,39 @@ on:
       - master
     
 jobs:
+  style_check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.x'
+      - name: Check style
+        run: dotnet format --verify-no-changes
+      - name: Install reuse linter
+        run: sudo apt-get install -y reuse
+      - name: Check reuse compliance
+        run: reuse lint
+
   build_and_test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '3.1.x'
-    - name: Generate coverage report
+        dotnet-version: '6.x'
+    - name: Test and generate coverage report
       run: dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
     - name: Copy coveralls report
       run: |
         mkdir ./CoverageResults
         cp -v ./CompactObliviousTransfer.Tests/TestResults/*/coverage.info ./CoverageResults/
     - name: Publish coverage report to coveralls.io
-      uses: coverallsapp/github-action@master
+      uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: ./CoverageResults/coverage.info
