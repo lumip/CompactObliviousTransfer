@@ -24,7 +24,7 @@ namespace CompactOT
     ///
     /// Further implementation details: Seung Geol Choi et al.: Secure Multi-Party Computation of Boolean Circuits with Applications
     /// to Privacy in On-Line Marketplaces. https://link.springer.com/chapter/10.1007/978-3-642-27954-6_26
-    /// 
+    ///
     /// Note that this implemenatation is slightly modified so as to remove special treatment for the first options: In the notation
     /// of Naor and Pinkas, the sender chooses an additional constant C_0, the receiver/chooser computes and sends PK = C_sigma / PK_sigma
     /// for any choice sigma (instead of only for sigma > 0), which the sender uses in subsequent computations in place of PK_0 of Naor
@@ -97,8 +97,7 @@ namespace CompactOT
                 listOfExponentiatedCs[i] = listOfCs[i] * alpha;
             });
 
-            await Task.WhenAll(writeCsTask, readDsTask);
-            var listOfDs = readDsTask.Result;
+            var listOfDs = await readDsTask;
 
 #if DEBUG
             stopwatch.Stop();
@@ -151,6 +150,10 @@ namespace CompactOT
             stopwatch.Stop();
             DebugUtils.WriteLineSender("NaorPinkas", "Sending masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
 #endif
+            // NOTE: we don't really care when writeCsTask finishes but we need to guarantee that it does, otherwise the
+            //   sender process might quit before the task is completed, leaving the receiver hanging
+            // TODO: introduce proper protocol message exchange so this could become implicit
+            await writeCsTask;
         }
 
         /// <inheritdoc/>
@@ -194,8 +197,11 @@ namespace CompactOT
                 listOfEs[j] = listOfCs[0] * listOfBetas[j];
             });
 
-            await Task.WhenAll(writeDsTask, readMaskedOptionsTask);
-            var maskedOptions = readMaskedOptionsTask.Result;
+            // NOTE: due to how the protocol works, maskedOptions are only received from the sender once it has received the
+            //    listOfDs, so awaiting readMaskedOptionsTask implicitely includes awaiting writeDsTask, but let's have both here
+            //    because it doesn't hurt and this way we make sure
+            await writeDsTask;
+            var maskedOptions = await readMaskedOptionsTask;
 
 #if DEBUG
             stopwatch.Stop();

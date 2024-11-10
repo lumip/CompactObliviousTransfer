@@ -11,7 +11,7 @@ namespace CompactOT
     {
 
         [Fact]
-        public void TestRandomOTs()
+        public async void TestRandomOTs()
         {
             const int numberOfOptions = 6;
             const int numberOfInvocations = 3;
@@ -36,11 +36,11 @@ namespace CompactOT
             var sendTask = otSender.SendAsync(numberOfInvocations, numberOfOptions, numberOfMessageBits);
             var receiverTask = otReceiver.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits);
 
-            TestUtils.WaitAllOrFail(sendTask, receiverTask);
+            await TestUtils.WhenAllOrFail(sendTask, receiverTask);
 
             // verify results
-            ObliviousTransferOptions senderResults = sendTask.Result;
-            ObliviousTransferResult results = receiverTask.Result;
+            ObliviousTransferOptions senderResults = await sendTask;
+            ObliviousTransferResult results = await receiverTask;
             Assert.Equal(numberOfInvocations, results.NumberOfInvocations);
             Assert.Equal(numberOfMessageBits, results.NumberOfMessageBits);
             Assert.Equal(numberOfInvocations, senderResults.NumberOfInvocations);

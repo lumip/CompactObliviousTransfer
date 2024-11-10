@@ -50,7 +50,7 @@ namespace CompactOT
             TestRunner(options, receiverIndices);
         }
 
-        private void TestRunner(ObliviousTransferOptions options, int[] receiverIndices)
+        private async void TestRunner(ObliviousTransferOptions options, int[] receiverIndices)
         {
             int numberOfInvocations = options.NumberOfInvocations;
             int numberOfOptions = options.NumberOfOptions;
@@ -67,10 +67,10 @@ namespace CompactOT
             var sendTask = senderOtChannel.SendAsync(options);
             var receiverTask = receiverOtChannel.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits);
 
-            TestUtils.WaitAllOrFail(sendTask, receiverTask);
+            await TestUtils.WhenAllOrFail(sendTask, receiverTask);
 
             // verify results
-            ObliviousTransferResult results = receiverTask.Result;
+            ObliviousTransferResult results = await receiverTask;
             Assert.Equal(numberOfInvocations, results.NumberOfInvocations);
             Assert.Equal(numberOfMessageBits, results.NumberOfMessageBits);
             for (int i = 0; i < results.NumberOfInvocations; ++i)

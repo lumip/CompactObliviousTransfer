@@ -201,7 +201,7 @@ namespace CompactOT.DataStructures
         }
 
         [Fact]
-        public void TestReadAndWriteAsync()
+        public async void TestReadAndWriteAsync()
         {
             var queriesAndResponses = new (byte[], byte[])[] {
                 (new byte[] { 0, 1, 2, 3 }, new byte[] { 9, 8 }),
@@ -218,7 +218,7 @@ namespace CompactOT.DataStructures
                 Task listenerTask = RunListener(tcpListener, queriesAndResponses);
                 Task clientTask = RunClient(endpoint!, queriesAndResponses);
 
-                TestUtils.WaitAllOrFail(listenerTask, clientTask);
+                await TestUtils.WhenAllOrFail(clientTask, listenerTask);
             }
             finally
             {
@@ -228,7 +228,7 @@ namespace CompactOT.DataStructures
         }
 
         [Fact]
-        public void TestInvalidLengthReceived()
+        public async void TestInvalidLengthReceived()
         {
             var tcpListener = new TcpListener(IPAddress.Loopback, 0);
             try
@@ -240,7 +240,7 @@ namespace CompactOT.DataStructures
                 Task listenerTask = RunListenerInvalidLength(tcpListener);
                 Task clientTask = RunClientInvalidLength(endpoint!);
 
-                TestUtils.WaitAllOrFail(listenerTask, clientTask);
+                await TestUtils.WhenAllOrFail(listenerTask, clientTask);
             }
             finally
             {

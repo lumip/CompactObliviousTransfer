@@ -92,7 +92,7 @@ namespace CompactOT
         }
 
         [Fact]
-        public void TestBaseOTs()
+        public async void TestBaseOTs()
         {
             int securityLevel = 24;
 
@@ -109,7 +109,7 @@ namespace CompactOT
             var senderTask = otSender.ExecuteSenderBaseTransferAsync();
             var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
 
-            TestUtils.WaitAllOrFail(senderTask, receiverTask);
+            await TestUtils.WhenAllOrFail(senderTask, receiverTask);
         }
 
         [Fact]

@@ -45,7 +45,7 @@ namespace CompactOT.Adapters
         }
 
         [Fact]
-        public void TestProtocol()
+        public async void TestProtocol()
         {
             var messageChannels = new TestMessageChannels();
             var otSender = new RandomFromCorrelatedObliviousTransferChannel(
@@ -64,10 +64,10 @@ namespace CompactOT.Adapters
             var senderTask = otSender.SendAsync(numberOfInvocations, numberOfOptions, numberOfMessageBits);
             var receiverTask = otReceiver.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits);
 
-            TestUtils.WaitAllOrFail(senderTask, receiverTask);
+            await TestUtils.WhenAllOrFail(senderTask, receiverTask);
 
-            var senderResults = senderTask.Result;
-            var receiverResults = receiverTask.Result;
+            var senderResults = await senderTask;
+            var receiverResults = await receiverTask;
 
             Assert.Equal(numberOfInvocations, senderResults.NumberOfInvocations);
             Assert.Equal(numberOfOptions, senderResults.NumberOfOptions);

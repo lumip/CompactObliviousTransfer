@@ -18,7 +18,7 @@ namespace CompactOT
 
     /// <summary>
     /// Commmon base implementation of the OT extension protocol and its random and correlated variants.
-    /// 
+    ///
     /// It provides an implemention of the base OT invocations as well as the common first steps of the online
     /// phase of the protocol (up until the matrix U is sent from receiver to sender). However, it does
     /// not provide full ObliviousTransferChannel functionality and therefore does not implement the
@@ -73,7 +73,7 @@ namespace CompactOT
 
         /// <summary>
         /// The total number of OT invocations that have been performed on this channel so far.
-        /// 
+        ///
         /// Every call to Send/Receive will advance this by the number of invocations requested for that call,
         /// even if the call should fail.
         /// </summary>
@@ -117,7 +117,7 @@ namespace CompactOT
 
         /// <summary>
         /// Performs 2k many 1-out-of-2 OTs on k bits for the sender, where k is the security level, using the base OT implementation.
-        /// 
+        ///
         /// These are subsequently expanded into m many 1ooN OTs on arbitrarily long messages
         /// by the SendAsync method, where m is only bounded by the amount of secure randomness the random
         /// oracle implementation can produce and N must be smaller than 2k.
@@ -161,7 +161,7 @@ namespace CompactOT
 
         /// <summary>
         /// Performs 2k many 1-out-of-2 OTs on k bits for the receiver, where k is the security level, using the base OT implementation.
-        /// 
+        ///
         /// These are subsequently expanded into m many 1ooN OTs on arbitrarily long messages
         /// by the SendAsync method, where m is only bounded by the amount of secure randomness the random
         /// oracle implementation can produce and N must be smaller than 2k.
@@ -294,8 +294,8 @@ namespace CompactOT
 #if DEBUG
             DebugUtils.WriteLineReceiver("ExtendedOT", "Generating random Ts and U took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Reset();
-#endif      
-            Task sendingTask = SendReceiverMessage(us);
+#endif
+            await SendReceiverMessage(us);
 
             return ts[0];
         }

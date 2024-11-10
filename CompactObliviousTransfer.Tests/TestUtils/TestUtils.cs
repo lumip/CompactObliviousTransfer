@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Linq;
@@ -13,24 +13,22 @@ namespace CompactOT
     {
         /// <summary>
         /// Waits until all tasks are completed or at least one failed.
-        /// 
-        /// Unlike Task.WaitAll, this will immediately unblock if any
+        ///
+        /// Unlike Task.WhenAll, this will immediately complete if any
         /// task failed and throw the exception thrown within that task.
         /// </summary>
         /// <param name="tasks"></param>
-        public static void WaitAllOrFail(params Task[] tasks)
+        public static async Task WhenAllOrFail(params Task[] tasks)
         {
-            var taskList = new System.Collections.Generic.LinkedList<Task>(tasks);
-            while (taskList.Count > 0)
+            var taskSet = new System.Collections.Generic.HashSet<Task>(tasks);
+            while (taskSet.Count > 0)
             {
-                int which = Task.WaitAny(taskList.ToArray());
-                var task = taskList.ElementAt(which);
+                var task = await Task.WhenAny(taskSet);
                 if (task.Status == TaskStatus.Faulted)
                     throw task.Exception!;
-                taskList.Remove(taskList.ElementAt(which));
+                taskSet.Remove(task);
             }
         }
-
 
         public static readonly BitArray[] TestCorrelations = {
             BitArray.FromBinaryString("000111"),

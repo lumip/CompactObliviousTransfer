@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-
+using System.Threading.Tasks;
 using CompactCryptoGroupAlgebra.EllipticCurves;
 using Moq;
 using Xunit;
@@ -17,7 +17,7 @@ namespace CompactOT
     {
 
         [Fact]
-        public void TestProtocolWithFullBytes()
+        public async void TestProtocolWithFullBytes()
         {
             int numberOfInvocations = 3;
             int numberOfOptions = TestUtils.TestOptions.Length;
@@ -32,11 +32,11 @@ namespace CompactOT
             // receiver data
             var receiverIndices = new int[] { 0, 5, 3 };
 
-            TestRunner(options, receiverIndices);
+            await TestRunner(options, receiverIndices);
         }
 
         [Fact]
-        public void TestProtocolWithLessThanOneByte()
+        public async void TestProtocolWithLessThanOneByte()
         {
             int numberOfInvocations = 2;
             int numberOfOptions = TestUtils.TestCorrelations.Length;
@@ -50,10 +50,10 @@ namespace CompactOT
             // receiver data
             var receiverIndices = new int[] { 0, 3 };
 
-            TestRunner(options, receiverIndices);
+            await TestRunner(options, receiverIndices);
         }
 
-        private void TestRunner(ObliviousTransferOptions options, int[] receiverIndices)
+        private async Task TestRunner(ObliviousTransferOptions options, int[] receiverIndices)
         {
             int numberOfInvocations = options.NumberOfInvocations;
             int numberOfOptions = options.NumberOfOptions;
@@ -80,10 +80,10 @@ namespace CompactOT
                 receiverIndices, numberOfOptions, numberOfMessageBits
             );
 
-            TestUtils.WaitAllOrFail(sendTask, receiverTask);
+            await TestUtils.WhenAllOrFail(sendTask, receiverTask);
 
             // verify results
-            ObliviousTransferResult results = receiverTask.Result;
+            ObliviousTransferResult results = await receiverTask;
             Assert.Equal(numberOfInvocations, results.NumberOfInvocations);
             Assert.Equal(numberOfMessageBits, results.NumberOfMessageBits);
             for (int i = 0; i < results.NumberOfInvocations; ++i)

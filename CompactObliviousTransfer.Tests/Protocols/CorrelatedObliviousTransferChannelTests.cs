@@ -13,7 +13,7 @@ namespace CompactOT
     {
 
         [Fact]
-        public void TestCorrleatedOTs()
+        public async void TestCorrleatedOTs()
         {
             int numberOfOptions = TestUtils.TestCorrelations.Length + 1;
 
@@ -45,11 +45,11 @@ namespace CompactOT
             var sendTask = otSender.SendAsync(correlations);
             var receiverTask = otReceiver.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits);
 
-            TestUtils.WaitAllOrFail(sendTask, receiverTask);
+            await TestUtils.WhenAllOrFail(sendTask, receiverTask);
 
             // verify results
-            ObliviousTransferResult senderResults = sendTask.Result;
-            ObliviousTransferResult results = receiverTask.Result;
+            ObliviousTransferResult senderResults = await sendTask;
+            ObliviousTransferResult results = await receiverTask;
             Assert.Equal(numberOfInvocations, results.NumberOfInvocations);
             Assert.Equal(numberOfMessageBits, results.NumberOfMessageBits);
             Assert.Equal(numberOfInvocations, senderResults.NumberOfInvocations);

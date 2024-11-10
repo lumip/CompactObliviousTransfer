@@ -15,7 +15,7 @@ namespace CompactOT
     {
 
         [Fact]
-        public void TestBaseOTs()
+        public async void TestBaseOTs()
         {
             int securityLevel = 24;
 
@@ -32,11 +32,11 @@ namespace CompactOT
             var senderTask = otSender.ExecuteSenderBaseTransferAsync();
             var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
 
-            TestUtils.WaitAllOrFail(senderTask, receiverTask);
+            await TestUtils.WhenAllOrFail(senderTask, receiverTask);
         }
 
         [Fact]
-        public void TestExtendedOTs()
+        public async void TestExtendedOTs()
         {
             int numberOfOptions = TestUtils.TestOptions.Length;
 
@@ -69,10 +69,10 @@ namespace CompactOT
             var sendTask = otSender.SendAsync(options);
             var receiverTask = otReceiver.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits);
 
-            TestUtils.WaitAllOrFail(sendTask, receiverTask);
+            await TestUtils.WhenAllOrFail(sendTask, receiverTask);
 
             // verify results
-            ObliviousTransferResult results = receiverTask.Result;
+            ObliviousTransferResult results = await receiverTask;
             Assert.Equal(numberOfInvocations, results.NumberOfInvocations);
             Assert.Equal(numberOfMessageBits, results.NumberOfMessageBits);
             for (int i = 0; i < results.NumberOfInvocations; ++i)
