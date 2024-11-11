@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Moq;
@@ -72,10 +73,10 @@ namespace CompactOT.DataStructures
             byte[] buffer = new byte[] { 3, 0, 0, 0xa0, 0xaa, 0xbb, 0xcc };
             var stream = new MemoryStream(buffer);
 
-            var channel = new NetworkStreamMessageChannel(stream);
+            IMessageChannel channel = new NetworkStreamMessageChannel(stream);
 
             await Assert.ThrowsAsync<ProtocolException>(
-                channel.ReadMessageAsync
+                async () => await channel.ReadMessageAsync()
             );
         }
 
@@ -144,6 +145,32 @@ namespace CompactOT.DataStructures
         }
 
         [Fact]
+        public async void TestReadAsyncInterrupted()
+        {
+            var tokenSource = new CancellationTokenSource();
+            var streamMock = new Mock<Stream>() { CallBase = true };
+            streamMock.Setup(s => s.CanWrite).Returns(true);
+            streamMock.Setup(s => s.CanRead).Returns(true);
+            streamMock
+                .Setup(s => s.ReadAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Callback(() => tokenSource.Cancel());
+
+            var channel = new NetworkStreamMessageChannel(streamMock.Object);
+
+            await Assert.ThrowsAsync<TaskCanceledException>(
+                async () => await channel.ReadMessageAsync(tokenSource.Token)
+            );
+
+            streamMock
+                .Verify(s => s.ReadAsync(
+                    It.IsAny<byte[]>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.Is<CancellationToken>(ct => ct == tokenSource.Token))
+                );
+        }
+
+        [Fact]
         public async void TestWriteAsync()
         {
             var stream = new MemoryStream();
@@ -159,6 +186,35 @@ namespace CompactOT.DataStructures
             stream.Read(streamContents, 0, streamContents.Length);
 
             Assert.Equal(expectedContents, streamContents);
+        }
+
+        [Fact]
+        public async void TestWriteAsyncCancelled()
+        {
+            var tokenSource = new CancellationTokenSource();
+
+            var streamMock = new Mock<Stream>() { CallBase = true };
+            streamMock.Setup(s => s.CanWrite).Returns(true);
+            streamMock.Setup(s => s.CanRead).Returns(true);
+            streamMock
+                .Setup(s => s.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Callback(() => tokenSource.Cancel());
+
+            var channel = new NetworkStreamMessageChannel(streamMock.Object);
+
+            byte[] message = new byte[] { 3, 4, 5 };
+
+            await Assert.ThrowsAsync<TaskCanceledException>(
+                async () => await channel.WriteMessageAsync(message, tokenSource.Token)
+            );
+
+            streamMock
+                .Verify(s => s.WriteAsync(
+                    It.IsAny<byte[]>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.Is<CancellationToken>(ct => ct == tokenSource.Token))
+                );
         }
     }
 
@@ -254,9 +310,9 @@ namespace CompactOT.DataStructures
             {
                 using (var tcpStream = tcpClient.GetStream())
                 {
-                    var channel = new NetworkStreamMessageChannel(tcpStream);
+                    IMessageChannel channel = new NetworkStreamMessageChannel(tcpStream);
                     await Assert.ThrowsAsync<ProtocolException>(
-                        channel.ReadMessageAsync
+                        async () => await channel.ReadMessageAsync()
                     );
                 }
             }

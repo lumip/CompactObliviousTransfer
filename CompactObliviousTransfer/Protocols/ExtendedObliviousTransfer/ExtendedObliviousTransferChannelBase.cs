@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 using CompactCryptoGroupAlgebra;
@@ -79,7 +80,9 @@ namespace CompactOT
         /// </summary>
         public int TotalNumberOfInvocations { get; private set; }
 
-        public ExtendedObliviousTransferChannelBase(IObliviousTransferChannel baseOT, int securityLevel, CryptoContext cryptoContext, IBinaryCode code)
+        public ExtendedObliviousTransferChannelBase(
+            IObliviousTransferChannel baseOT, int securityLevel, CryptoContext cryptoContext, IBinaryCode code
+        )
         {
             if (securityLevel < 1)
             {
@@ -122,7 +125,8 @@ namespace CompactOT
         /// by the SendAsync method, where m is only bounded by the amount of secure randomness the random
         /// oracle implementation can produce and N must be smaller than 2k.
         /// </summary>
-        public async Task ExecuteSenderBaseTransferAsync()
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public async Task ExecuteSenderBaseTransferAsync(CancellationToken cancellationToken = default)
         {
             int numBaseOTOptions = 2;
             _senderState = new SenderState(CodeLength)
@@ -138,7 +142,8 @@ namespace CompactOT
             ObliviousTransferResult seeds = await _baseOT.ReceiveAsync(
                 _senderState.RandomChoices.ToSelectionIndices().ToArray(),
                 numBaseOTOptions,
-                numberOfMessageBits: _securityLevel.InBits
+                numberOfMessageBits: _securityLevel.InBits,
+                cancellationToken: cancellationToken
             );
 #if DEBUG
             DebugUtils.WriteLineSender("ExtendedOT", "Base transfers completed after {0} ms.", stopwatch.ElapsedMilliseconds);
@@ -166,7 +171,8 @@ namespace CompactOT
         /// by the SendAsync method, where m is only bounded by the amount of secure randomness the random
         /// oracle implementation can produce and N must be smaller than 2k.
         /// </summary>
-        public async Task ExecuteReceiverBaseTransferAsync()
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public async Task ExecuteReceiverBaseTransferAsync(CancellationToken cancellationToken = default)
         {
             int numBaseOTOptions = 2;
             _receiverState = new ReceiverState(CodeLength, numBaseOTOptions);
@@ -180,7 +186,7 @@ namespace CompactOT
 #endif
 
             // base OTs as _sender_ with the seeds as inputs
-            Task sendTask = _baseOT.SendAsync(seeds);
+            Task sendTask = _baseOT.SendAsync(seeds, cancellationToken);
 
             // initializing a random oracle based on each seed
             for (int k = 0; k < CodeLength; ++k)
@@ -201,8 +207,14 @@ namespace CompactOT
         /// <param name="numberOfInvocations">The number of invocations/instances of OT, i.e., how many separate messages the receiver will obtain.</param>
         /// <param name="numberOfOptions">The number of options the receiver can choose from, per message/invocation/instance.</param>
         /// <param name="numberOfMessageBits">The length of each message, in bits.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>The bit matrix T_0 with numberOfInvocations rows and CodeLength columns.</returns>
-        protected async Task<BitMatrix> SenderReceiveUAndComputeQ(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
+        protected async Task<BitMatrix> SenderReceiveUAndComputeQ(
+            int numberOfInvocations,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken
+        )
         {
             if (numberOfOptions > _code.MaximumMessage)
             {
@@ -210,14 +222,14 @@ namespace CompactOT
                     $"the number of options to be less than {_code.MaximumMessage}; was {numberOfOptions}", nameof(numberOfOptions));
             }
             if (_senderState == null)
-                await ExecuteSenderBaseTransferAsync();
+                await ExecuteSenderBaseTransferAsync(cancellationToken);
 
             TotalNumberOfInvocations += numberOfInvocations;
 
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
-            BitMatrix us = await ReceiveReceiverMessage(numberOfInvocations);
+            BitMatrix us = await ReceiveReceiverMessage(numberOfInvocations, cancellationToken);
 #if DEBUG
             DebugUtils.WriteLineSender("ExtendedOT", "Receiving U took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Reset();
@@ -247,8 +259,14 @@ namespace CompactOT
         /// <param name="selectionIndices">The indices indicating which option the receiver requests for each message/invocation/instance.</param>
         /// <param name="numberOfOptions">The number of options the receiver can choose from, per message/invocation/instance.</param>
         /// <param name="numberOfMessageBits">The length of each message, in bits.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>The bit matrix T_0 with CodeLength rows and numberOfInvocations columns.</returns>
-        protected async Task<BitMatrix> ReceiverComputeAndSendU(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        protected async Task<BitMatrix> ReceiverComputeAndSendU(
+            int[] selectionIndices,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken
+        )
         {
             if (numberOfOptions >= _code.MaximumMessage)
             {
@@ -256,7 +274,7 @@ namespace CompactOT
                     $"the number of options to be less than {_code.MaximumMessage}; was {numberOfOptions}", nameof(numberOfOptions));
             }
             if (_receiverState == null)
-                await ExecuteReceiverBaseTransferAsync();
+                await ExecuteReceiverBaseTransferAsync(cancellationToken);
 
             int numberOfInvocations = selectionIndices.Length;
             TotalNumberOfInvocations += numberOfInvocations;
@@ -295,7 +313,7 @@ namespace CompactOT
             DebugUtils.WriteLineReceiver("ExtendedOT", "Generating random Ts and U took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Reset();
 #endif
-            await SendReceiverMessage(us);
+            await SendReceiverMessage(us, cancellationToken);
 
             return ts[0];
         }
@@ -326,22 +344,27 @@ namespace CompactOT
             return MaskOption(option, mask, invocationIndex);
         }
 
-        protected async Task SendReceiverMessage(BitMatrix us)
+        protected async Task SendReceiverMessage(BitMatrix us, CancellationToken cancellationToken)
         {
             var message = new MessageComposer();
             message.Write(us);
-            await Channel.WriteMessageAsync(message.Compose());
+            await Channel.WriteMessageAsync(message.Compose(), cancellationToken);
         }
 
-        private async Task<BitMatrix> ReceiveReceiverMessage(int numberOfInvocations)
+        private async Task<BitMatrix> ReceiveReceiverMessage(int numberOfInvocations, CancellationToken cancellationToken)
         {
-            var message = new MessageDecomposer(await Channel.ReadMessageAsync());
+            var message = new MessageDecomposer(await Channel.ReadMessageAsync(cancellationToken));
             return message.ReadBitMatrix(numberOfInvocations, CodeLength);
         }
 
-        protected async Task<ObliviousTransferOptions> ReceiveMaskedOptions(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
+        protected async Task<ObliviousTransferOptions> ReceiveMaskedOptions(
+            int numberOfInvocations,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken
+        )
         {
-            var message = new MessageDecomposer(await Channel.ReadMessageAsync());
+            var message = new MessageDecomposer(await Channel.ReadMessageAsync(cancellationToken));
             var maskedOptions = new ObliviousTransferOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
             for (int i = 0; i < numberOfInvocations; ++i)
             {
@@ -350,14 +373,14 @@ namespace CompactOT
             return maskedOptions;
         }
 
-        protected async Task SendMaskedOptions(ObliviousTransferOptions maskedOptions)
+        protected async Task SendMaskedOptions(ObliviousTransferOptions maskedOptions, CancellationToken cancellationToken)
         {
             var message = new MessageComposer(1);
             for (int i = 0; i < maskedOptions.NumberOfInvocations; ++i)
             {
                 message.Write(maskedOptions.GetInvocation(i));
             }
-            await Channel.WriteMessageAsync(message.Compose());
+            await Channel.WriteMessageAsync(message.Compose(), cancellationToken);
         }
 
         public virtual double EstimateCost(ObliviousTransferUsageProjection usageProjection)

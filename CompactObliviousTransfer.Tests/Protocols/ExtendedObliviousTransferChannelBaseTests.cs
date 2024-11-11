@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 using CompactCryptoGroupAlgebra;
@@ -131,7 +132,7 @@ namespace CompactOT
             }
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
-            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<int[]>(), It.Is<int>(o => o == 2), It.IsAny<int>()))
+            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<int[]>(), It.Is<int>(o => o == 2), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(received));
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
@@ -154,13 +155,17 @@ namespace CompactOT
                 baseOTMock.Object, securityLevel.InBits, cryptoContext, code
             );
 
-            await otProtocol.ExecuteSenderBaseTransferAsync();
+            var cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
+
+            await otProtocol.ExecuteSenderBaseTransferAsync(cancellationToken);
 
             rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
             baseOTMock.Verify(ot => ot.ReceiveAsync(
                 It.Is<int[]>(b => randomChoices.ToSelectionIndices().SequenceEqual(b)),
                 It.Is<int>(o => o == 2),
-                It.Is<int>(i => i == securityLevel.InBits)), Times.Once());
+                It.Is<int>(i => i == securityLevel.InBits),
+                It.Is<CancellationToken>(ct => ct == cancellationToken)), Times.Once());
         }
 
         [Fact]
@@ -182,7 +187,7 @@ namespace CompactOT
             }
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
-            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<int[]>(), It.Is<int>(o => o == 2), It.IsAny<int>()))
+            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<int[]>(), It.Is<int>(o => o == 2), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(received));
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
@@ -227,7 +232,7 @@ namespace CompactOT
             }
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
-            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<int[]>(), It.Is<int>(o => o == 2), It.IsAny<int>()))
+            baseOTMock.Setup(ot => ot.ReceiveAsync(It.IsAny<int[]>(), It.Is<int>(o => o == 2), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(received));
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
@@ -260,7 +265,7 @@ namespace CompactOT
             int codeLength = code.CodeLength;
 
             var baseOTMock = new Mock<IObliviousTransferChannel>();
-            baseOTMock.Setup(ot => ot.SendAsync(It.IsAny<ObliviousTransferOptions>())).Returns(Task.CompletedTask);
+            baseOTMock.Setup(ot => ot.SendAsync(It.IsAny<ObliviousTransferOptions>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
 
             var randomChoices = BitArray.FromBinaryString("00000000 01011010 11111111 11001100 10100101 00101101 10010110 01010101");
@@ -285,11 +290,16 @@ namespace CompactOT
                 baseOTMock.Object, securityLevel, cryptoContext, code
             );
 
-            await otProtocol.ExecuteReceiverBaseTransferAsync();
+            var cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
+
+            await otProtocol.ExecuteReceiverBaseTransferAsync(cancellationToken);
 
             rngMock.Verify(r => r.GetBytes(It.IsAny<byte[]>()), Times.AtLeastOnce());
             baseOTMock.Verify(ot => ot.SendAsync(
-                It.Is<ObliviousTransferOptions>(o => o.Equals(expectedOptions))), Times.Once());
+                    It.Is<ObliviousTransferOptions>(o => o.Equals(expectedOptions)),
+                    It.Is<CancellationToken>(ct => ct == cancellationToken)
+                ), Times.Once());
         }
 
         [Fact]

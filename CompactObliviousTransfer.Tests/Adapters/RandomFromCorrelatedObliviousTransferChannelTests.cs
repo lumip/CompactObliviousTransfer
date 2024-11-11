@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using System.Security.Cryptography;
-
+using System.Threading;
 using Moq;
 using Xunit;
 
@@ -48,10 +48,10 @@ namespace CompactOT.Adapters
         public async void TestProtocol()
         {
             var messageChannels = new TestMessageChannels();
-            var otSender = new RandomFromCorrelatedObliviousTransferChannel(
+            IRandomObliviousTransferChannel otSender = new RandomFromCorrelatedObliviousTransferChannel(
                 GetBaseTransferChannel(messageChannels.FirstPartyChannel), RandomNumberGenerator.Create()
             );
-            var otReceiver = new RandomFromCorrelatedObliviousTransferChannel(
+            IObliviousTransferChannelReceiverEndpoint otReceiver = new RandomFromCorrelatedObliviousTransferChannel(
                 GetBaseTransferChannel(messageChannels.SecondPartyChannel), RandomNumberGenerator.Create()
             );
 
@@ -61,8 +61,10 @@ namespace CompactOT.Adapters
 
             int[] receiverIndices = new int[] { 0, 4 };
 
-            var senderTask = otSender.SendAsync(numberOfInvocations, numberOfOptions, numberOfMessageBits);
-            var receiverTask = otReceiver.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits);
+            var tokenSource = new CancellationTokenSource(TestUtils.TestTimeoutMs);
+
+            var senderTask = otSender.SendAsync(numberOfInvocations, numberOfOptions, numberOfMessageBits, tokenSource.Token);
+            var receiverTask = otReceiver.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits, tokenSource.Token);
 
             await TestUtils.WhenAllOrFail(senderTask, receiverTask);
 

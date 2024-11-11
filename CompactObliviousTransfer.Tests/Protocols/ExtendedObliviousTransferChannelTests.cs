@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using System.Text;
-
+using System.Threading;
 using CompactOT.Codes;
 using Moq;
 using Xunit;
@@ -29,8 +29,10 @@ namespace CompactOT
             var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityLevel, cryptoContext, code);
             var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityLevel, cryptoContext, code);
 
-            var senderTask = otSender.ExecuteSenderBaseTransferAsync();
-            var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync();
+            var tokenSource = new CancellationTokenSource(TestUtils.TestTimeoutMs);
+
+            var senderTask = otSender.ExecuteSenderBaseTransferAsync(tokenSource.Token);
+            var receiverTask = otReceiver.ExecuteReceiverBaseTransferAsync(tokenSource.Token);
 
             await TestUtils.WhenAllOrFail(senderTask, receiverTask);
         }
@@ -49,8 +51,8 @@ namespace CompactOT
             var cryptoContext = CryptoContext.CreateDefault();
             var code = WalshHadamardCode.CreateWithDistance(cryptoContext.SecurityLevel);
 
-            var otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityLevel, cryptoContext, code);
-            var otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityLevel, cryptoContext, code);
+            IObliviousTransferChannel otSender = new ExtendedObliviousTransferChannel(senderBaseChannel, securityLevel, cryptoContext, code);
+            IObliviousTransferChannelReceiverEndpoint otReceiver = new ExtendedObliviousTransferChannel(receiverBaseChannel, securityLevel, cryptoContext, code);
 
             const int numberOfInvocations = 3;
             int numberOfMessageBits = TestUtils.TestOptions[0].Length * 8;
@@ -66,8 +68,10 @@ namespace CompactOT
             var receiverIndices = new int[] { 0, 5, 3 };
 
             // execute protocol
-            var sendTask = otSender.SendAsync(options);
-            var receiverTask = otReceiver.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits);
+            var tokenSource = new CancellationTokenSource(TestUtils.TestTimeoutMs);
+
+            var sendTask = otSender.SendAsync(options, tokenSource.Token);
+            var receiverTask = otReceiver.ReceiveAsync(receiverIndices, numberOfOptions, numberOfMessageBits, tokenSource.Token);
 
             await TestUtils.WhenAllOrFail(sendTask, receiverTask);
 
@@ -100,7 +104,7 @@ namespace CompactOT
             baseOtChannelMock.Setup(bot => bot.SecurityLevel).Returns(securityLevel);
             var baseOtChannel = baseOtChannelMock.Object;
 
-            var otChannel = new ExtendedObliviousTransferChannel(baseOtChannel, securityLevel, cryptoContext, code);
+            IObliviousTransferChannel otChannel = new ExtendedObliviousTransferChannel(baseOtChannel, securityLevel, cryptoContext, code);
 
             int numberOfMessageBits = TestUtils.TestOptions[0].Length * 8;
 
@@ -130,7 +134,7 @@ namespace CompactOT
             baseOtChannelMock.Setup(bot => bot.SecurityLevel).Returns(securityLevel);
             var baseOtChannel = baseOtChannelMock.Object;
 
-            var otChannel = new ExtendedObliviousTransferChannel(baseOtChannel, securityLevel, cryptoContext, code);
+            IObliviousTransferChannel otChannel = new ExtendedObliviousTransferChannel(baseOtChannel, securityLevel, cryptoContext, code);
 
             const int numberOfInvocations = 3;
             int numberOfMessageBits = TestUtils.TestOptions[0].Length * 8;

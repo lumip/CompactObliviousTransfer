@@ -1,101 +1,53 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System;
-using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace CompactOT
 {
     /// <summary>
-    /// Provides message channels for testing, backed by local queues of byte arrays.
+    /// Provides message channels for testing, backed by System.Threading.Channels.Channel.
     /// </summary>
-    public class TestMessageChannels : IDisposable
+    public class TestMessageChannels
     {
 
-        public class Channel : IMessageChannel
+        public class MessageChannel : IMessageChannel
         {
 
-            private readonly ConcurrentQueue<byte[]> _inQueue;
-            private readonly ConcurrentQueue<byte[]> _outQueue;
+            private readonly Channel<byte[]> _inChannel;
+            private readonly Channel<byte[]> _outChannel;
 
-            private readonly AutoResetEvent _inEvent;
-            private readonly AutoResetEvent _outEvent;
-
-            public Channel(ConcurrentQueue<byte[]> inQueue, AutoResetEvent inEvent, ConcurrentQueue<byte[]> outQueue, AutoResetEvent outEvent)
+            public MessageChannel(Channel<byte[]> inChannel, Channel<byte[]> outChannel)
             {
-                _inQueue = inQueue;
-                _inEvent = inEvent;
-                _outQueue = outQueue;
-                _outEvent = outEvent;
+                _inChannel = inChannel;
+                _outChannel = outChannel;
             }
 
-            public async Task<byte[]> ReadMessageAsync()
+            public async Task<byte[]> ReadMessageAsync(CancellationToken cancellationToken)
             {
-                return await Task.Run(() =>
-                {
-                    while (true)
-                    {
-                        _inEvent.WaitOne();
-
-                        byte[]? value;
-                        if (_inQueue.TryDequeue(out value))
-                            return value;
-                    }
-                });
+                return await _inChannel.Reader.ReadAsync(cancellationToken);
             }
 
-            public async Task WriteMessageAsync(byte[] message)
+            public async Task WriteMessageAsync(byte[] message, CancellationToken cancellationToken)
             {
-                await Task.Run(() =>
-                {
-                    _outQueue.Enqueue(message);
-                    _outEvent.Set();
-                });
+                await _outChannel.Writer.WriteAsync(message, cancellationToken);
             }
         }
 
-        private readonly ConcurrentQueue<byte[]> _firstToSecond;
-        private readonly ConcurrentQueue<byte[]> _secondToFirst;
-
-        private readonly AutoResetEvent _firstToSecondEvent;
-        private readonly AutoResetEvent _secondToFirstEvent;
-
-        private bool _disposed;
-
+        private readonly Channel<byte[]> _firstToSecondChannel;
+        private readonly Channel<byte[]> _secondToFirstChannel;
 
 
         public TestMessageChannels()
         {
-            _firstToSecond = new ConcurrentQueue<byte[]>();
-            _firstToSecondEvent = new AutoResetEvent(false);
-            _secondToFirst = new ConcurrentQueue<byte[]>();
-            _secondToFirstEvent = new AutoResetEvent(false);
-            _disposed = false;
+            _firstToSecondChannel = Channel.CreateUnbounded<byte[]>();
+            _secondToFirstChannel = Channel.CreateUnbounded<byte[]>();
         }
 
-        public IMessageChannel FirstPartyChannel => new Channel(_secondToFirst, _secondToFirstEvent, _firstToSecond, _firstToSecondEvent);
-        public IMessageChannel SecondPartyChannel => new Channel(_firstToSecond, _firstToSecondEvent, _secondToFirst, _secondToFirstEvent);
+        public IMessageChannel FirstPartyChannel => new MessageChannel(_secondToFirstChannel, _firstToSecondChannel);
+        public IMessageChannel SecondPartyChannel => new MessageChannel(_firstToSecondChannel, _secondToFirstChannel);
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-                return;
-
-            if (disposing)
-            {
-                _firstToSecondEvent.Dispose();
-                _secondToFirstEvent.Dispose();
-            }
-
-            _disposed = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
     }
 }

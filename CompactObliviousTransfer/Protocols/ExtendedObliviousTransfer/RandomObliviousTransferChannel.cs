@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 using CompactOT.Codes;
@@ -21,9 +22,14 @@ namespace CompactOT
         {
         }
 
-        public async Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public async Task<ObliviousTransferResult> ReceiveAsync(
+            int[] selectionIndices,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken
+        )
         {
-            var t0 = await base.ReceiverComputeAndSendU(selectionIndices, numberOfOptions, numberOfMessageBits);
+            var t0 = await base.ReceiverComputeAndSendU(selectionIndices, numberOfOptions, numberOfMessageBits, cancellationToken);
             int numberOfInvocations = selectionIndices.Length;
             Debug.Assert(_receiverState != null);
             Debug.Assert(t0.Rows == CodeLength);
@@ -51,9 +57,14 @@ namespace CompactOT
             return results;
         }
 
-        public async Task<ObliviousTransferOptions> SendAsync(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
+        public async Task<ObliviousTransferOptions> SendAsync(
+            int numberOfInvocations,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken
+        )
         {
-            var qs = await base.SenderReceiveUAndComputeQ(numberOfInvocations, numberOfOptions, numberOfMessageBits);
+            var qs = await base.SenderReceiveUAndComputeQ(numberOfInvocations, numberOfOptions, numberOfMessageBits, cancellationToken);
             Debug.Assert(_senderState != null);
             Debug.Assert(qs.Rows == numberOfInvocations);
             Debug.Assert(qs.Cols == CodeLength);

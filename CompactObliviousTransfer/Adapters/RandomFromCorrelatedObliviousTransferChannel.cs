@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CompactOT.Adapters
@@ -24,12 +25,22 @@ namespace CompactOT.Adapters
 
         public int SecurityLevel => _cotChannel.SecurityLevel;
 
-        public Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public Task<ObliviousTransferResult> ReceiveAsync(
+            int[] selectionIndices,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken
+        )
         {
-            return _cotChannel.ReceiveAsync(selectionIndices, numberOfOptions, numberOfMessageBits);
+            return _cotChannel.ReceiveAsync(selectionIndices, numberOfOptions, numberOfMessageBits, cancellationToken);
         }
 
-        public async Task<ObliviousTransferOptions> SendAsync(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits)
+        public async Task<ObliviousTransferOptions> SendAsync(
+            int numberOfInvocations,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken
+        )
         {
             var correlations = new ObliviousTransferOptions(
                 numberOfInvocations, numberOfOptions - 1, numberOfMessageBits
@@ -42,7 +53,7 @@ namespace CompactOT.Adapters
                     correlations.SetMessage(i, j, correlation);
                 }
             }
-            ObliviousTransferResult firstOptions = await _cotChannel.SendAsync(correlations);
+            ObliviousTransferResult firstOptions = await _cotChannel.SendAsync(correlations, cancellationToken);
             return ObliviousTransferOptions.FromCorrelatedTransfer(firstOptions, correlations);
         }
 

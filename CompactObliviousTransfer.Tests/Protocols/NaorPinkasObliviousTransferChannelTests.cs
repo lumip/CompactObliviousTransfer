@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2023 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CompactCryptoGroupAlgebra.EllipticCurves;
 using Moq;
@@ -66,18 +67,20 @@ namespace CompactOT
             var cryptoContext = CryptoContext.CreateDefault();
 
             // protocol setup
-            var senderOtChannel = new NaorPinkasObliviousTransferChannel<BigInteger, CurvePoint>(
+            IObliviousTransferChannel senderOtChannel = new NaorPinkasObliviousTransferChannel<BigInteger, CurvePoint>(
                 channels.FirstPartyChannel, cryptoGroup, cryptoContext
             );
 
-            var receiverOtChannel = new NaorPinkasObliviousTransferChannel<BigInteger, CurvePoint>(
+            IObliviousTransferChannelReceiverEndpoint receiverOtChannel = new NaorPinkasObliviousTransferChannel<BigInteger, CurvePoint>(
                 channels.SecondPartyChannel, cryptoGroup, cryptoContext
             );
 
+            var tokenSource = new CancellationTokenSource(TestUtils.TestTimeoutMs);
+
             // execute protocol
-            var sendTask = senderOtChannel.SendAsync(options);
+            var sendTask = senderOtChannel.SendAsync(options, tokenSource.Token);
             var receiverTask = receiverOtChannel.ReceiveAsync(
-                receiverIndices, numberOfOptions, numberOfMessageBits
+                receiverIndices, numberOfOptions, numberOfMessageBits, tokenSource.Token
             );
 
             await TestUtils.WhenAllOrFail(sendTask, receiverTask);

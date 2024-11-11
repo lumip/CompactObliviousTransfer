@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CompactOT.Adapters
@@ -24,12 +25,17 @@ namespace CompactOT.Adapters
 
         public int SecurityLevel => _otChannel.SecurityLevel;
 
-        public Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public Task<ObliviousTransferResult> ReceiveAsync(
+            int[] selectionIndices,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken
+        )
         {
-            return _otChannel.ReceiveAsync(selectionIndices, numberOfOptions, numberOfMessageBits);
+            return _otChannel.ReceiveAsync(selectionIndices, numberOfOptions, numberOfMessageBits, cancellationToken);
         }
 
-        public Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions correlations)
+        public Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions correlations, CancellationToken cancellationToken)
         {
             var firstOptions = new ObliviousTransferResult(correlations.NumberOfInvocations, correlations.NumberOfMessageBits);
             var options = new ObliviousTransferOptions(
@@ -45,7 +51,7 @@ namespace CompactOT.Adapters
                     options.SetMessage(i, j + 1, correlations.GetMessage(i, j) ^ firstOption);
                 }
             }
-            return _otChannel.SendAsync(options).ContinueWith(t => firstOptions);
+            return _otChannel.SendAsync(options, cancellationToken).ContinueWith(t => firstOptions);
         }
 
         public double EstimateCost(ObliviousTransferUsageProjection usageProjection)

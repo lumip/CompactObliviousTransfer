@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 using CompactOT.Codes;
@@ -28,9 +29,14 @@ namespace CompactOT
         }
 
 
-        public async Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public async Task<ObliviousTransferResult> ReceiveAsync(
+            int[] selectionIndices,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken
+        )
         {
-            var t0 = await base.ReceiverComputeAndSendU(selectionIndices, numberOfOptions, numberOfMessageBits);
+            var t0 = await base.ReceiverComputeAndSendU(selectionIndices, numberOfOptions, numberOfMessageBits, cancellationToken);
             int numberOfInvocations = selectionIndices.Length;
             Debug.Assert(_receiverState != null);
             Debug.Assert(t0.Rows == CodeLength);
@@ -41,7 +47,9 @@ namespace CompactOT
 #endif
 
             var results = new ObliviousTransferResult(numberOfInvocations, numberOfMessageBits);
-            ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfOptions, numberOfMessageBits);
+            ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(
+                numberOfInvocations, numberOfOptions, numberOfMessageBits, cancellationToken
+            );
 #if DEBUG
             DebugUtils.WriteLineReceiver("ExtendedOT", "Receiving masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Reset();
@@ -64,9 +72,11 @@ namespace CompactOT
             return results;
         }
 
-        public async Task SendAsync(ObliviousTransferOptions options)
+        public async Task SendAsync(ObliviousTransferOptions options, CancellationToken cancellationToken)
         {
-            var qs = await base.SenderReceiveUAndComputeQ(options.NumberOfInvocations, options.NumberOfOptions, options.NumberOfMessageBits);
+            var qs = await base.SenderReceiveUAndComputeQ(
+                options.NumberOfInvocations, options.NumberOfOptions, options.NumberOfMessageBits, cancellationToken
+            );
             Debug.Assert(_senderState != null);
             Debug.Assert(qs.Rows == options.NumberOfInvocations);
             Debug.Assert(qs.Cols == CodeLength);
@@ -101,7 +111,7 @@ namespace CompactOT
 #if DEBUG
             DebugUtils.WriteLineSender("ExtendedOT", "Masking options took {0} ms.", stopwatch.ElapsedMilliseconds);
 #endif
-            await SendMaskedOptions(maskedOptions);
+            await SendMaskedOptions(maskedOptions, cancellationToken);
         }
 
         public override double EstimateCost(ObliviousTransferUsageProjection usageProjection)

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System.Linq;
 using System.Threading.Tasks;
 
 using CompactOT.DataStructures;
@@ -11,6 +10,8 @@ namespace CompactOT
 {
     public static class TestUtils
     {
+        public const int TestTimeoutMs = 10000;
+
         /// <summary>
         /// Waits until all tasks are completed or at least one failed.
         ///

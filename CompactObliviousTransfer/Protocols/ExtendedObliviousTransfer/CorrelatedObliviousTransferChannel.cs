@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 using CompactOT.Codes;
@@ -22,9 +23,14 @@ namespace CompactOT
         {
         }
 
-        public async Task<ObliviousTransferResult> ReceiveAsync(int[] selectionIndices, int numberOfOptions, int numberOfMessageBits)
+        public async Task<ObliviousTransferResult> ReceiveAsync(
+            int[] selectionIndices,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken = default
+        )
         {
-            var t0 = await ReceiverComputeAndSendU(selectionIndices, numberOfOptions, numberOfMessageBits);
+            var t0 = await ReceiverComputeAndSendU(selectionIndices, numberOfOptions, numberOfMessageBits, cancellationToken);
             int numberOfInvocations = selectionIndices.Length;
             int numberOfCorrelations = numberOfOptions - 1;
             Debug.Assert(_receiverState != null);
@@ -35,7 +41,9 @@ namespace CompactOT
             Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
             var results = new ObliviousTransferResult(numberOfInvocations, numberOfMessageBits);
-            ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(numberOfInvocations, numberOfCorrelations, numberOfMessageBits);
+            ObliviousTransferOptions maskedOptions = await ReceiveMaskedOptions(
+                numberOfInvocations, numberOfCorrelations, numberOfMessageBits, cancellationToken
+            );
 #if DEBUG
             DebugUtils.WriteLineReceiver("CorrelatedOT", "Receiving masked options took {0} ms.", stopwatch.ElapsedMilliseconds);
             stopwatch.Reset();
@@ -68,11 +76,15 @@ namespace CompactOT
             return results;
         }
 
-        public async Task<ObliviousTransferResult> SendAsync(ObliviousTransferOptions correlations)
+        public async Task<ObliviousTransferResult> SendAsync(
+            ObliviousTransferOptions correlations, CancellationToken cancellationToken = default
+        )
         {
             int numberOfCorrelations = correlations.NumberOfOptions;
             int numberOfOptions = numberOfCorrelations + 1;
-            var qs = await SenderReceiveUAndComputeQ(correlations.NumberOfInvocations, numberOfOptions, correlations.NumberOfMessageBits);
+            var qs = await SenderReceiveUAndComputeQ(
+                correlations.NumberOfInvocations, numberOfOptions, correlations.NumberOfMessageBits, cancellationToken
+            );
             Debug.Assert(_senderState != null);
             Debug.Assert(qs.Rows == correlations.NumberOfInvocations);
             Debug.Assert(qs.Cols == CodeLength);
@@ -118,7 +130,7 @@ namespace CompactOT
 #if DEBUG
             DebugUtils.WriteLineSender("CorrelatedOT", "Masking options took {0} ms.", stopwatch.ElapsedMilliseconds);
 #endif
-            await SendMaskedOptions(maskedOptions);
+            await SendMaskedOptions(maskedOptions, cancellationToken);
 
             return firstOptions;
         }

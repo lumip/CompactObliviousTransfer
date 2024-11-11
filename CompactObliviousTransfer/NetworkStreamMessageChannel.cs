@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CompactOT
@@ -24,14 +25,14 @@ namespace CompactOT
             _stream = stream;
         }
 
-        private async Task ReadAllAsync(byte[] buffer)
+        private async Task ReadAllAsync(byte[] buffer, CancellationToken cancellationToken)
         {
             int bytesToRead = buffer.Length;
             int bytesRead = 0;
 
             while (bytesToRead > 0)
             {
-                int bytesJustRead = await _stream.ReadAsync(buffer, bytesRead, bytesToRead);
+                int bytesJustRead = await _stream.ReadAsync(buffer, bytesRead, bytesToRead, cancellationToken);
                 bytesRead += bytesJustRead;
                 bytesToRead = buffer.Length - bytesRead;
             }
@@ -39,11 +40,11 @@ namespace CompactOT
 
         /// <inheritdoc/>
         /// <exception cref="ProtocolException">Thrown when a message was received via the message stream that could not be interpreted.</exception>
-        public async Task<byte[]> ReadMessageAsync()
+        public async Task<byte[]> ReadMessageAsync(CancellationToken cancellationToken = default)
         {
             byte[] messageLengthBuffer = new byte[4];
 
-            await ReadAllAsync(messageLengthBuffer);
+            await ReadAllAsync(messageLengthBuffer, cancellationToken);
             int messageLength = BitConverter.ToInt32(messageLengthBuffer, 0);
 
             if (messageLength < 0)
@@ -52,17 +53,17 @@ namespace CompactOT
             byte[] messageBuffer = new byte[messageLength];
 
             if (messageLength > 0)
-                await ReadAllAsync(messageBuffer);
+                await ReadAllAsync(messageBuffer, cancellationToken);
 
             return messageBuffer;
         }
 
         /// <inheritdoc/>
-        public async Task WriteMessageAsync(byte[] message)
+        public async Task WriteMessageAsync(byte[] message, CancellationToken cancellationToken = default)
         {
             byte[] messageLengthBuffer = BitConverter.GetBytes(message.Length);
-            await _stream.WriteAsync(messageLengthBuffer, 0, messageLengthBuffer.Length);
-            await _stream.WriteAsync(message, 0, message.Length);
+            await _stream.WriteAsync(messageLengthBuffer, 0, messageLengthBuffer.Length, cancellationToken);
+            await _stream.WriteAsync(message, 0, message.Length, cancellationToken);
         }
 
     }

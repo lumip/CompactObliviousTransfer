@@ -1,6 +1,7 @@
-// SPDX-FileCopyrightText: 2022 Lukas Prediger <lumip@lumip.de>
+// SPDX-FileCopyrightText: 2024 Lukas Prediger <lumip@lumip.de>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CompactOT
@@ -8,10 +9,10 @@ namespace CompactOT
 
     /// <summary>
     /// A 1-out-of-N Correlated Oblivious Transfer channel implementation.
-    /// 
+    ///
     /// Provides 1ooN-COT on a given channel (i.e., pair of parties) and may maintain
     /// channel-specific protocol state in-between invocations.
-    /// 
+    ///
     /// In a single invocation of 1-out-of-N Random Oblivious Transfer, the sender inputs
     /// nothing and the receiver inputs a selection index s.
     /// The sender receives as output N random bit-strings x_0, ..., X_N. The receiver receives
@@ -19,7 +20,12 @@ namespace CompactOT
     /// </summary>
     public interface IRandomObliviousTransferChannel : IObliviousTransferChannelReceiverEndpoint, ICostEstimator
     {
-        Task<ObliviousTransferOptions> SendAsync(int numberOfInvocations, int numberOfOptions, int numberOfMessageBits);
+        Task<ObliviousTransferOptions> SendAsync(
+            int numberOfInvocations,
+            int numberOfOptions,
+            int numberOfMessageBits,
+            CancellationToken cancellationToken = default
+        );
     }
 
 }
