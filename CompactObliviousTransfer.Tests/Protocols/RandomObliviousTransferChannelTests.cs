@@ -3,7 +3,7 @@
 
 using System.Threading;
 using CompactOT.Codes;
-
+using Moq;
 using Xunit;
 
 namespace CompactOT
@@ -56,6 +56,44 @@ namespace CompactOT
                 var receiverOption = results.GetInvocationResult(i);
                 Assert.Equal(senderOption, receiverOption);
             }
+        }
+
+        [Fact]
+        public void TestEstimateCost()
+        {
+            int securityLevel = 4;
+
+            var baseOTMock = new Mock<IObliviousTransferChannel>();
+            baseOTMock.Setup(ot => ot.SecurityLevel).Returns(1000000);
+            double baseCost = 3.5;
+            baseOTMock.Setup(ot => ot.EstimateCost(It.IsAny<ObliviousTransferUsageProjection>())).Returns(baseCost);
+
+            var cryptoContext = CryptoContext.CreateDefault();
+
+            int codeLength = 15;
+            var codeMock = new Mock<IBinaryCode>();
+            codeMock.Setup(c => c.CodeLength).Returns(codeLength);
+            codeMock.Setup(c => c.Distance).Returns(securityLevel);
+            var code = codeMock.Object;
+
+            var otProtocol = new RandomObliviousTransferChannel(
+                baseOTMock.Object, securityLevel, cryptoContext, code
+            );
+
+            var usageProjection = new ObliviousTransferUsageProjection
+            {
+                MaxNumberOfInvocations = 7,
+                AverageNumberOfOptions = 3,
+                AverageMessageBits = 11
+            };
+
+            double initialExchangeCost = usageProjection.MaxNumberOfBatches * usageProjection.AverageInvocationsPerBatch * codeLength;
+
+            double expectedCost = baseCost + initialExchangeCost;
+
+            double actualCost = otProtocol.EstimateCost(usageProjection);
+
+            Assert.Equal(expectedCost, actualCost);
         }
 
     }

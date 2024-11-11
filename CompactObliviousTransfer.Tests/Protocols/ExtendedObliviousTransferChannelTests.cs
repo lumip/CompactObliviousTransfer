@@ -200,9 +200,9 @@ namespace CompactOT
             };
 
             double initialExchangeCost = usageProjection.MaxNumberOfBatches * usageProjection.AverageInvocationsPerBatch * codeLength;
-            double onlineCost = usageProjection.MaxNumberOfInvocations * usageProjection.AverageNumberOfOptions * usageProjection.AverageMessageBits;
+            double maskedOptionExchangeCost = usageProjection.MaxNumberOfInvocations * usageProjection.AverageNumberOfOptions * usageProjection.AverageMessageBits;
 
-            double expectedCost = baseCost + initialExchangeCost + onlineCost;
+            double expectedCost = baseCost + initialExchangeCost + maskedOptionExchangeCost;
 
             double actualCost = otProtocol.EstimateCost(usageProjection);
 

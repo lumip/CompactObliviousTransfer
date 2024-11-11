@@ -405,8 +405,6 @@ namespace CompactOT
             // bandwidth cost of security exchange
             double averageInvocationsPerBatch = usageProjection.AverageInvocationsPerBatch;
             double maxNumberOfBatches = usageProjection.MaxNumberOfBatches;
-
-            // bandwidth cost of security exchange
             double securityExchangeBitLength = codeLength;
             double securityExchangeCost = maxNumberOfBatches * averageInvocationsPerBatch * securityExchangeBitLength;
 

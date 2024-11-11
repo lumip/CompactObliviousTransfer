@@ -150,7 +150,7 @@ namespace CompactOT
             double maxNumberOfInvocations = usageProjection.MaxNumberOfInvocations;
             double averageNumberOfOptions = usageProjection.AverageNumberOfOptions;
             double averageMessageBits = usageProjection.AverageMessageBits;
-            double correlationsExchangeCost = maxNumberOfInvocations * (averageNumberOfOptions - 1.0) * usageProjection.AverageMessageBits;
+            double correlationsExchangeCost = maxNumberOfInvocations * (averageNumberOfOptions - 1.0) * averageMessageBits;
 
             return baseOtAndSecurityExchangeCost + correlationsExchangeCost;
         }
